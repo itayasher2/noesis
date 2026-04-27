@@ -283,5 +283,36 @@ router.post('/ai-analysis', async (req, res) => {
     res.status(500).json({ error: err.response?.data?.error?.message || err.message });
   }
 });
-
+router.get('/quarterly/:ticker', async (req, res) => {
+  try {
+    const ticker = req.params.ticker.toUpperCase();
+    const [income, cashflow, balance] = await Promise.all([
+      fmp.getIncomeQ(ticker),
+      fmp.getCashflowQ(ticker),
+      fmp.getBalanceQ(ticker),
+    ]);
+    const histIncome   = safe(income).slice(0,8).reverse();
+    const histCashflow = safe(cashflow).slice(0,8).reverse();
+    const histBalance  = safe(balance).slice(0,8).reverse();
+    const history = histIncome.map((yr, idx) => ({
+      year: yr.date ? yr.date.slice(0,7) : null,
+      revenue:      n(yr.revenue) || n(yr.totalRevenue),
+      grossProfit:  n(yr.grossProfit),
+      ebitda:       n(yr.ebitda),
+      netIncome:    n(yr.netIncome),
+      fcf:          n(histCashflow[idx]?.freeCashFlow),
+      capex:        n(histCashflow[idx]?.capitalExpenditure),
+      dividends:    Math.abs(n(histCashflow[idx]?.dividendsPaid)||0),
+      buybacks:     Math.abs(n(histCashflow[idx]?.commonStockRepurchased)||0),
+      grossMargin:  yr.revenue ? (n(yr.grossProfit)||0)/yr.revenue*100 : null,
+      ebitdaMargin: yr.revenue ? (n(yr.ebitda)||0)/yr.revenue*100 : null,
+      netMargin:    yr.revenue ? (n(yr.netIncome)||0)/yr.revenue*100 : null,
+      roe:          histBalance[idx]?.totalStockholdersEquity > 0
+                      ? (n(yr.netIncome)||0)/histBalance[idx].totalStockholdersEquity*100 : null,
+    }));
+    res.json({ history });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 module.exports = router;
