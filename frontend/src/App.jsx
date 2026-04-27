@@ -225,7 +225,7 @@ export default function App() {
   const [gordonP, setGordonP] = useState({ r: 10, g: 4 });
   const [riP, setRiP] = useState({ ke: 10, g: 4 });
   const [showDesc, setShowDesc] = useState(false);
- if (!user) return <Login onLogin={setUser} />;
+ const [user, setUser] = useState('guest');
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('vp-theme') === 'dark');
 
   if (!user) return <Login onLogin={setUser} />;
