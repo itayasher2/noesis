@@ -226,9 +226,9 @@ export default function App() {
   const [riP, setRiP] = useState({ ke: 10, g: 4 });
   const [showDesc, setShowDesc] = useState(false);
   const [period, setPeriod] = useState('annual');
-const [quarterlyHistory, setQuarterlyHistory] = useState(null);
-const [quarterlyLoading, setQuarterlyLoading] = useState(false);
- const [user, setUser] = useState('guest');
+  const [quarterlyHistory, setQuarterlyHistory] = useState(null);
+  const [quarterlyLoading, setQuarterlyLoading] = useState(false);
+  const [user, setUser] = useState('guest');
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('vp-theme') === 'dark');
 
   const toggleTheme = () => {
@@ -241,12 +241,24 @@ const [quarterlyLoading, setQuarterlyLoading] = useState(false);
   const analyze = async () => {
     if (!ticker.trim()) return;
     setLoading(true); setError(''); setData(null);
+    setPeriod('annual'); setQuarterlyHistory(null);
     try {
       const res = await axios.get(`${API}/valuation/${ticker.trim().toUpperCase()}`);
       setData(res.data); setTab('overview');
     } catch (e) {
       setError('No data found. Please check the ticker.');
     } finally { setLoading(false); }
+  };
+
+  const loadQuarterly = async () => {
+    if (quarterlyHistory) { setPeriod('quarterly'); return; }
+    setQuarterlyLoading(true);
+    try {
+      const res = await axios.get(`${API}/valuation/quarterly/${data.profile.ticker}`);
+      setQuarterlyHistory(res.data.history);
+      setPeriod('quarterly');
+    } catch(e) {}
+    setQuarterlyLoading(false);
   };
 
   const getDCF = () => !data ? null : calcDCF({ fcf: data.financials.fcf, shares: data.profile.shares, totalDebt: data.financials.totalDebt, cash: data.financials.cash, g1: dcfP.g1/100, g2: dcfP.g2/100, wacc: dcfP.wacc/100, tgr: dcfP.tgr/100 });
@@ -773,20 +785,11 @@ const [quarterlyLoading, setQuarterlyLoading] = useState(false);
                   })()}
                 </div>
               )}
-              const loadQuarterly = async () => {
-  if (quarterlyHistory) { setPeriod('quarterly'); return; }
-  setQuarterlyLoading(true);
-  try {
-    const res = await axios.get(`${API}/valuation/quarterly/${data.profile.ticker}`);
-    setQuarterlyHistory(res.data.history);
-    setPeriod('quarterly');
-  } catch(e) {}
-  setQuarterlyLoading(false);
-};
+
               {tab==='financials'&&(
                 <div>
                   {(()=>{
-                    const hist=data.history||[];
+                    const hist=(period==='quarterly' ? quarterlyHistory : data.history) || [];
                     const revArr=hist.filter(r=>r.revenue&&r.revenue>0),niArr=hist.filter(r=>r.netIncome&&r.netIncome>0),fcfArr=hist.filter(r=>r.fcf&&r.fcf>0);
                     const revCAGR=revArr.length>=2?((revArr[revArr.length-1].revenue/revArr[0].revenue)**(1/(revArr.length-1))-1)*100:null;
                     const niCAGR=niArr.length>=2?((niArr[niArr.length-1].netIncome/niArr[0].netIncome)**(1/(niArr.length-1))-1)*100:null;
@@ -803,12 +806,24 @@ const [quarterlyLoading, setQuarterlyLoading] = useState(false);
                           <div className="text-sm font-semibold" style={C.p}>{tw}</div>
                           {revCAGR!==null&&revCAGR<5&&<div className="text-xs mt-1" style={C.s}>Low single-digit growth — margins and capital returns drive the thesis</div>}
                         </div>
+                        <div className="flex gap-2 mb-4">
+                          <button onClick={()=>setPeriod('annual')}
+                            className="px-4 py-1.5 text-xs font-semibold rounded-lg transition-all"
+                            style={{background:period==='annual'?'var(--accent)':'var(--bg-subtle)',color:period==='annual'?'white':'var(--text-muted)',border:'1px solid var(--border)'}}>
+                            Annual
+                          </button>
+                          <button onClick={loadQuarterly} disabled={quarterlyLoading}
+                            className="px-4 py-1.5 text-xs font-semibold rounded-lg transition-all"
+                            style={{background:period==='quarterly'?'var(--accent)':'var(--bg-subtle)',color:period==='quarterly'?'white':'var(--text-muted)',border:'1px solid var(--border)'}}>
+                            {quarterlyLoading ? '⟳ Loading...' : 'Quarterly'}
+                          </button>
+                        </div>
                         <div className="grid grid-cols-3 gap-3 mb-5">
                           {[{label:'Revenue CAGR',val:revCAGR},{label:'Net Income CAGR',val:niCAGR},{label:'FCF CAGR',val:fcfCAGR,warn:fcfCAGR!==null&&revCAGR!==null&&fcfCAGR<revCAGR}].map(item=>(
                             <div key={item.label} style={{...C.sub,background:item.warn?'var(--amber-bg)':'var(--bg-subtle)',border:item.warn?'1px solid var(--amber)':'1px solid var(--border)'}} className="p-3">
                               <div className="text-xs mb-1" style={C.m}>{item.label}</div>
                               <div className="text-xl font-black num" style={{color:item.val>10?'var(--green)':item.val>5?'var(--amber)':'var(--text-secondary)'}}>{item.val!==null?fmt(item.val,1)+'%':'—'}</div>
-                              <div className="text-xs" style={C.m}>{hist.length}Y</div>
+                              <div className="text-xs" style={C.m}>{hist.length}{period==='quarterly'?'Q':'Y'}</div>
                               {item.warn&&<div className="text-xs mt-0.5" style={C.amber}>⚠ Lagging revenue</div>}
                             </div>
                           ))}
