@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API = 'http://localhost:3001/api';
+const API = import.meta.env.VITE_API_URL + '/api';
 
 function fmt(n, d=1) { return n==null||isNaN(n)?'N/A':Number(n).toFixed(d); }
 
