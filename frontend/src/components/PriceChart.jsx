@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from 'recharts';
 import axios from 'axios';
 
-const API = 'http://localhost:3001/api';
+const API = import.meta.env.VITE_API_URL + '/api';
 
 const PERIODS = [
   { label: '1D', days: 1 },
