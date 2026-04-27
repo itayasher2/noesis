@@ -324,7 +324,7 @@ export default function App() {
           </div>
           <UserMenu
             user={user}
-            onLogout={() => { localStorage.removeItem('noesis-auth'); setUser(null); }}
+            onLogout={() => { localStorage.removeItem('noesis-auth'); setUser('guest'); }}
             darkMode={darkMode}
             toggleTheme={toggleTheme}
           />
