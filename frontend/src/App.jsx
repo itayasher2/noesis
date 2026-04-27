@@ -15,7 +15,7 @@ import DecisionBox from './components/DecisionBox';
 import ThesisTriggers from './components/ThesisTriggers';
 import Login from './components/Login';
 
-const API = 'http://localhost:3001/api';
+const API = import.meta.env.VITE_API_URL + '/api';
 
 function Badge({ upside }) {
   const color = upside >= 20 ? {bg:'var(--green-bg)',text:'var(--green)'} : upside >= 0 ? {bg:'var(--amber-bg)',text:'var(--amber)'} : {bg:'var(--red-bg)',text:'var(--red)'};
