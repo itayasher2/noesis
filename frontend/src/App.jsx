@@ -225,6 +225,9 @@ export default function App() {
   const [gordonP, setGordonP] = useState({ r: 10, g: 4 });
   const [riP, setRiP] = useState({ ke: 10, g: 4 });
   const [showDesc, setShowDesc] = useState(false);
+  const [period, setPeriod] = useState('annual');
+const [quarterlyHistory, setQuarterlyHistory] = useState(null);
+const [quarterlyLoading, setQuarterlyLoading] = useState(false);
  const [user, setUser] = useState('guest');
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('vp-theme') === 'dark');
 
@@ -770,7 +773,16 @@ export default function App() {
                   })()}
                 </div>
               )}
-
+              const loadQuarterly = async () => {
+  if (quarterlyHistory) { setPeriod('quarterly'); return; }
+  setQuarterlyLoading(true);
+  try {
+    const res = await axios.get(`${API}/valuation/quarterly/${data.profile.ticker}`);
+    setQuarterlyHistory(res.data.history);
+    setPeriod('quarterly');
+  } catch(e) {}
+  setQuarterlyLoading(false);
+};
               {tab==='financials'&&(
                 <div>
                   {(()=>{
