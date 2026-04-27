@@ -228,8 +228,6 @@ export default function App() {
  const [user, setUser] = useState('guest');
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('vp-theme') === 'dark');
 
-  if (!user) return <Login onLogin={setUser} />;
-
   const toggleTheme = () => {
     const next = !darkMode;
     setDarkMode(next);
