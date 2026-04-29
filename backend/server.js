@@ -6,6 +6,7 @@ require('dotenv').config();
 
 const stockRoutes = require('./routes/stock');
 const valuationRoutes = require('./routes/valuation');
+const marketRoutes = require('./routes/market');
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use(limiter);
 
 app.use('/api/stock', stockRoutes);
 app.use('/api/valuation', valuationRoutes);
+app.use('/api/market', marketRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date() });
