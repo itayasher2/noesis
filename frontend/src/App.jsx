@@ -396,6 +396,7 @@ export default function App() {
               <KpiCard label="ROE" value={fmtPct(data.financials.roe)} />
               <KpiCard label="ROIC" value={fmtPct(data.financials.roic)} />
               <KpiCard label="EPS" value={fmtPrice(data.multiples.eps)} />
+              <KpiCard label="PEG (5yr)" value={data.multiples.pegRatio ? fmt(data.multiples.pegRatio, 2)+'x' : 'N/A'} />
             </div>
           </div>
 
