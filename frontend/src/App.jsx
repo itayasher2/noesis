@@ -327,7 +327,7 @@ export default function App() {
 
   return (
     <div style={{minHeight:'100vh',background:'var(--bg-base)'}} dir="ltr">
-      <div className="max-w-5xl mx-auto px-4 py-8">
+     <div className="max-w-7xl mx-auto px-4 py-8">
 
         {/* ── Header ── */}
         <div className="flex items-center justify-between mb-8">
