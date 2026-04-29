@@ -223,10 +223,9 @@ export default function App() {
   const [period, setPeriod] = useState('annual');
   const [quarterlyHistory, setQuarterlyHistory] = useState(null);
   const [quarterlyLoading, setQuarterlyLoading] = useState(false);
-  const [user, setUser] = useState(() => localStorage.getItem('noesis-auth'));
+  const [user, setUser] = useState('ADMIN');
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('vp-theme') === 'dark');
 
-  if (!user) return <Login onLogin={setUser} />;
 
   const toggleTheme = () => {
     const next = !darkMode;
