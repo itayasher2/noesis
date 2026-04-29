@@ -14,9 +14,8 @@ import MarketExpectations from './components/MarketExpectations';
 import DecisionBox from './components/DecisionBox';
 import ThesisTriggers from './components/ThesisTriggers';
 import Login from './components/Login';
-import MarketHeatmap from './components/MarketHeatmap';
 
-const API = import.meta.env.VITE_API_URL + '/api';
+const API = 'https://noesis-production-2521.up.railway.app/api';
 
 function Badge({ upside }) {
   const color = upside >= 20 ? {bg:'var(--green-bg)',text:'var(--green)'} : upside >= 0 ? {bg:'var(--amber-bg)',text:'var(--amber)'} : {bg:'var(--red-bg)',text:'var(--red)'};
@@ -50,8 +49,6 @@ function UserMenu({ user, onLogout, darkMode, toggleTheme }) {
       {open && <>
         <div style={{position:'fixed',inset:0,zIndex:40}} onClick={() => setOpen(false)}/>
         <div style={{position:'absolute',top:'calc(100% + 8px)',right:0,width:220,zIndex:50,background:'var(--bg-card)',border:'1px solid var(--border)',borderRadius:'var(--radius)',boxShadow:'var(--shadow-md)',overflow:'hidden'}}>
-
-          {/* User info */}
           <div style={{padding:'14px 16px',borderBottom:'1px solid var(--border)',background:'var(--bg-subtle)'}}>
             <div style={{display:'flex',alignItems:'center',gap:10}}>
               <div style={{width:32,height:32,borderRadius:'50%',background:'var(--gradient-brand)',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:13,fontWeight:700,flexShrink:0}}>
@@ -64,14 +61,13 @@ function UserMenu({ user, onLogout, darkMode, toggleTheme }) {
             </div>
           </div>
 
-          {/* Items */}
           {[
-            {icon:'', label:'Account',       sub:'Manage your profile'},
-            {icon:'', label:'Subscription',  sub:'Pro · Renews monthly'},
-            {icon:'', label:'Notifications', sub:'Alerts & updates'},
-            {icon:'', label:'Settings',      sub:'Preferences'},
-            {icon:'', label:'Usage',         sub:'API calls & limits'},
-            {icon:'', label:'Help & Support',sub:'Docs & contact'},
+            {icon:'👤', label:'Account',       sub:'Manage your profile'},
+            {icon:'💳', label:'Subscription',  sub:'Pro · Renews monthly'},
+            {icon:'🔔', label:'Notifications', sub:'Alerts & updates'},
+            {icon:'⚙️', label:'Settings',      sub:'Preferences'},
+            {icon:'📊', label:'Usage',         sub:'API calls & limits'},
+            {icon:'❓', label:'Help & Support',sub:'Docs & contact'},
           ].map(item => (
             <button key={item.label} onClick={() => setOpen(false)}
               style={{width:'100%',padding:'10px 16px',display:'flex',alignItems:'center',gap:12,background:'transparent',border:'none',cursor:'pointer',borderBottom:'1px solid var(--border)',transition:'background 0.1s'}}
@@ -85,7 +81,6 @@ function UserMenu({ user, onLogout, darkMode, toggleTheme }) {
             </button>
           ))}
 
-          {/* Theme toggle */}
           <button onClick={() => { toggleTheme(); setOpen(false); }}
             style={{width:'100%',padding:'10px 16px',display:'flex',alignItems:'center',gap:12,background:'transparent',border:'none',cursor:'pointer',borderBottom:'1px solid var(--border)',transition:'background 0.1s'}}
             onMouseEnter={e=>e.currentTarget.style.background='var(--bg-subtle)'}
@@ -97,7 +92,6 @@ function UserMenu({ user, onLogout, darkMode, toggleTheme }) {
             </div>
           </button>
 
-          {/* Sign out */}
           <button onClick={() => { onLogout(); setOpen(false); }}
             style={{width:'100%',padding:'10px 16px',display:'flex',alignItems:'center',gap:12,background:'transparent',border:'none',cursor:'pointer',transition:'background 0.1s'}}
             onMouseEnter={e=>e.currentTarget.style.background='var(--red-bg)'}
@@ -229,8 +223,10 @@ export default function App() {
   const [period, setPeriod] = useState('annual');
   const [quarterlyHistory, setQuarterlyHistory] = useState(null);
   const [quarterlyLoading, setQuarterlyLoading] = useState(false);
-  const [user, setUser] = useState('guest');
+  const [user, setUser] = useState(() => localStorage.getItem('noesis-auth'));
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('vp-theme') === 'dark');
+
+  if (!user) return <Login onLogin={setUser} />;
 
   const toggleTheme = () => {
     const next = !darkMode;
@@ -302,8 +298,8 @@ export default function App() {
     { id: 'financials', label: 'Financials' },
     { id: 'capital', label: 'Capital Allocation' },
     { id: 'forward', label: ' Forward View' },
-    { id: 'market', label: ' Market Expectations' },
-    { id: 'drivers', label: ' Business Drivers' },
+    { id: 'market', label: 'Market Expectations' },
+    { id: 'drivers', label: 'Business Drivers' },
     { id: 'peers', label: 'Peers' },
     { id: 'ai', label: ' AI Analysis' },
     { id: 'links', label: 'Documents' },
@@ -327,7 +323,7 @@ export default function App() {
 
   return (
     <div style={{minHeight:'100vh',background:'var(--bg-base)'}} dir="ltr">
-     <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8">
 
         {/* ── Header ── */}
         <div className="flex items-center justify-between mb-8">
@@ -340,7 +336,7 @@ export default function App() {
           </div>
           <UserMenu
             user={user}
-            onLogout={() => { localStorage.removeItem('noesis-auth'); setUser('guest'); }}
+            onLogout={() => { localStorage.removeItem('noesis-auth'); setUser(null); }}
             darkMode={darkMode}
             toggleTheme={toggleTheme}
           />
@@ -357,11 +353,7 @@ export default function App() {
             {loading ? '⟳ Loading...' : 'Analyze ▶'}
           </button>
         </div>
-        {!data && !loading && (
-  <MarketHeatmap onSelectTicker={(sym) => {
-    setTicker(sym);
-  }} />
-)}
+
         {error && <div className="px-4 py-3 rounded-xl text-sm mb-4" style={{background:'var(--red-bg)',color:'var(--red)',border:'1px solid var(--red)'}}>{error}</div>}
 
         {data && (<>
