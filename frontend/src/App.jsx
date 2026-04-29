@@ -14,6 +14,7 @@ import MarketExpectations from './components/MarketExpectations';
 import DecisionBox from './components/DecisionBox';
 import ThesisTriggers from './components/ThesisTriggers';
 import Login from './components/Login';
+import MarketHeatmap from './components/MarketHeatmap';
 
 const API = import.meta.env.VITE_API_URL + '/api';
 
@@ -356,7 +357,11 @@ export default function App() {
             {loading ? '⟳ Loading...' : 'Analyze ▶'}
           </button>
         </div>
-
+        {!data && !loading && (
+  <MarketHeatmap onSelectTicker={(sym) => {
+    setTicker(sym);
+  }} />
+)}
         {error && <div className="px-4 py-3 rounded-xl text-sm mb-4" style={{background:'var(--red-bg)',color:'var(--red)',border:'1px solid var(--red)'}}>{error}</div>}
 
         {data && (<>
