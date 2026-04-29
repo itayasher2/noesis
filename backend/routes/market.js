@@ -19,10 +19,13 @@ const STOCKS = [
   'EMR','ETN','COIN','MSTR','MARA','RIOT','HUT',
 ];
 
+const delay = (ms) => new Promise(r => setTimeout(r, ms));
+
 router.get('/heatmap', async (req, res) => {
   try {
-    const results = await Promise.allSettled(
-      STOCKS.map(async (sym) => {
+    const data = [];
+    for (const sym of STOCKS) {
+      try {
         const r = await fetch(
           `https://${RAPIDAPI_HOST}/api/market-data?symbol=NASDAQ:${sym}`,
           {
@@ -34,7 +37,7 @@ router.get('/heatmap', async (req, res) => {
           }
         );
         const d = await r.json();
-        return {
+        data.push({
           symbol: sym,
           price: parseFloat(d['price_52_week_high'] || 0),
           change: parseFloat(d['Perf.W'] || 0),
@@ -44,14 +47,10 @@ router.get('/heatmap', async (req, res) => {
           low: parseFloat(d['Low.1M'] || 0),
           volume: parseFloat(d['average_volume_10d_calc'] || 0),
           marketCap: 0,
-        };
-      })
-    );
-
-    const data = results
-      .filter(r => r.status === 'fulfilled')
-      .map(r => r.value);
-
+        });
+      } catch (e) {}
+      await delay(200);
+    }
     res.json({ data, updatedAt: new Date().toISOString() });
   } catch (err) {
     console.error('Market heatmap error:', err.message);
