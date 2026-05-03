@@ -15,7 +15,7 @@ import DecisionBox from './components/DecisionBox';
 import ThesisTriggers from './components/ThesisTriggers';
 import Login from './components/Login';
 
-const API = 'https://noesis-production-2521.up.railway.app/api';
+const API = 'https://web-production-bdb26.up.railway.app/api';
 
 function Badge({ upside }) {
   const color = upside >= 20 ? {bg:'var(--green-bg)',text:'var(--green)'} : upside >= 0 ? {bg:'var(--amber-bg)',text:'var(--amber)'} : {bg:'var(--red-bg)',text:'var(--red)'};
