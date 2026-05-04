@@ -6,6 +6,7 @@ import FinancialsChart from './components/FinancialsChart';
 import SensitivityTable from './components/SensitivityTable';
 import Scenarios from './components/Scenarios';
 import PeerComparison from './components/PeerComparison';
+import NAVModel from './components/NAVModel';
 import PriceChart from './components/PriceChart';
 import AIAnalysis from './components/AIAnalysis';
 import ForwardView from './components/ForwardView';
@@ -225,7 +226,6 @@ export default function App() {
   const [quarterlyLoading, setQuarterlyLoading] = useState(false);
   const [user, setUser] = useState('ADMIN');
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('vp-theme') === 'dark');
-
 
   const toggleTheme = () => {
     const next = !darkMode;
@@ -755,31 +755,7 @@ export default function App() {
                     {riFV?(<><div className="text-sm mb-1" style={C.m}>Residual Income Fair Value</div><div className="text-3xl font-black num" style={C.green}>{fmtPrice(riFV)}</div><div className="text-xs num mt-2" style={C.m}>RI₁ = BV×(ROE−Ke) | FV = BV+RI₁/(Ke−g)</div></>):<div className="text-sm" style={C.amber}>Insufficient data</div>}
                   </div>
                   {grahamFV&&(<div className="rounded-xl p-4 mt-4" style={{background:'var(--accent-subtle)',border:'1px solid var(--accent)'}}><div className="text-sm font-bold mb-1" style={C.accent}>Graham Number</div><div className="text-2xl font-black num" style={C.accent}>{fmtPrice(grahamFV)}</div><div className="text-xs num mt-1" style={C.m}>√(22.5 × {fmt(data.multiples.eps,2)} × {fmt(data.multiples.bvps,2)})</div>{price&&<div className="text-sm font-bold mt-1 num" style={{color:grahamFV>price?'var(--green)':'var(--red)'}}>{grahamFV>price?'+':''}{fmt((grahamFV/price-1)*100,1)}% vs market</div>}</div>)}
-                  {(()=>{
-                    const ta=data.financials.totalAssets||0,td=data.financials.totalDebt||0,eq=data.financials.equity||0,sh=data.profile.shares||1;
-                    const nav=ta-td,navPS=nav/sh,bvps=eq/sh;
-                    const p2n=price&&navPS>0?price/navPS:null,upNav=navPS&&price?(navPS/price-1)*100:null;
-                    return(
-                      <div className="rounded-xl p-4 mt-4" style={{background:'#faf5ff',border:'1px solid #e9d5ff'}}>
-                        <div className="text-sm font-bold mb-4" style={{color:'#7c3aed'}}>NAV — Net Asset Value</div>
-                        <table className="w-full text-sm mb-4"><tbody>
-                          {[['Total Assets',fmtB(ta),C.p],['Less: Debt',`(${fmtB(td)})`,C.red],['= NAV',fmtB(nav),{color:'#7c3aed',fontWeight:700}],['÷ Shares',(sh/1e9).toFixed(2)+'B',C.s]].map(([k,v,s])=>(
-                            <tr key={k} style={{borderBottom:'1px solid #e9d5ff'}}><td className="py-1.5" style={C.s}>{k}</td><td className="py-1.5 text-right font-bold num" style={s}>{v}</td></tr>
-                          ))}
-                          <tr style={{background:'#ede9fe'}}><td className="py-2 font-bold" style={{color:'#7c3aed'}}>NAV/Share</td><td className="py-2 text-right text-xl font-black num" style={{color:'#7c3aed'}}>{fmtPrice(navPS)}</td></tr>
-                        </tbody></table>
-                        <div className="grid grid-cols-3 gap-3 mb-3">
-                          {[{l:'NAV/Share',v:fmtPrice(navPS)},{l:'Book Value',v:fmtPrice(bvps)},{l:'Market Price',v:fmtPrice(price),sub:p2n?fmt(p2n,1)+'x NAV':''}].map(item=>(
-                            <div key={item.l} className="rounded-lg p-3" style={{background:'var(--bg-card)',border:'1px solid #e9d5ff'}}><div className="text-xs mb-1" style={C.m}>{item.l}</div><div className="text-lg font-bold num" style={{color:'#7c3aed'}}>{item.v}</div>{item.sub&&<div className="text-xs font-medium num" style={{color:upNav<0?'var(--red)':'var(--green)'}}>{item.sub}</div>}</div>
-                          ))}
-                        </div>
-                        <div className="rounded-lg p-3" style={{background:'var(--bg-card)',border:'1px solid #e9d5ff'}}>
-                          <div className="text-sm font-bold" style={{color:upNav>=0?'var(--green)':'var(--red)'}}>{upNav!=null&&`${fmt(Math.abs(upNav),1)}% ${upNav>=0?'discount':'premium'} to NAV`}</div>
-                          {p2n&&p2n>3&&<div className="text-xs mt-1" style={C.amber}>⚠ {fmt(p2n,1)}x NAV — intangibles dominate</div>}
-                        </div>
-                      </div>
-                    );
-                  })()}
+                  <NAVModel data={data} />
                 </div>
               )}
 
