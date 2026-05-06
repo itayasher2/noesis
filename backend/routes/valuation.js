@@ -56,6 +56,7 @@ router.get('/:ticker', async (req, res) => {
 
     const pe         = n(yd.summaryDetail?.trailingPE) || n(m.peRatio);
     const forwardPE  = n(yd.defaultKeyStatistics?.forwardPE);
+    const pegRatio   = n(yd.defaultKeyStatistics?.pegRatio);
     const pb         = n(yd.defaultKeyStatistics?.priceToBook) || n(m.pbRatio);
     const ps         = n(yd.summaryDetail?.priceToSalesTrailing12Months) || n(m.priceToSalesRatio);
     const evEbitda   = n(yd.defaultKeyStatistics?.enterpriseToEbitda) || n(m.enterpriseValueOverEBITDA);
@@ -132,8 +133,8 @@ router.get('/:ticker', async (req, res) => {
         changePct: n(p.changesPercentage)||n(p.changePercentage),
         marketCap: mktCap, shares: sharesOutstanding, beta,
       },
-      multiples: {
-        pe, forwardPE, pb, ps, evEbitda, evRevenue, evFcf,
+     multiples: {
+  pe, forwardPE, pegRatio, pb, ps, evEbitda, evRevenue, evFcf,
         eps, bvps, dps, dividendYield, roe, roa, roic,
         debtEq, payoutRatio, targetPrice, analystRating, numberOfAnalysts,
       },
