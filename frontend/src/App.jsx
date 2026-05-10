@@ -14,6 +14,7 @@ import MarketExpectations from './components/MarketExpectations';
 import DecisionBox from './components/DecisionBox';
 import ThesisTriggers from './components/ThesisTriggers';
 import Login from './components/Login';
+import HeroSection from './components/HeroSection';
 
 const API = 'https://web-production-bdb26.up.railway.app/api';
 
