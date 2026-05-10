@@ -259,7 +259,73 @@ ALL 8 fields are REQUIRED. If any field is missing the response is invalid.`;
     res.status(500).json({ error: err.message });
   }
 });
+router.post('/hero-insight', async (req, res) => {
+  try {
+    const { profile, financials, multiples, scoreData, history } = req.body;
 
+    const revCAGR = history && history.length >= 2
+      ? (((history[history.length-1].revenue / history[0].revenue) ** (1/(history.length-1))) - 1) * 100
+      : null;
+
+    const prompt = `You are a senior equity analyst. Analyze this company and return ONLY a JSON object, no markdown, no backticks.
+
+Company: ${profile.name} (${profile.ticker})
+Sector: ${profile.sector}
+Industry: ${profile.industry}
+Price: $${profile.price}
+Market Cap: $${(profile.marketCap/1e9).toFixed(1)}B
+Beta: ${profile.beta}
+
+Financials:
+- Revenue: $${(financials.revenue/1e9).toFixed(1)}B
+- Net Margin: ${financials.netMargin?.toFixed(1)}%
+- FCF Margin: ${financials.fcfMargin?.toFixed(1)}%
+- ROIC: ${financials.roic?.toFixed(1)}%
+- Revenue CAGR: ${revCAGR?.toFixed(1)}%
+
+Valuation:
+- P/E: ${multiples.pe?.toFixed(1)}x
+- EV/EBITDA: ${multiples.evEbitda?.toFixed(1)}x
+- Forward P/E: ${multiples.forwardPE?.toFixed(1)}x
+- Implied FCF Growth: ${scoreData?.impliedGrowth?.toFixed(1)}%
+- Historical CAGR: ${revCAGR?.toFixed(1)}%
+- Investment Score: ${scoreData?.composite}/100
+- Verdict: ${scoreData?.rating}
+
+Return this exact JSON structure:
+{
+  "companyType": "one of: Growth | Mature | Cyclical | Bank | REIT | SaaS | Turnaround | Commodity",
+  "keyInsight": "One powerful sentence explaining the core investment thesis or concern. Be specific, use numbers.",
+  "whyMarket": "One sentence explaining WHY the market is pricing it this way. What narrative drives the premium or discount?",
+  "mainRisk": "The single most important risk to the investment thesis. Be specific.",
+  "opportunity": "The single most important potential upside catalyst. Be specific.",
+  "verdict": "one of: Strong Opportunity | Attractive | Fairly Valued | High Expectations | Caution | Speculative"
+}`;
+
+    const response = await axios({
+      method: 'post',
+      url: 'https://api.anthropic.com/v1/messages',
+      headers: {
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      data: {
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 500,
+        messages: [{ role: 'user', content: prompt }],
+      }
+    });
+
+    const text = response.data.content[0].text;
+    const clean = text.replace(/```json|```/g, '').trim();
+    const insight = JSON.parse(clean);
+    res.json(insight);
+  } catch (err) {
+    console.error('Hero insight error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
 router.post('/ai-analysis', async (req, res) => {
   try {
     const { prompt } = req.body;
