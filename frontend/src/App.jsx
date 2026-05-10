@@ -15,6 +15,7 @@ import DecisionBox from './components/DecisionBox';
 import ThesisTriggers from './components/ThesisTriggers';
 import Login from './components/Login';
 import HeroSection from './components/HeroSection';
+import ThesisTab from './components/ThesisTab';
 
 const API = 'https://web-production-bdb26.up.railway.app/api';
 
@@ -299,6 +300,7 @@ export default function App() {
     { id: 'market', label: ' Market Expectations' },
     { id: 'drivers', label: ' Business Drivers' },
     { id: 'peers', label: 'Peers' },
+    { id: 'thesis', label: '📋 Thesis' },
     { id: 'ai', label: ' AI Analysis' },
     { id: 'links', label: 'Documents' },
   ];
@@ -514,6 +516,7 @@ export default function App() {
               {tab==='market'&&(<div><MarketExpectations data={data} dcfParams={dcfP}/><div className="mt-4"><ThesisTriggers data={data} dcfParams={dcfP} scoreData={scoreData}/></div></div>)}
               {tab==='drivers'&&<BusinessDrivers data={data}/>}
               {tab==='peers'&&<PeerComparison ticker={data.profile.ticker} sector={data.profile.sector} currentPE={data.multiples.pe} currentEVEbitda={data.multiples.evEbitda} currentPS={data.multiples.ps} currentPB={data.multiples.pb} currentLogo={data.profile.logo} currentName={data.profile.name} currentNetMargin={data.financials.netMargin} currentRevGrowth={(()=>{const h=data.history?.filter(r=>r.revenue&&r.revenue>0);if(!h||h.length<2)return null;return((h[h.length-1].revenue/h[0].revenue)**(1/(h.length-1))-1)*100;})()}/>}
+              {tab==='thesis'&&<ThesisTab data={data} scoreData={scoreData} dcf={dcf} dcfParams={dcfP}/>}
               {tab==='ai'&&<AIAnalysis data={data} dcfParams={dcfP}/>}
               {tab==='links'&&(<div><div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>Official Reports & Documents</div><div className="flex flex-col gap-2">{data.links?.map((l,i)=>(<a key={i} href={l.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 rounded-xl transition-all" style={{border:'1px solid var(--border)',background:'var(--bg-card)'}}><span className="text-sm font-medium" style={C.p}>{l.label}</span><span className="text-xs font-semibold" style={C.accent}>Open ↗</span></a>))}</div>{data.profile.website&&(<div className="mt-4"><div className="text-xs font-bold uppercase tracking-widest mb-2" style={C.m}>Company Website</div><a href={data.profile.website} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 rounded-xl" style={{border:'1px solid var(--border)',background:'var(--bg-card)'}}><span className="text-sm font-medium" style={C.p}>{data.profile.website}</span><span className="text-xs font-semibold" style={C.accent}>Open ↗</span></a></div>)}</div>)}
 
