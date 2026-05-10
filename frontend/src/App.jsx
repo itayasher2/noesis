@@ -300,7 +300,7 @@ export default function App() {
     { id: 'market', label: ' Market Expectations' },
     { id: 'drivers', label: ' Business Drivers' },
     { id: 'peers', label: 'Peers' },
-    { id: 'thesis', label: '📋 Thesis' },
+    { id: 'thesis', label: 'Thesis' },
     { id: 'ai', label: ' AI Analysis' },
     { id: 'links', label: 'Documents' },
   ];
