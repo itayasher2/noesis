@@ -295,11 +295,11 @@ export default function App() {
     { id: 'ri', label: 'Value Models' },
     { id: 'financials', label: 'Financials' },
     { id: 'capital', label: 'Capital Allocation' },
-    { id: 'forward', label: '📈 Forward View' },
-    { id: 'market', label: '🎯 Market Expectations' },
-    { id: 'drivers', label: '🔑 Business Drivers' },
+    { id: 'forward', label: 'Forward View' },
+    { id: 'market', label: ' Market Expectations' },
+    { id: 'drivers', label: ' Business Drivers' },
     { id: 'peers', label: 'Peers' },
-    { id: 'ai', label: '🤖 AI Analysis' },
+    { id: 'ai', label: ' AI Analysis' },
     { id: 'links', label: 'Documents' },
   ];
 
