@@ -326,6 +326,68 @@ Return this exact JSON structure:
     res.status(500).json({ error: err.message });
   }
 });
+router.post('/thesis', async (req, res) => {
+  try {
+    const { profile, financials, multiples, scoreData, history, dcf } = req.body;
+
+    const revCAGR = history && history.length >= 2
+      ? (((history[history.length-1].revenue / history[0].revenue) ** (1/(history.length-1))) - 1) * 100
+      : null;
+
+    const prompt = `You are a Managing Director at Goldman Sachs equity research. Write a professional investment memo for ${profile.name} (${profile.ticker}).
+
+Company Data:
+- Sector: ${profile.sector} | Industry: ${profile.industry}
+- Price: $${profile.price} | Market Cap: $${(profile.marketCap/1e9).toFixed(1)}B
+- Revenue: $${(financials.revenue/1e9).toFixed(1)}B | Net Margin: ${financials.netMargin?.toFixed(1)}%
+- FCF Margin: ${financials.fcfMargin?.toFixed(1)}% | ROIC: ${financials.roic?.toFixed(1)}%
+- Revenue CAGR (5Y): ${revCAGR?.toFixed(1)}% | P/E: ${multiples.pe?.toFixed(1)}x
+- EV/EBITDA: ${multiples.evEbitda?.toFixed(1)}x | Forward P/E: ${multiples.forwardPE?.toFixed(1)}x
+- EPS: $${multiples.eps?.toFixed(2)} | Dividend Yield: ${((multiples.dividendYield||0)*100).toFixed(2)}%
+- Beta: ${profile.beta?.toFixed(2)} | DCF Fair Value: $${dcf?.fv?.toFixed(0) || 'N/A'}
+- Implied FCF Growth: ${scoreData?.impliedGrowth?.toFixed(1)}% | Historical CAGR: ${revCAGR?.toFixed(1)}%
+- Investment Score: ${scoreData?.composite}/100 | Analyst Target: $${multiples.targetPrice?.toFixed(0) || 'N/A'}
+- Analyst Rating: ${multiples.analystRating || 'N/A'} | Analysts: ${multiples.numberOfAnalysts || 'N/A'}
+
+Return ONLY a JSON object, no markdown, no backticks:
+{
+  "recommendation": "one of: Strong Buy | Buy | Hold | Reduce | Sell",
+  "targetPrice": 123,
+  "thesis": "3-4 sentences with specific numbers.",
+  "businessQuality": "2-3 sentences on moat and capital returns.",
+  "bullPoints": ["point 1 with numbers", "point 2", "point 3"],
+  "bearPoints": ["point 1", "point 2", "point 3"],
+  "valuationAssessment": "2-3 sentences on valuation.",
+  "keyRisks": ["risk 1", "risk 2", "risk 3"],
+  "catalysts": ["catalyst 1 with timeframe", "catalyst 2"],
+  "whatChangesView": "Specific metrics that would change the recommendation.",
+  "bottomLine": "One powerful concluding sentence."
+}`;
+
+    const response = await axios({
+      method: 'post',
+      url: 'https://api.anthropic.com/v1/messages',
+      headers: {
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      data: {
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }],
+      }
+    });
+
+    const text = response.data.content[0].text;
+    const clean = text.replace(/```json|```/g, '').trim();
+    const thesis = JSON.parse(clean);
+    res.json(thesis);
+  } catch (err) {
+    console.error('Thesis error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
 router.post('/ai-analysis', async (req, res) => {
   try {
     const { prompt } = req.body;
