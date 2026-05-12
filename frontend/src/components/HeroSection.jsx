@@ -212,12 +212,38 @@ export default function HeroSection({ data, scoreData, dcf, dcfParams }) {
         </div>
       )}
 
-      {insight?.narrativeLabel && (
-        <div className="mt-3 text-xs" style={{color: 'var(--text-muted)'}}>
-          <span className="font-bold uppercase tracking-widest">Narrative: </span>
-          <span style={{fontStyle: 'italic'}}>{insight.narrativeLabel}</span>
+      {/* ── Bottom Row ── */}
+      <div className="mt-3 pt-3 flex items-center justify-between" style={{borderTop: '1px solid var(--border)'}}>
+        <div>
+          {insight?.narrativeLabel && (
+            <div className="text-xs" style={{color: 'var(--text-muted)'}}>
+              <span className="font-bold uppercase tracking-widest">Narrative: </span>
+              <span style={{fontStyle: 'italic'}}>{insight.narrativeLabel}</span>
+            </div>
+          )}
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            <span className="text-xs font-bold" style={{color: 'var(--text-muted)'}}>{data.profile.ticker}</span>
+            <span className="text-xs" style={{color: 'var(--text-muted)'}}>·</span>
+            <span className="text-xs" style={{color: 'var(--text-muted)'}}>{data.profile.exchange}</span>
+            {data.profile.employees && <>
+              <span className="text-xs" style={{color: 'var(--text-muted)'}}>·</span>
+              <span className="text-xs" style={{color: 'var(--text-muted)'}}>{data.profile.employees.toLocaleString()} employees</span>
+            </>}
+            {data.profile.country && <>
+              <span className="text-xs" style={{color: 'var(--text-muted)'}}>·</span>
+              <span className="text-xs" style={{color: 'var(--text-muted)'}}>{data.profile.country}</span>
+            </>}
+          </div>
         </div>
-      )}
+        <div className="text-xs leading-relaxed text-right" style={{color: 'var(--text-muted)', maxWidth: '50%'}}>
+          {data.profile.description?.slice(0, 120)}...
+        </div>
+      </div>
+
+    </div>
+  );
+}
+       )}
 
       {/* ── Company Info + Description ── */}
       <div className="mt-3 pt-3" style={{borderTop: '1px solid var(--border)'}}>
