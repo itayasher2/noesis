@@ -376,7 +376,7 @@ Return ONLY a JSON object, no markdown, no backticks:
       },
       data: {
         model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
+        max_tokens: 3000,
         messages: [{ role: 'user', content: prompt }],
       }
     });
