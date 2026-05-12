@@ -197,31 +197,47 @@ export default function HeroSection({ data, scoreData, dcf, dcfParams }) {
         </div>
       </div>
 
-     {/* ── What Must Happen ── */}
-{insight?.whatMustHappen && (
-  <div className="mt-4 px-4 py-3 rounded-xl" style={{
-    background: 'rgba(255,255,255,0.4)',
-    border: '1px solid var(--border)',
-  }}>
-    <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{color: 'var(--text-muted)'}}>
-      What Must Happen to Justify Valuation
-    </div>
-    <div className="text-xs leading-relaxed" style={{color: 'var(--text-secondary)'}}>
-      {insight.whatMustHappen}
-    </div>
-  </div>
-)}
+      {/* ── What Must Happen ── */}
+      {insight?.whatMustHappen && (
+        <div className="mt-4 px-4 py-3 rounded-xl" style={{
+          background: 'rgba(255,255,255,0.4)',
+          border: '1px solid var(--border)',
+        }}>
+          <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{color: 'var(--text-muted)'}}>
+            What Must Happen to Justify Valuation
+          </div>
+          <div className="text-xs leading-relaxed" style={{color: 'var(--text-secondary)'}}>
+            {insight.whatMustHappen}
+          </div>
+        </div>
+      )}
 
-{insight?.narrativeLabel && (
-  <div className="mt-3 text-xs" style={{color: 'var(--text-muted)'}}>
-    <span className="font-bold uppercase tracking-widest">Narrative: </span>
-    <span style={{fontStyle: 'italic'}}>{insight.narrativeLabel}</span>
-  </div>
-)}
+      {insight?.narrativeLabel && (
+        <div className="mt-3 text-xs" style={{color: 'var(--text-muted)'}}>
+          <span className="font-bold uppercase tracking-widest">Narrative: </span>
+          <span style={{fontStyle: 'italic'}}>{insight.narrativeLabel}</span>
+        </div>
+      )}
 
-<div className="mt-2 text-xs leading-relaxed" style={{color: 'var(--text-muted)'}}>
-  {data.profile.description?.slice(0, 180)}...
-</div>
+      {/* ── Company Info + Description ── */}
+      <div className="mt-3 pt-3" style={{borderTop: '1px solid var(--border)'}}>
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
+          <span className="text-xs font-bold" style={{color: 'var(--text-muted)'}}>{data.profile.ticker}</span>
+          <span className="text-xs" style={{color: 'var(--text-muted)'}}>·</span>
+          <span className="text-xs" style={{color: 'var(--text-muted)'}}>{data.profile.exchange}</span>
+          {data.profile.employees && <>
+            <span className="text-xs" style={{color: 'var(--text-muted)'}}>·</span>
+            <span className="text-xs" style={{color: 'var(--text-muted)'}}>{data.profile.employees.toLocaleString()} employees</span>
+          </>}
+          {data.profile.country && <>
+            <span className="text-xs" style={{color: 'var(--text-muted)'}}>·</span>
+            <span className="text-xs" style={{color: 'var(--text-muted)'}}>{data.profile.country}</span>
+          </>}
+        </div>
+        <div className="text-xs leading-relaxed" style={{color: 'var(--text-muted)'}}>
+          {data.profile.description?.slice(0, 220)}...
+        </div>
+      </div>
 
     </div>
   );
