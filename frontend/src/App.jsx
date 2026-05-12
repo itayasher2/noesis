@@ -439,7 +439,7 @@ export default function App() {
       </div>
     )}
   </div>
-)} )}
+)} 
 
           {/* ── Tabs ── */}
           <div style={C.card} className="mb-4">
