@@ -311,7 +311,7 @@ Return this exact JSON structure:
         'content-type': 'application/json',
       },
       data: {
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-5',
         max_tokens: 500,
         messages: [{ role: 'user', content: prompt }],
       }
