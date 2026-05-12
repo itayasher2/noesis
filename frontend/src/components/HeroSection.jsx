@@ -243,28 +243,3 @@ export default function HeroSection({ data, scoreData, dcf, dcfParams }) {
     </div>
   );
 }
-       )}
-
-      {/* ── Company Info + Description ── */}
-      <div className="mt-3 pt-3" style={{borderTop: '1px solid var(--border)'}}>
-        <div className="flex items-center gap-2 mb-2 flex-wrap">
-          <span className="text-xs font-bold" style={{color: 'var(--text-muted)'}}>{data.profile.ticker}</span>
-          <span className="text-xs" style={{color: 'var(--text-muted)'}}>·</span>
-          <span className="text-xs" style={{color: 'var(--text-muted)'}}>{data.profile.exchange}</span>
-          {data.profile.employees && <>
-            <span className="text-xs" style={{color: 'var(--text-muted)'}}>·</span>
-            <span className="text-xs" style={{color: 'var(--text-muted)'}}>{data.profile.employees.toLocaleString()} employees</span>
-          </>}
-          {data.profile.country && <>
-            <span className="text-xs" style={{color: 'var(--text-muted)'}}>·</span>
-            <span className="text-xs" style={{color: 'var(--text-muted)'}}>{data.profile.country}</span>
-          </>}
-        </div>
-        <div className="text-xs leading-relaxed" style={{color: 'var(--text-muted)'}}>
-          {data.profile.description?.slice(0, 500)}...
-        </div>
-      </div>
-
-    </div>
-  );
-}
