@@ -374,7 +374,8 @@ export default function App() {
             })}
           </div>
 
-          {/* ── Composite Score ── */}{scoreData && (
+          {/* ── Composite Score ── */}
+          {scoreData && (
   <div style={{...C.card, padding: '20px 24px'}} className="mb-4 fade-in">
     <div className="flex items-center justify-between">
 
