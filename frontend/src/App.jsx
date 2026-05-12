@@ -374,39 +374,71 @@ export default function App() {
             })}
           </div>
 
-          {/* ── Composite Score ── */}
-          {scoreData && (
-            <div style={C.card} className="p-5 mb-4 fade-in">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-xs font-bold uppercase tracking-widest" style={C.m}>Investment Score</span>
-                    {(() => { const [bg,text] = (styleBadge[scoreData.companyStyle]||'#f3f4f6:#374151').split(':'); return <span className="text-xs px-2 py-0.5 rounded font-semibold" style={{background:bg,color:text}}>{scoreData.companyStyle}</span>; })()}
-                  </div>
-                  <div className="flex items-end gap-4">
-                    <div className="text-6xl font-black num" style={{color:scoreData.ratingColor, lineHeight:1}}>{scoreData.composite}</div>
-                    <div className="pb-1">
-                      <div className="text-xl font-bold" style={{color:scoreData.ratingColor}}>{scoreData.rating}</div>
-                      <div className="text-xs font-medium mt-0.5" style={{color:scoreData.confColor}}>● Confidence: {scoreData.confidence}</div>
-                      {(scoreData.companyStyle==='Growth'||scoreData.companyStyle==='Growth-Blend')&&(<div className="text-xs mt-0.5" style={C.accent}>↗ Growth-adj: {scoreData.cappedGrowthAdj}</div>)}
-                    </div>
-                  </div>
-                </div>
-                <div style={{width:220}}>
-                  {[{label:'Valuation',score:scoreData.valuationScore,weight:Math.round(scoreData.weights.val*100)+'%'},{label:'Growth',score:scoreData.growthScore,weight:Math.round(scoreData.weights.growth*100)+'%'},{label:'Quality',score:scoreData.qualityScore,weight:Math.round(scoreData.weights.quality*100)+'%'},{label:'Risk',score:scoreData.riskScore,weight:Math.round(scoreData.weights.risk*100)+'%'}].map(b => {
-                    const barColor = b.score>=65?'var(--green)':b.score>=45?'var(--amber)':'var(--red)';
-                    return (<div key={b.label} className="mb-3"><div className="flex justify-between text-xs mb-1"><span style={C.m}>{b.label} <span style={{color:'var(--border-strong)'}}>({b.weight})</span></span><span className="font-bold num" style={{color:barColor}}>{b.score}</span></div><div className="h-1 rounded-full" style={{background:'var(--border)'}}><div className="h-1 rounded-full transition-all" style={{width:b.score+'%',background:barColor}}></div></div></div>);
-                  })}
-                  <div className="pt-2 mt-1" style={{borderTop:'1px solid var(--border)'}}><div className="flex gap-3 text-xs">{[['Data',scoreData.dataQuality],['Models',scoreData.modelConsistency],['Stability',scoreData.assumptionStability]].map(([l,v])=>(<span key={l} style={{color:v==='high'?'var(--green)':v==='medium'?'var(--amber)':'var(--red)'}}>{l}: {v}</span>))}</div></div>
-                </div>
-              </div>
-              <div className="rounded-xl p-4 mb-3" style={{background:'var(--bg-subtle)',borderLeft:`3px solid ${scoreData.ratingColor}`}}>
-                <div className="text-xs font-bold uppercase tracking-wider mb-2" style={C.m}>Why this score?</div>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1">{scoreData.explanations.map((exp,i)=>(<div key={i} className="flex items-start gap-2 text-xs" style={C.s}><span style={{color:scoreData.ratingColor,marginTop:2}}>→</span>{exp}</div>))}</div>
-              </div>
-              {scoreData.expectationsGap!==0&&(<div className="rounded-xl px-4 py-3 text-xs" style={Math.abs(scoreData.expectationsGap)>8?{background:'var(--amber-bg)',border:'1px solid var(--amber)',color:'var(--amber)'}:{background:'var(--bg-subtle)',color:'var(--text-secondary)'}}><span className="font-bold">Expectations Gap: </span>Market implies <strong>{fmt(scoreData.impliedGrowth,1)}%</strong> FCF growth vs <strong>{fmt(scoreData.revCAGR||0,1)}%</strong> historical revenue CAGR{Math.abs(scoreData.expectationsGap)>8?' — significant gap, warrants caution':' — broadly aligned'}</div>)}
-            </div>
-          )}
+          {/* ── Composite Score ── */}{scoreData && (
+  <div style={{...C.card, padding: '20px 24px'}} className="mb-4 fade-in">
+    <div className="flex items-center justify-between">
+
+      {/* Left — Investment Profile */}
+      <div>
+        <div className="text-xs font-bold uppercase tracking-widest mb-2" style={C.m}>
+          Investment Profile
+        </div>
+        <div style={{fontSize: 22, fontWeight: 700, color: scoreData.ratingColor, marginBottom: 6}}>
+          {scoreData.composite >= 80 ? 'Strong Opportunity' :
+           scoreData.composite >= 65 ? 'Attractive Compounder' :
+           scoreData.composite >= 50 ? 'Fairly Valued' :
+           scoreData.composite >= 35 ? 'High Expectations' :
+           scoreData.composite >= 20 ? 'Caution' : 'Speculative'}
+        </div>
+        <div className="flex items-center gap-3 text-xs" style={C.m}>
+          <span>● Confidence: <strong style={{color: scoreData.confColor}}>{scoreData.confidence}</strong></span>
+          <span>·</span>
+          <span>Style: <strong style={C.s}>{scoreData.companyStyle}</strong></span>
+        </div>
+      </div>
+
+      {/* Right — 3 quick metrics */}
+      <div className="flex gap-4">
+        {[
+          {
+            label: 'Risk Level',
+            value: scoreData.riskScore >= 65 ? 'Low' : scoreData.riskScore >= 40 ? 'Moderate' : 'High',
+            color: scoreData.riskScore >= 65 ? 'var(--green)' : scoreData.riskScore >= 40 ? 'var(--amber)' : 'var(--red)',
+          },
+          {
+            label: 'Quality',
+            value: scoreData.qualityScore >= 65 ? 'High' : scoreData.qualityScore >= 40 ? 'Solid' : 'Weak',
+            color: scoreData.qualityScore >= 65 ? 'var(--green)' : scoreData.qualityScore >= 40 ? 'var(--amber)' : 'var(--red)',
+          },
+          {
+            label: 'Valuation',
+            value: scoreData.valuationScore >= 65 ? 'Cheap' : scoreData.valuationScore >= 40 ? 'Fair' : 'Expensive',
+            color: scoreData.valuationScore >= 65 ? 'var(--green)' : scoreData.valuationScore >= 40 ? 'var(--amber)' : 'var(--red)',
+          },
+        ].map(item => (
+          <div key={item.label} className="text-center px-3 py-2 rounded-xl" style={{background: 'var(--bg-subtle)', border: '1px solid var(--border)'}}>
+            <div className="text-xs mb-1" style={C.m}>{item.label}</div>
+            <div className="text-sm font-bold" style={{color: item.color}}>{item.value}</div>
+          </div>
+        ))}
+      </div>
+
+    </div>
+
+    {/* Expectations Gap */}
+    {scoreData.expectationsGap !== 0 && (
+      <div className="mt-3 px-3 py-2 rounded-xl text-xs" style={
+        Math.abs(scoreData.expectationsGap) > 8
+          ? {background: 'var(--amber-bg)', border: '1px solid var(--amber)', color: 'var(--amber)'}
+          : {background: 'var(--bg-subtle)', color: 'var(--text-secondary)'}
+      }>
+        <span className="font-bold">Expectations Gap: </span>
+        Market implies <strong>{fmt(scoreData.impliedGrowth, 1)}%</strong> FCF growth vs <strong>{fmt(scoreData.revCAGR || 0, 1)}%</strong> historical
+        {Math.abs(scoreData.expectationsGap) > 8 ? ' — significant gap, warrants caution' : ' — broadly aligned'}
+      </div>
+    )}
+  </div>
+)} )}
 
           {/* ── Tabs ── */}
           <div style={C.card} className="mb-4">
