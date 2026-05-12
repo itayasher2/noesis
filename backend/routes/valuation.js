@@ -133,8 +133,8 @@ router.get('/:ticker', async (req, res) => {
         changePct: n(p.changesPercentage)||n(p.changePercentage),
         marketCap: mktCap, shares: sharesOutstanding, beta,
       },
-     multiples: {
-  pe, forwardPE, pegRatio, pb, ps, evEbitda, evRevenue, evFcf,
+      multiples: {
+        pe, forwardPE, pegRatio, pb, ps, evEbitda, evRevenue, evFcf,
         eps, bvps, dps, dividendYield, roe, roa, roic,
         debtEq, payoutRatio, targetPrice, analystRating, numberOfAnalysts,
       },
@@ -259,6 +259,7 @@ ALL 8 fields are REQUIRED. If any field is missing the response is invalid.`;
     res.status(500).json({ error: err.message });
   }
 });
+
 router.post('/hero-insight', async (req, res) => {
   try {
     const { profile, financials, multiples, scoreData, history } = req.body;
@@ -311,7 +312,7 @@ Return this exact JSON structure:
         'content-type': 'application/json',
       },
       data: {
-        model: 'claude-sonnet-4-5',
+        model: 'claude-sonnet-4-6',
         max_tokens: 500,
         messages: [{ role: 'user', content: prompt }],
       }
@@ -326,6 +327,7 @@ Return this exact JSON structure:
     res.status(500).json({ error: err.message });
   }
 });
+
 router.post('/thesis', async (req, res) => {
   try {
     const { profile, financials, multiples, scoreData, history, dcf } = req.body;
@@ -373,7 +375,7 @@ Return ONLY a JSON object, no markdown, no backticks:
         'content-type': 'application/json',
       },
       data: {
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 1000,
         messages: [{ role: 'user', content: prompt }],
       }
@@ -388,6 +390,7 @@ Return ONLY a JSON object, no markdown, no backticks:
     res.status(500).json({ error: err.message });
   }
 });
+
 router.post('/ai-analysis', async (req, res) => {
   try {
     const { prompt } = req.body;
@@ -401,7 +404,7 @@ router.post('/ai-analysis', async (req, res) => {
         'content-type': 'application/json',
       },
       data: {
-       model: 'claude-sonnet-4-6',
+        model: 'claude-sonnet-4-6',
         max_tokens: 1000,
         messages: [{ role: 'user', content: prompt }],
       }
@@ -412,6 +415,7 @@ router.post('/ai-analysis', async (req, res) => {
     res.status(500).json({ error: err.response?.data?.error?.message || err.message });
   }
 });
+
 router.get('/quarterly/:ticker', async (req, res) => {
   try {
     const ticker = req.params.ticker.toUpperCase();
@@ -444,4 +448,5 @@ router.get('/quarterly/:ticker', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 module.exports = router;
