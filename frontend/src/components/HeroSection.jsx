@@ -236,7 +236,7 @@ export default function HeroSection({ data, scoreData, dcf, dcfParams }) {
           </div>
         </div>
         <div className="text-xs leading-relaxed text-right" style={{color: 'var(--text-muted)', maxWidth: '50%'}}>
-          {data.profile.description?.slice(0, 120)}...
+          {data.profile.description?.slice(0, 350)}...
         </div>
       </div>
 
