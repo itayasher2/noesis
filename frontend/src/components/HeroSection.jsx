@@ -136,7 +136,7 @@ export default function HeroSection({ data, scoreData, dcf, dcfParams }) {
           )}
           {fcfGap !== null && (
             <div className="mt-2 pt-2 flex justify-between text-xs" style={{borderTop: '1px solid var(--border)'}}>
-              <span style={{color: 'var(--text-muted)'}}>Implied vs Historical</span>
+              <span style={{color: 'var(--text-muted)'}}>Implied vs 5Y Historical</span>
               <span className="font-bold num" style={{color: fcfGap > 8 ? '#991b1b' : '#92400e'}}>
                 {fmt(implied, 1)}% vs {fmt(historical, 1)}%
               </span>
