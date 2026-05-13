@@ -259,13 +259,9 @@ export default function App() {
 
   const getDCF = () => {
     if (!data) return null;
-    const hist = data.history?.filter(r => r.fcf && r.fcf > 0) || [];
-    const normalizedFCF = hist.length >= 3
-  ? Math.max(...hist.slice(-3).map(r => r.fcf))
-  : hist.length >= 1 ? hist[hist.length-1].fcf
-  : data.financials.fcf;
-    if (!normalizedFCF || normalizedFCF <= 0) return null;
-    return calcDCF({ fcf: normalizedFCF, shares: data.profile.shares, totalDebt: data.financials.totalDebt, cash: data.financials.cash, g1: dcfP.g1/100, g2: dcfP.g2/100, wacc: dcfP.wacc/100, tgr: dcfP.tgr/100 });
+    const fcf = data.financials.fcf;
+if (!fcf || fcf <= 0) return null;
+return calcDCF({ fcf, shares: data.profile.shares, totalDebt: data.financials.totalDebt, cash: data.financials.cash, g1: dcfP.g1/100, g2: dcfP.g2/100, wacc: dcfP.wacc/100, tgr: dcfP.tgr/100 });
   };
 
   const getGordon = () => calcGordon({ dps: data?.multiples?.dps, r: gordonP.r/100, g: gordonP.g/100 });
