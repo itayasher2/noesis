@@ -111,7 +111,7 @@ function UserMenu({ user, onLogout, darkMode, toggleTheme }) {
 }
 
 function calcDCF({ fcf, shares, totalDebt, cash, g1, g2, wacc, tgr }) {
-  if (!fcf || !shares) return null;
+  if (!fcf || !shares || fcf <= 0) return null;
   let f = fcf; let pv = 0; const rows = [];
   for (let y = 1; y <= 10; y++) {
     f *= (1 + (y <= 5 ? g1 : g2));
