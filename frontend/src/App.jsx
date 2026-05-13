@@ -5,7 +5,7 @@ import * as XLSX from 'xlsx';
 import FinancialsChart from './components/FinancialsChart';
 import SensitivityTable from './components/SensitivityTable';
 import Scenarios from './components/Scenarios';
-import PeerComparison from './components/PeerComparison';
+import PeerComparison from './components/PeerComparison'; 
 import PriceChart from './components/PriceChart';
 import AIAnalysis from './components/AIAnalysis';
 import ForwardView from './components/ForwardView';
