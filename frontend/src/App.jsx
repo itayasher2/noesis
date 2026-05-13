@@ -257,7 +257,17 @@ export default function App() {
     setQuarterlyLoading(false);
   };
 
-  const getDCF = () => !data ? null : calcDCF({ fcf: data.financials.fcf, shares: data.profile.shares, totalDebt: data.financials.totalDebt, cash: data.financials.cash, g1: dcfP.g1/100, g2: dcfP.g2/100, wacc: dcfP.wacc/100, tgr: dcfP.tgr/100 });
+  const getDCF = () => {
+    if (!data) return null;
+    const hist = data.history?.filter(r => r.fcf && r.fcf > 0) || [];
+    const normalizedFCF = hist.length >= 3
+      ? hist.slice(-3).reduce((s, r) => s + r.fcf, 0) / 3
+      : hist.length >= 1 ? hist[hist.length-1].fcf
+      : data.financials.fcf;
+    if (!normalizedFCF || normalizedFCF <= 0) return null;
+    return calcDCF({ fcf: normalizedFCF, shares: data.profile.shares, totalDebt: data.financials.totalDebt, cash: data.financials.cash, g1: dcfP.g1/100, g2: dcfP.g2/100, wacc: dcfP.wacc/100, tgr: dcfP.tgr/100 });
+  };
+
   const getGordon = () => calcGordon({ dps: data?.multiples?.dps, r: gordonP.r/100, g: gordonP.g/100 });
   const getRI = () => calcRI({ bvps: data?.multiples?.bvps, roe: (data?.financials?.roe||0)/100, ke: riP.ke/100, g: riP.g/100 });
 
@@ -297,11 +307,11 @@ export default function App() {
     { id: 'financials', label: 'Financials' },
     { id: 'capital', label: 'Capital Allocation' },
     { id: 'forward', label: 'Forward View' },
-    { id: 'market', label: ' Market Expectations' },
-    { id: 'drivers', label: ' Business Drivers' },
+    { id: 'market', label: 'Market Expectations' },
+    { id: 'drivers', label: 'Business Drivers' },
     { id: 'peers', label: 'Peers' },
     { id: 'thesis', label: 'Thesis' },
-    { id: 'ai', label: ' AI Analysis' },
+    { id: 'ai', label: 'AI Analysis' },
     { id: 'links', label: 'Documents' },
   ];
 
@@ -353,13 +363,9 @@ export default function App() {
 
         {data && (<>
 
-          {/* ── Hero Section ── */}
           <HeroSection data={data} scoreData={scoreData} dcf={dcf} dcfParams={dcfP}/>
-
-          {/* ── Decision Box ── */}
           <DecisionBox scoreData={scoreData} dcf={dcf} price={price} data={data} dcfParams={dcfP}/>
 
-          {/* ── Model Cards ── */}
           <div className="grid grid-cols-5 gap-3 mb-4">
             {[...models,{name:'Average',fv:avgFV,sub:'Consensus',highlight:true}].map(m=>{
               const up = m.fv&&price?(m.fv/price-1)*100:null;
@@ -374,74 +380,47 @@ export default function App() {
             })}
           </div>
 
-          {/* ── Composite Score ── */}
           {scoreData && (
-  <div style={{...C.card, padding: '20px 24px'}} className="mb-4 fade-in">
-    <div className="flex items-center justify-between">
+            <div style={{...C.card, padding: '20px 24px'}} className="mb-4 fade-in">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-xs font-bold uppercase tracking-widest mb-2" style={C.m}>Investment Profile</div>
+                  <div style={{fontSize: 22, fontWeight: 700, color: scoreData.ratingColor, marginBottom: 6}}>
+                    {scoreData.composite >= 80 ? 'Strong Opportunity' :
+                     scoreData.composite >= 65 ? 'Attractive Compounder' :
+                     scoreData.composite >= 50 ? 'Fairly Valued' :
+                     scoreData.composite >= 35 ? 'High Expectations' :
+                     scoreData.composite >= 20 ? 'Caution' : 'Speculative'}
+                  </div>
+                  <div className="flex items-center gap-3 text-xs" style={C.m}>
+                    <span>● Confidence: <strong style={{color: scoreData.confColor}}>{scoreData.confidence}</strong></span>
+                    <span>·</span>
+                    <span>Style: <strong style={C.s}>{scoreData.companyStyle}</strong></span>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  {[
+                    { label: 'Risk Level', value: scoreData.riskScore >= 65 ? 'Low' : scoreData.riskScore >= 40 ? 'Moderate' : 'High', color: scoreData.riskScore >= 65 ? 'var(--green)' : scoreData.riskScore >= 40 ? 'var(--amber)' : 'var(--red)' },
+                    { label: 'Quality', value: scoreData.qualityScore >= 65 ? 'High' : scoreData.qualityScore >= 40 ? 'Solid' : 'Weak', color: scoreData.qualityScore >= 65 ? 'var(--green)' : scoreData.qualityScore >= 40 ? 'var(--amber)' : 'var(--red)' },
+                    { label: 'Valuation', value: scoreData.valuationScore >= 65 ? 'Cheap' : scoreData.valuationScore >= 40 ? 'Fair' : 'Expensive', color: scoreData.valuationScore >= 65 ? 'var(--green)' : scoreData.valuationScore >= 40 ? 'var(--amber)' : 'var(--red)' },
+                  ].map(item => (
+                    <div key={item.label} className="text-center px-3 py-2 rounded-xl" style={{background: 'var(--bg-subtle)', border: '1px solid var(--border)'}}>
+                      <div className="text-xs mb-1" style={C.m}>{item.label}</div>
+                      <div className="text-sm font-bold" style={{color: item.color}}>{item.value}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {scoreData.expectationsGap !== 0 && (
+                <div className="mt-3 px-3 py-2 rounded-xl text-xs" style={Math.abs(scoreData.expectationsGap) > 8 ? {background:'var(--amber-bg)',border:'1px solid var(--amber)',color:'var(--amber)'} : {background:'var(--bg-subtle)',color:'var(--text-secondary)'}}>
+                  <span className="font-bold">Expectations Gap: </span>
+                  Market implies <strong>{fmt(scoreData.impliedGrowth,1)}%</strong> FCF growth vs <strong>{fmt(scoreData.revCAGR||0,1)}%</strong> historical
+                  {Math.abs(scoreData.expectationsGap) > 8 ? ' — significant gap, warrants caution' : ' — broadly aligned'}
+                </div>
+              )}
+            </div>
+          )}
 
-      {/* Left — Investment Profile */}
-      <div>
-        <div className="text-xs font-bold uppercase tracking-widest mb-2" style={C.m}>
-          Investment Profile
-        </div>
-        <div style={{fontSize: 22, fontWeight: 700, color: scoreData.ratingColor, marginBottom: 6}}>
-          {scoreData.composite >= 80 ? 'Strong Opportunity' :
-           scoreData.composite >= 65 ? 'Attractive Compounder' :
-           scoreData.composite >= 50 ? 'Fairly Valued' :
-           scoreData.composite >= 35 ? 'High Expectations' :
-           scoreData.composite >= 20 ? 'Caution' : 'Speculative'}
-        </div>
-        <div className="flex items-center gap-3 text-xs" style={C.m}>
-          <span>● Confidence: <strong style={{color: scoreData.confColor}}>{scoreData.confidence}</strong></span>
-          <span>·</span>
-          <span>Style: <strong style={C.s}>{scoreData.companyStyle}</strong></span>
-        </div>
-      </div>
-
-      {/* Right — 3 quick metrics */}
-      <div className="flex gap-4">
-        {[
-          {
-            label: 'Risk Level',
-            value: scoreData.riskScore >= 65 ? 'Low' : scoreData.riskScore >= 40 ? 'Moderate' : 'High',
-            color: scoreData.riskScore >= 65 ? 'var(--green)' : scoreData.riskScore >= 40 ? 'var(--amber)' : 'var(--red)',
-          },
-          {
-            label: 'Quality',
-            value: scoreData.qualityScore >= 65 ? 'High' : scoreData.qualityScore >= 40 ? 'Solid' : 'Weak',
-            color: scoreData.qualityScore >= 65 ? 'var(--green)' : scoreData.qualityScore >= 40 ? 'var(--amber)' : 'var(--red)',
-          },
-          {
-            label: 'Valuation',
-            value: scoreData.valuationScore >= 65 ? 'Cheap' : scoreData.valuationScore >= 40 ? 'Fair' : 'Expensive',
-            color: scoreData.valuationScore >= 65 ? 'var(--green)' : scoreData.valuationScore >= 40 ? 'var(--amber)' : 'var(--red)',
-          },
-        ].map(item => (
-          <div key={item.label} className="text-center px-3 py-2 rounded-xl" style={{background: 'var(--bg-subtle)', border: '1px solid var(--border)'}}>
-            <div className="text-xs mb-1" style={C.m}>{item.label}</div>
-            <div className="text-sm font-bold" style={{color: item.color}}>{item.value}</div>
-          </div>
-        ))}
-      </div>
-
-    </div>
-
-    {/* Expectations Gap */}
-    {scoreData.expectationsGap !== 0 && (
-      <div className="mt-3 px-3 py-2 rounded-xl text-xs" style={
-        Math.abs(scoreData.expectationsGap) > 8
-          ? {background: 'var(--amber-bg)', border: '1px solid var(--amber)', color: 'var(--amber)'}
-          : {background: 'var(--bg-subtle)', color: 'var(--text-secondary)'}
-      }>
-        <span className="font-bold">Expectations Gap: </span>
-        Market implies <strong>{fmt(scoreData.impliedGrowth, 1)}%</strong> FCF growth vs <strong>{fmt(scoreData.revCAGR || 0, 1)}%</strong> historical
-        {Math.abs(scoreData.expectationsGap) > 8 ? ' — significant gap, warrants caution' : ' — broadly aligned'}
-      </div>
-    )}
-  </div>
-)} 
-
-          {/* ── Tabs ── */}
           <div style={C.card} className="mb-4">
             <div className="flex overflow-x-auto" style={C.bdr}>
               {tabs.map(t=>(<button key={t.id} onClick={()=>setTab(t.id)} className="px-4 py-3 text-sm font-medium whitespace-nowrap relative transition-colors" style={tab===t.id?{color:'var(--accent)'}:{color:'var(--text-muted)'}}>{t.label}{tab===t.id&&<div style={{position:'absolute',bottom:0,left:0,right:0,height:2,background:'var(--gradient-brand)',borderRadius:'2px 2px 0 0'}}></div>}</button>))}
@@ -462,7 +441,7 @@ export default function App() {
                   <div className="grid grid-cols-4 gap-3 mb-5">
                     {[{key:'g1',label:'Growth Yr 1-5 (%)'},{key:'g2',label:'Growth Yr 6-10 (%)'},{key:'wacc',label:'WACC (%)'},{key:'tgr',label:'Terminal Growth (%)'}].map(p=>(<div key={p.key}><label className="text-xs block mb-1" style={C.m}>{p.label}</label><input type="number" step="0.5" value={dcfP[p.key]} onChange={e=>setDcfP(prev=>({...prev,[p.key]:parseFloat(e.target.value)||0}))} className="w-full h-9 px-3 text-sm text-right num" style={{background:'var(--bg-input)',border:'1px solid var(--border)',borderRadius:'var(--radius-sm)',color:'var(--text-primary)'}} /></div>))}
                   </div>
-                  {dcf?(<div>{data.history&&data.history.length>=3&&(<div className="text-xs mb-3 px-3 py-2 rounded-lg" style={{background:'var(--bg-subtle)',color:'var(--text-muted)'}}>Normalized FCF (3Y avg): <strong style={C.s}>{fmtB(data.history.slice(-3).reduce((s,r)=>s+(r.fcf||0),0)/3)}</strong></div>)}<div className="text-xs px-3 py-2 mb-4 rounded-lg" style={{background:'var(--amber-bg)',border:'1px solid var(--amber)',color:'var(--amber)'}}>Driven by <strong>{dcfP.g1}%</strong> near-term · <strong>{dcfP.g2}%</strong> long-term FCF growth · <strong>{dcfP.wacc}%</strong> WACC</div><table className="w-full text-sm mb-4"><thead><tr className="text-xs" style={{...C.m,...C.bdr}}><th className="text-right pb-2">Year</th><th className="text-right pb-2">FCF ($M)</th><th className="text-right pb-2">PV FCF ($M)</th></tr></thead><tbody>{dcf.rows.map(r=>(<tr key={r.y} style={C.bdr}><td className="py-1.5" style={C.s}>Yr {r.y}</td><td className="py-1.5 text-right num" style={C.p}>{fmt(r.fcf/1e6,0)}</td><td className="py-1.5 text-right num" style={C.p}>{fmt(r.pv/1e6,0)}</td></tr>))}<tr style={{background:'var(--bg-subtle)'}}><td className="py-2 font-medium" style={C.p}>Terminal Value</td><td className="py-2 text-right num" style={C.p}>{fmtB(dcf.tv)}</td><td className="py-2 text-right num" style={C.p}>{fmtB(dcf.pvTV)}</td></tr></tbody></table><div className="rounded-xl p-4 mb-4" style={C.sub}><div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>Valuation Bridge</div><table className="w-full text-sm"><tbody>{[['Enterprise Value',fmtB(dcf.ev),C.p],['Less: Net Debt',`(${fmtB(data.financials.netDebt)})`,C.red],['Equity Value',fmtB(dcf.ev-data.financials.netDebt),C.p],['Shares',(data.profile.shares/1e9).toFixed(2)+'B',C.s]].map(([k,v,s])=>(<tr key={k} style={C.bdr}><td className="py-1.5" style={C.s}>{k}</td><td className="py-1.5 text-right font-medium num" style={s}>{v}</td></tr>))}<tr><td className="py-2 font-bold" style={C.green}>Fair Value / Share</td><td className="py-2 text-right text-lg font-black num" style={C.green}>{fmtPrice(dcf.fv)}</td></tr></tbody></table><div className="mt-3 pt-3" style={{borderTop:'1px solid var(--border)'}}><div className="text-xs font-medium" style={{color:dcf.pvTV/dcf.ev>0.6?'var(--amber)':'var(--text-secondary)'}}>{dcf.pvTV/dcf.ev>0.6?'⚠':'ℹ'} {fmt(dcf.pvTV/dcf.ev*100,1)}% from Terminal Value — {dcf.pvTV/dcf.ev>0.7?'high dependency':'acceptable'}</div></div></div><div className="rounded-xl p-4 mb-4" style={{background:'var(--accent-subtle)',border:'1px solid var(--accent)'}}><div className="text-xs font-bold uppercase tracking-widest mb-2" style={C.accent}>Reverse DCF — Implied Growth</div>{(()=>{const wacc=dcfP.wacc/100,tgr=dcfP.tgr/100,fcfBase=data.financials.fcf,sh=data.profile.shares,nd=data.financials.netDebt,targetEV=price*sh+nd;let lo=-0.1,hi=0.5,mid=0;for(let i=0;i<50;i++){mid=(lo+hi)/2;let f=fcfBase,pv=0;for(let y=1;y<=10;y++){f*=(1+mid);pv+=f/Math.pow(1+wacc,y);}const tv=f*(1+tgr)/(wacc-tgr);const ev=pv+tv/Math.pow(1+wacc,10);if(ev>targetEV)hi=mid;else lo=mid;}const ig=mid*100;const histFCF=data.history&&data.history.length>=3?(()=>{const h=data.history.filter(r=>r.fcf&&r.fcf>0);if(h.length<2)return null;return((h[h.length-1].fcf/h[0].fcf)**(1/(h.length-1))-1)*100;})():null;return(<div><div className="text-3xl font-black num mb-1" style={C.accent}>{fmt(ig,1)}<span className="text-base font-normal ml-1" style={C.m}>% implied FCF growth</span></div>{histFCF!==null&&<div className="text-xs" style={C.s}>vs <strong>{fmt(histFCF,1)}%</strong> historical</div>}<div className="text-xs mt-1 font-medium" style={{color:ig>15?'var(--red)':ig>8?'var(--amber)':'var(--green)'}}>{ig>15?'⚠ Aggressive pricing — high execution risk':ig>8?'✓ Moderate — reasonable for quality names':'✓ Conservative — potential value opportunity'}</div></div>);})()}</div><div className="text-xs px-3 py-2 mb-4 rounded-lg" style={{background:'var(--bg-subtle)',...C.s}}>💡 1% WACC increase → ~{fmt(Math.abs((dcf.fv-(calcDCF({fcf:data.financials.fcf,shares:data.profile.shares,totalDebt:data.financials.totalDebt,cash:data.financials.cash,g1:dcfP.g1/100,g2:dcfP.g2/100,wacc:(dcfP.wacc+1)/100,tgr:dcfP.tgr/100})?.fv||dcf.fv))/dcf.fv*100),1)}% fair value reduction</div></div>):<p className="text-sm" style={C.m}>Insufficient data for DCF</p>}
+                  {dcf?(<div>{data.history&&data.history.length>=3&&(<div className="text-xs mb-3 px-3 py-2 rounded-lg" style={{background:'var(--bg-subtle)',color:'var(--text-muted)'}}>Normalized FCF (3Y avg): <strong style={C.s}>{fmtB(data.history.filter(r=>r.fcf&&r.fcf>0).slice(-3).reduce((s,r)=>s+(r.fcf||0),0)/3)}</strong></div>)}<div className="text-xs px-3 py-2 mb-4 rounded-lg" style={{background:'var(--amber-bg)',border:'1px solid var(--amber)',color:'var(--amber)'}}>Driven by <strong>{dcfP.g1}%</strong> near-term · <strong>{dcfP.g2}%</strong> long-term FCF growth · <strong>{dcfP.wacc}%</strong> WACC</div><table className="w-full text-sm mb-4"><thead><tr className="text-xs" style={{...C.m,...C.bdr}}><th className="text-right pb-2">Year</th><th className="text-right pb-2">FCF ($M)</th><th className="text-right pb-2">PV FCF ($M)</th></tr></thead><tbody>{dcf.rows.map(r=>(<tr key={r.y} style={C.bdr}><td className="py-1.5" style={C.s}>Yr {r.y}</td><td className="py-1.5 text-right num" style={C.p}>{fmt(r.fcf/1e6,0)}</td><td className="py-1.5 text-right num" style={C.p}>{fmt(r.pv/1e6,0)}</td></tr>))}<tr style={{background:'var(--bg-subtle)'}}><td className="py-2 font-medium" style={C.p}>Terminal Value</td><td className="py-2 text-right num" style={C.p}>{fmtB(dcf.tv)}</td><td className="py-2 text-right num" style={C.p}>{fmtB(dcf.pvTV)}</td></tr></tbody></table><div className="rounded-xl p-4 mb-4" style={C.sub}><div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>Valuation Bridge</div><table className="w-full text-sm"><tbody>{[['Enterprise Value',fmtB(dcf.ev),C.p],['Less: Net Debt',`(${fmtB(data.financials.netDebt)})`,C.red],['Equity Value',fmtB(dcf.ev-data.financials.netDebt),C.p],['Shares',(data.profile.shares/1e9).toFixed(2)+'B',C.s]].map(([k,v,s])=>(<tr key={k} style={C.bdr}><td className="py-1.5" style={C.s}>{k}</td><td className="py-1.5 text-right font-medium num" style={s}>{v}</td></tr>))}<tr><td className="py-2 font-bold" style={C.green}>Fair Value / Share</td><td className="py-2 text-right text-lg font-black num" style={C.green}>{fmtPrice(dcf.fv)}</td></tr></tbody></table><div className="mt-3 pt-3" style={{borderTop:'1px solid var(--border)'}}><div className="text-xs font-medium" style={{color:dcf.pvTV/dcf.ev>0.6?'var(--amber)':'var(--text-secondary)'}}>{dcf.pvTV/dcf.ev>0.6?'⚠':'ℹ'} {fmt(dcf.pvTV/dcf.ev*100,1)}% from Terminal Value — {dcf.pvTV/dcf.ev>0.7?'high dependency':'acceptable'}</div></div></div><div className="rounded-xl p-4 mb-4" style={{background:'var(--accent-subtle)',border:'1px solid var(--accent)'}}><div className="text-xs font-bold uppercase tracking-widest mb-2" style={C.accent}>Reverse DCF — Implied Growth</div>{(()=>{const wacc=dcfP.wacc/100,tgr=dcfP.tgr/100,fcfBase=data.financials.fcf,sh=data.profile.shares,nd=data.financials.netDebt,targetEV=price*sh+nd;let lo=-0.1,hi=0.5,mid=0;for(let i=0;i<50;i++){mid=(lo+hi)/2;let f=fcfBase,pv=0;for(let y=1;y<=10;y++){f*=(1+mid);pv+=f/Math.pow(1+wacc,y);}const tv=f*(1+tgr)/(wacc-tgr);const ev=pv+tv/Math.pow(1+wacc,10);if(ev>targetEV)hi=mid;else lo=mid;}const ig=mid*100;const histFCF=data.history&&data.history.length>=3?(()=>{const h=data.history.filter(r=>r.fcf&&r.fcf>0);if(h.length<2)return null;return((h[h.length-1].fcf/h[0].fcf)**(1/(h.length-1))-1)*100;})():null;return(<div><div className="text-3xl font-black num mb-1" style={C.accent}>{fmt(ig,1)}<span className="text-base font-normal ml-1" style={C.m}>% implied FCF growth</span></div>{histFCF!==null&&<div className="text-xs" style={C.s}>vs <strong>{fmt(histFCF,1)}%</strong> historical</div>}<div className="text-xs mt-1 font-medium" style={{color:ig>15?'var(--red)':ig>8?'var(--amber)':'var(--green)'}}>{ig>15?'⚠ Aggressive pricing — high execution risk':ig>8?'✓ Moderate — reasonable for quality names':'✓ Conservative — potential value opportunity'}</div></div>);})()}</div><div className="text-xs px-3 py-2 mb-4 rounded-lg" style={{background:'var(--bg-subtle)',...C.s}}>💡 1% WACC increase → ~{fmt(Math.abs((dcf.fv-(calcDCF({fcf:data.financials.fcf,shares:data.profile.shares,totalDebt:data.financials.totalDebt,cash:data.financials.cash,g1:dcfP.g1/100,g2:dcfP.g2/100,wacc:(dcfP.wacc+1)/100,tgr:dcfP.tgr/100})?.fv||dcf.fv))/dcf.fv*100),1)}% fair value reduction</div></div>):<p className="text-sm" style={C.m}>Insufficient data for DCF</p>}
                   <SensitivityTable fcf={data.financials.fcf} shares={data.profile.shares} totalDebt={data.financials.totalDebt} cash={data.financials.cash} baseWacc={dcfP.wacc/100} baseTgr={dcfP.tgr/100}/>
                   <Scenarios fcf={data.financials.fcf} shares={data.profile.shares} totalDebt={data.financials.totalDebt} cash={data.financials.cash} price={data.profile.price}/>
                 </div>
