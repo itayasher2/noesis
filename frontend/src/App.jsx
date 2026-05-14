@@ -224,6 +224,7 @@ export default function App() {
   const [period, setPeriod] = useState('annual');
   const [quarterlyHistory, setQuarterlyHistory] = useState(null);
   const [quarterlyLoading, setQuarterlyLoading] = useState(false);
+  const [dcfMode, setDcfMode] = useState('fcf');
   const [user, setUser] = useState('ADMIN');
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('vp-theme') === 'dark');
 
@@ -259,9 +260,9 @@ export default function App() {
 
   const getDCF = () => {
     if (!data) return null;
-    const fcf = data.financials.fcf;
+  const fcf = dcfMode === 'ebitda' ? data.financials.ebitda : data.financials.fcf;
 if (!fcf || fcf <= 0) return null;
-return calcDCF({ fcf, shares: data.profile.shares, totalDebt: data.financials.totalDebt, cash: data.financials.cash, g1: dcfP.g1/100, g2: dcfP.g2/100, wacc: dcfP.wacc/100, tgr: dcfP.tgr/100 });
+return calcDCF({ fcf,
   };
 
   const getGordon = () => calcGordon({ dps: data?.multiples?.dps, r: gordonP.r/100, g: gordonP.g/100 });
@@ -434,6 +435,10 @@ return calcDCF({ fcf, shares: data.profile.shares, totalDebt: data.financials.to
 
               {tab==='dcf'&&(
                 <div>
+                  <div className="flex gap-2 mb-4">
+  <button onClick={()=>setDcfMode('fcf')} className="px-4 py-1.5 text-xs font-semibold rounded-lg" style={{background:dcfMode==='fcf'?'var(--accent)':'var(--bg-subtle)',color:dcfMode==='fcf'?'white':'var(--text-muted)',border:'1px solid var(--border)'}}>FCF-based</button>
+  <button onClick={()=>setDcfMode('ebitda')} className="px-4 py-1.5 text-xs font-semibold rounded-lg" style={{background:dcfMode==='ebitda'?'var(--accent)':'var(--bg-subtle)',color:dcfMode==='ebitda'?'white':'var(--text-muted)',border:'1px solid var(--border)'}}>EBITDA-based</button>
+</div>
                   <div className="grid grid-cols-4 gap-3 mb-5">
                     {[{key:'g1',label:'Growth Yr 1-5 (%)'},{key:'g2',label:'Growth Yr 6-10 (%)'},{key:'wacc',label:'WACC (%)'},{key:'tgr',label:'Terminal Growth (%)'}].map(p=>(<div key={p.key}><label className="text-xs block mb-1" style={C.m}>{p.label}</label><input type="number" step="0.5" value={dcfP[p.key]} onChange={e=>setDcfP(prev=>({...prev,[p.key]:parseFloat(e.target.value)||0}))} className="w-full h-9 px-3 text-sm text-right num" style={{background:'var(--bg-input)',border:'1px solid var(--border)',borderRadius:'var(--radius-sm)',color:'var(--text-primary)'}} /></div>))}
                   </div>
