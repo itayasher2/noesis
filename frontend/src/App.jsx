@@ -259,11 +259,11 @@ export default function App() {
   };
 
   const getDCF = () => {
-    if (!data) return null;
+  if (!data) return null;
   const fcf = dcfMode === 'ebitda' ? data.financials.ebitda : data.financials.fcf;
-if (!fcf || fcf <= 0) return null;
-return calcDCF({ fcf,
-  };
+  if (!fcf || fcf <= 0) return null;
+  return calcDCF({ fcf, shares: data.profile.shares, totalDebt: data.financials.totalDebt, cash: data.financials.cash, g1: dcfP.g1/100, g2: dcfP.g2/100, wacc: dcfP.wacc/100, tgr: dcfP.tgr/100 });
+};
 
   const getGordon = () => calcGordon({ dps: data?.multiples?.dps, r: gordonP.r/100, g: gordonP.g/100 });
   const getRI = () => calcRI({ bvps: data?.multiples?.bvps, roe: (data?.financials?.roe||0)/100, ke: riP.ke/100, g: riP.g/100 });
