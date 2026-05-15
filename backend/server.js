@@ -11,7 +11,6 @@ const app = express();
 app.set('trust proxy', 1);
 app.use(helmet());
 
-// ✅ CORS מפורש — מאפשר לפרונט לתקשר עם הבאקנד
 const corsOptions = {
   origin: [
     'https://ainoesis.org',
@@ -24,8 +23,9 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 };
+
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // ✅ טיפול ב-preflight OPTIONS
+app.options('/(.*)', cors(corsOptions)); // ✅ תיקון סינטקס preflight
 
 app.use(express.json());
 
