@@ -8,187 +8,7 @@ const axios = require('axios');
 function safe(arr) { return Array.isArray(arr) ? arr : (arr ? [arr] : []); }
 function n(v) { return (v != null && !isNaN(v)) ? Number(v) : null; }
 
-router.get('/:ticker', async (req, res) => {
-  try {
-    const ticker = req.params.ticker.toUpperCase();
-    const [profile, income, cashflow, balance, metrics, ratios, yahooData, estimates] =
-      await Promise.all([
-        fmp.getProfile(ticker),
-        fmp.getIncome(ticker),
-        fmp.getCashflow(ticker),
-        fmp.getBalance(ticker),
-        fmp.getMetrics(ticker),
-        fmp.getRatios(ticker),
-        yahoo.quoteSummary(ticker, {
-          modules: ['summaryDetail', 'defaultKeyStatistics', 'financialData', 'price']
-        }).catch(() => null),
-        axios.get(`https://financialmodelingprep.com/stable/analyst-estimates?symbol=${ticker}&period=annual&apikey=${process.env.FMP_API_KEY}`)
-          .then(r => r.data).catch(() => []),
-      ]);
-
-    const p  = safe(profile)[0]  || {};
-    const i0 = safe(income)[0]   || {};
-    const c0 = safe(cashflow)[0] || {};
-    const b0 = safe(balance)[0]  || {};
-    const m  = safe(metrics)[0]  || {};
-    const r0 = safe(ratios)[0]   || {};
-    const yd = yahooData || {};
-
-    const price    = n(p.price) || 0;
-    const mktCap   = n(p.mktCap) || n(p.marketCap) || 0;
-    const shares   = price > 0 && mktCap > 0 ? mktCap / price : n(p.sharesOutstanding) || 1;
-
-    const revenue     = n(i0.revenue) || n(i0.totalRevenue) || 0;
-    const ebitda      = n(i0.ebitda) || 0;
-    const ebit        = n(i0.operatingIncome) || 0;
-    const netIncome   = n(i0.netIncome) || 0;
-    const grossProfit = n(i0.grossProfit) || 0;
-    const fcf         = n(c0.freeCashFlow) || 0;
-    const capex       = n(c0.capitalExpenditure) || 0;
-    const ocf         = n(c0.operatingCashFlow) || 0;
-    const dividendsPaid = Math.abs(n(c0.dividendsPaid) || n(c0.commonDividendsPaid) || n(c0.netDividendsPaid) || 0);
-    const shareRepurchase = Math.abs(n(c0.commonStockRepurchased) || 0);
-    const totalDebt   = n(b0.totalDebt) || (n(b0.shortTermDebt)||0) + (n(b0.longTermDebt)||0);
-    const cash        = n(b0.cashAndCashEquivalents) || 0;
-    const equity      = n(b0.totalStockholdersEquity) || n(b0.totalEquity) || 0;
-    const totalAssets = n(b0.totalAssets) || 0;
-    const netDebt     = totalDebt - cash;
-
-    const pe         = n(yd.summaryDetail?.trailingPE) || n(m.peRatio);
-    const forwardPE  = n(yd.defaultKeyStatistics?.forwardPE);
-    const pegRatio   = n(yd.defaultKeyStatistics?.pegRatio);
-    const pb         = n(yd.defaultKeyStatistics?.priceToBook) || n(m.pbRatio);
-    const ps         = n(yd.summaryDetail?.priceToSalesTrailing12Months) || n(m.priceToSalesRatio);
-    const evEbitda   = n(yd.defaultKeyStatistics?.enterpriseToEbitda) || n(m.enterpriseValueOverEBITDA);
-    const evRevenue  = n(yd.defaultKeyStatistics?.enterpriseToRevenue);
-    const evFcf      = n(m.evToFreeCashFlow);
-    const eps        = n(m.netIncomePerShare) || (shares > 0 ? netIncome/shares : null);
-    const bvps       = n(m.bookValuePerShare) || (shares > 0 ? equity/shares : null);
-    const dps        = n(yd.summaryDetail?.dividendRate) || n(m.dividendPerShare) || 0;
-    const dividendYield = n(yd.summaryDetail?.dividendYield) || 0;
-    const payoutRatio = n(yd.summaryDetail?.payoutRatio) || (dividendsPaid > 0 && netIncome > 0 ? dividendsPaid/netIncome : null);
-    const roe        = equity > 0 ? netIncome/equity : null;
-    const roa        = n(m.roa);
-    const roic       = n(m.roic);
-    const debtEq     = equity > 0 ? totalDebt/equity : null;
-    const grahamNumber = (eps && bvps && eps > 0 && bvps > 0) ? Math.sqrt(22.5 * eps * bvps) : null;
-    const targetPrice = n(yd.financialData?.targetMeanPrice);
-    const analystRating = yd.financialData?.recommendationKey || null;
-    const numberOfAnalysts = n(yd.financialData?.numberOfAnalystOpinions);
-    const beta = n(yd.summaryDetail?.beta) || n(p.beta);
-    const sharesOutstanding = n(yd.defaultKeyStatistics?.sharesOutstanding) || shares;
-    const buybackYield = shareRepurchase > 0 && mktCap > 0 ? shareRepurchase / mktCap : null;
-
-    const histIncome   = safe(income).slice(0,5).reverse();
-    const histCashflow = safe(cashflow).slice(0,5).reverse();
-    const histBalance  = safe(balance).slice(0,5).reverse();
-
-    const history = histIncome.map((yr, idx) => ({
-      year:         yr.date ? new Date(yr.date).getFullYear() : null,
-      revenue:      n(yr.revenue) || n(yr.totalRevenue),
-      grossProfit:  n(yr.grossProfit),
-      ebitda:       n(yr.ebitda),
-      ebit:         n(yr.operatingIncome),
-      netIncome:    n(yr.netIncome),
-      eps:          n(yr.eps),
-      fcf:          n(histCashflow[idx]?.freeCashFlow),
-      ocf:          n(histCashflow[idx]?.operatingCashFlow),
-      capex:        n(histCashflow[idx]?.capitalExpenditure),
-      dividends:    Math.abs(n(histCashflow[idx]?.dividendsPaid) || n(histCashflow[idx]?.commonDividendsPaid) || n(histCashflow[idx]?.netDividendsPaid) || 0),
-      buybacks:     Math.abs(n(histCashflow[idx]?.commonStockRepurchased)||0),
-      totalDebt:    n(histBalance[idx]?.totalDebt),
-      cash:         n(histBalance[idx]?.cashAndCashEquivalents),
-      equity:       n(histBalance[idx]?.totalStockholdersEquity),
-      totalAssets:  n(histBalance[idx]?.totalAssets),
-      grossMargin:  yr.revenue ? (n(yr.grossProfit)||0)/yr.revenue*100 : null,
-      ebitdaMargin: yr.revenue ? (n(yr.ebitda)||0)/yr.revenue*100 : null,
-      netMargin:    yr.revenue ? (n(yr.netIncome)||0)/yr.revenue*100 : null,
-      roe:          histBalance[idx]?.totalStockholdersEquity > 0
-                      ? (n(yr.netIncome)||0)/histBalance[idx].totalStockholdersEquity*100 : null,
-    }));
-
-    const links = [
-      { label: '10-K Annual Report (SEC)', url: `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${ticker}&type=10-K&dateb=&owner=include&count=5` },
-      { label: '10-Q Quarterly Report (SEC)', url: `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${ticker}&type=10-Q&dateb=&owner=include&count=8` },
-      { label: 'SEC EDGAR', url: `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${ticker}&type=&dateb=&owner=include&count=20` },
-      { label: 'Earnings Calls — Seeking Alpha', url: `https://seekingalpha.com/symbol/${ticker}/earnings` },
-      { label: 'Earnings Transcripts — Motley Fool', url: `https://www.fool.com/earnings-call-transcripts/?search=${ticker}` },
-      { label: 'IR Website', url: p.website || `https://www.google.com/search?q=${ticker}+investor+relations` },
-    ];
-
-    res.json({
-      profile: {
-        name: p.companyName || p.name,
-        ticker: p.symbol || ticker,
-        exchange: p.exchangeShortName || p.exchange,
-        sector: p.sector,
-        industry: p.industry,
-        currency: p.currency || 'USD',
-        country: p.country,
-        employees: n(p.fullTimeEmployees),
-        description: p.description,
-        website: p.website,
-        logo: p.image,
-        price, change: n(p.changes)||n(p.change),
-        changePct: n(p.changesPercentage)||n(p.changePercentage),
-        marketCap: mktCap, shares: sharesOutstanding, beta,
-      },
-      multiples: {
-        pe, forwardPE, pegRatio, pb, ps, evEbitda, evRevenue, evFcf,
-        eps, bvps, dps, dividendYield, roe, roa, roic,
-        debtEq, payoutRatio, targetPrice, analystRating, numberOfAnalysts,
-      },
-      capitalAllocation: {
-        dividendYield,
-        dividendRate: dps,
-        dividendsPaid,
-        shareRepurchase,
-        buybackYield,
-        payoutRatio,
-        totalReturn: (dividendsPaid + shareRepurchase) > 0 && mktCap > 0
-          ? (dividendsPaid + shareRepurchase) / mktCap : null,
-      },
-      financials: {
-        revenue, ebitda, ebit, netIncome, grossProfit,
-        fcf, capex, ocf, dividends: dividendsPaid, shareRepurchase,
-        totalDebt, cash, netDebt, equity, totalAssets,
-        grossMargin:  revenue > 0 ? grossProfit/revenue*100 : null,
-        ebitdaMargin: revenue > 0 ? ebitda/revenue*100 : null,
-        ebitMargin:   revenue > 0 ? ebit/revenue*100 : null,
-        netMargin:    revenue > 0 ? netIncome/revenue*100 : null,
-        fcfMargin:    revenue > 0 ? fcf/revenue*100 : null,
-        roe: roe ? roe*100 : null,
-        roa: roa ? roa*100 : null,
-        roic: roic ? roic*100 : null,
-        debtToEquity: debtEq,
-        netDebtEbitda: ebitda > 0 ? netDebt/ebitda : null,
-        currentRatio: n(r0.currentRatio),
-        quickRatio: n(r0.quickRatio),
-        interestCoverage: n(r0.interestCoverage),
-      },
-      valuation: { grahamNumber, pe, pb, ps, evEbitda, evFcf, ev: mktCap + netDebt },
-      history,
-      estimates: safe(estimates).slice(0,4).map(e => ({
-        date: e.date,
-        revenueAvg: n(e.revenueAvg),
-        revenueLow: n(e.revenueLow),
-        revenueHigh: n(e.revenueHigh),
-        ebitdaAvg: n(e.ebitdaAvg),
-        netIncomeAvg: n(e.netIncomeAvg),
-        netIncomeLow: n(e.netIncomeLow),
-        netIncomeHigh: n(e.netIncomeHigh),
-        epsAvg: n(e.epsAvg),
-        epsLow: n(e.epsLow),
-        epsHigh: n(e.epsHigh),
-      })),
-      earnings: [],
-      links,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
-  }
-});
+// ✅ POST routes MUST come before GET /:ticker (wildcard)
 
 router.post('/business-drivers', async (req, res) => {
   try {
@@ -416,6 +236,7 @@ router.post('/ai-analysis', async (req, res) => {
   }
 });
 
+// ✅ GET routes with wildcards come LAST
 router.get('/quarterly/:ticker', async (req, res) => {
   try {
     const ticker = req.params.ticker.toUpperCase();
@@ -445,6 +266,188 @@ router.get('/quarterly/:ticker', async (req, res) => {
     }));
     res.json({ history });
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/:ticker', async (req, res) => {
+  try {
+    const ticker = req.params.ticker.toUpperCase();
+    const [profile, income, cashflow, balance, metrics, ratios, yahooData, estimates] =
+      await Promise.all([
+        fmp.getProfile(ticker),
+        fmp.getIncome(ticker),
+        fmp.getCashflow(ticker),
+        fmp.getBalance(ticker),
+        fmp.getMetrics(ticker),
+        fmp.getRatios(ticker),
+        yahoo.quoteSummary(ticker, {
+          modules: ['summaryDetail', 'defaultKeyStatistics', 'financialData', 'price']
+        }).catch(() => null),
+        axios.get(`https://financialmodelingprep.com/stable/analyst-estimates?symbol=${ticker}&period=annual&apikey=${process.env.FMP_API_KEY}`)
+          .then(r => r.data).catch(() => []),
+      ]);
+
+    const p  = safe(profile)[0]  || {};
+    const i0 = safe(income)[0]   || {};
+    const c0 = safe(cashflow)[0] || {};
+    const b0 = safe(balance)[0]  || {};
+    const m  = safe(metrics)[0]  || {};
+    const r0 = safe(ratios)[0]   || {};
+    const yd = yahooData || {};
+
+    const price    = n(p.price) || 0;
+    const mktCap   = n(p.mktCap) || n(p.marketCap) || 0;
+    const shares   = price > 0 && mktCap > 0 ? mktCap / price : n(p.sharesOutstanding) || 1;
+
+    const revenue     = n(i0.revenue) || n(i0.totalRevenue) || 0;
+    const ebitda      = n(i0.ebitda) || 0;
+    const ebit        = n(i0.operatingIncome) || 0;
+    const netIncome   = n(i0.netIncome) || 0;
+    const grossProfit = n(i0.grossProfit) || 0;
+    const fcf         = n(c0.freeCashFlow) || 0;
+    const capex       = n(c0.capitalExpenditure) || 0;
+    const ocf         = n(c0.operatingCashFlow) || 0;
+    const dividendsPaid = Math.abs(n(c0.dividendsPaid) || n(c0.commonDividendsPaid) || n(c0.netDividendsPaid) || 0);
+    const shareRepurchase = Math.abs(n(c0.commonStockRepurchased) || 0);
+    const totalDebt   = n(b0.totalDebt) || (n(b0.shortTermDebt)||0) + (n(b0.longTermDebt)||0);
+    const cash        = n(b0.cashAndCashEquivalents) || 0;
+    const equity      = n(b0.totalStockholdersEquity) || n(b0.totalEquity) || 0;
+    const totalAssets = n(b0.totalAssets) || 0;
+    const netDebt     = totalDebt - cash;
+
+    const pe         = n(yd.summaryDetail?.trailingPE) || n(m.peRatio);
+    const forwardPE  = n(yd.defaultKeyStatistics?.forwardPE);
+    const pegRatio   = n(yd.defaultKeyStatistics?.pegRatio);
+    const pb         = n(yd.defaultKeyStatistics?.priceToBook) || n(m.pbRatio);
+    const ps         = n(yd.summaryDetail?.priceToSalesTrailing12Months) || n(m.priceToSalesRatio);
+    const evEbitda   = n(yd.defaultKeyStatistics?.enterpriseToEbitda) || n(m.enterpriseValueOverEBITDA);
+    const evRevenue  = n(yd.defaultKeyStatistics?.enterpriseToRevenue);
+    const evFcf      = n(m.evToFreeCashFlow);
+    const eps        = n(m.netIncomePerShare) || (shares > 0 ? netIncome/shares : null);
+    const bvps       = n(m.bookValuePerShare) || (shares > 0 ? equity/shares : null);
+    const dps        = n(yd.summaryDetail?.dividendRate) || n(m.dividendPerShare) || 0;
+    const dividendYield = n(yd.summaryDetail?.dividendYield) || 0;
+    const payoutRatio = n(yd.summaryDetail?.payoutRatio) || (dividendsPaid > 0 && netIncome > 0 ? dividendsPaid/netIncome : null);
+    const roe        = equity > 0 ? netIncome/equity : null;
+    const roa        = n(m.roa);
+    const roic       = n(m.roic);
+    const debtEq     = equity > 0 ? totalDebt/equity : null;
+    const grahamNumber = (eps && bvps && eps > 0 && bvps > 0) ? Math.sqrt(22.5 * eps * bvps) : null;
+    const targetPrice = n(yd.financialData?.targetMeanPrice);
+    const analystRating = yd.financialData?.recommendationKey || null;
+    const numberOfAnalysts = n(yd.financialData?.numberOfAnalystOpinions);
+    const beta = n(yd.summaryDetail?.beta) || n(p.beta);
+    const sharesOutstanding = n(yd.defaultKeyStatistics?.sharesOutstanding) || shares;
+    const buybackYield = shareRepurchase > 0 && mktCap > 0 ? shareRepurchase / mktCap : null;
+
+    const histIncome   = safe(income).slice(0,5).reverse();
+    const histCashflow = safe(cashflow).slice(0,5).reverse();
+    const histBalance  = safe(balance).slice(0,5).reverse();
+
+    const history = histIncome.map((yr, idx) => ({
+      year:         yr.date ? new Date(yr.date).getFullYear() : null,
+      revenue:      n(yr.revenue) || n(yr.totalRevenue),
+      grossProfit:  n(yr.grossProfit),
+      ebitda:       n(yr.ebitda),
+      ebit:         n(yr.operatingIncome),
+      netIncome:    n(yr.netIncome),
+      eps:          n(yr.eps),
+      fcf:          n(histCashflow[idx]?.freeCashFlow),
+      ocf:          n(histCashflow[idx]?.operatingCashFlow),
+      capex:        n(histCashflow[idx]?.capitalExpenditure),
+      dividends:    Math.abs(n(histCashflow[idx]?.dividendsPaid) || n(histCashflow[idx]?.commonDividendsPaid) || n(histCashflow[idx]?.netDividendsPaid) || 0),
+      buybacks:     Math.abs(n(histCashflow[idx]?.commonStockRepurchased)||0),
+      totalDebt:    n(histBalance[idx]?.totalDebt),
+      cash:         n(histBalance[idx]?.cashAndCashEquivalents),
+      equity:       n(histBalance[idx]?.totalStockholdersEquity),
+      totalAssets:  n(histBalance[idx]?.totalAssets),
+      grossMargin:  yr.revenue ? (n(yr.grossProfit)||0)/yr.revenue*100 : null,
+      ebitdaMargin: yr.revenue ? (n(yr.ebitda)||0)/yr.revenue*100 : null,
+      netMargin:    yr.revenue ? (n(yr.netIncome)||0)/yr.revenue*100 : null,
+      roe:          histBalance[idx]?.totalStockholdersEquity > 0
+                      ? (n(yr.netIncome)||0)/histBalance[idx].totalStockholdersEquity*100 : null,
+    }));
+
+    const links = [
+      { label: '10-K Annual Report (SEC)', url: `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${ticker}&type=10-K&dateb=&owner=include&count=5` },
+      { label: '10-Q Quarterly Report (SEC)', url: `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${ticker}&type=10-Q&dateb=&owner=include&count=8` },
+      { label: 'SEC EDGAR', url: `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${ticker}&type=&dateb=&owner=include&count=20` },
+      { label: 'Earnings Calls — Seeking Alpha', url: `https://seekingalpha.com/symbol/${ticker}/earnings` },
+      { label: 'Earnings Transcripts — Motley Fool', url: `https://www.fool.com/earnings-call-transcripts/?search=${ticker}` },
+      { label: 'IR Website', url: p.website || `https://www.google.com/search?q=${ticker}+investor+relations` },
+    ];
+
+    res.json({
+      profile: {
+        name: p.companyName || p.name,
+        ticker: p.symbol || ticker,
+        exchange: p.exchangeShortName || p.exchange,
+        sector: p.sector,
+        industry: p.industry,
+        currency: p.currency || 'USD',
+        country: p.country,
+        employees: n(p.fullTimeEmployees),
+        description: p.description,
+        website: p.website,
+        logo: p.image,
+        price, change: n(p.changes)||n(p.change),
+        changePct: n(p.changesPercentage)||n(p.changePercentage),
+        marketCap: mktCap, shares: sharesOutstanding, beta,
+      },
+      multiples: {
+        pe, forwardPE, pegRatio, pb, ps, evEbitda, evRevenue, evFcf,
+        eps, bvps, dps, dividendYield, roe, roa, roic,
+        debtEq, payoutRatio, targetPrice, analystRating, numberOfAnalysts,
+      },
+      capitalAllocation: {
+        dividendYield,
+        dividendRate: dps,
+        dividendsPaid,
+        shareRepurchase,
+        buybackYield,
+        payoutRatio,
+        totalReturn: (dividendsPaid + shareRepurchase) > 0 && mktCap > 0
+          ? (dividendsPaid + shareRepurchase) / mktCap : null,
+      },
+      financials: {
+        revenue, ebitda, ebit, netIncome, grossProfit,
+        fcf, capex, ocf, dividends: dividendsPaid, shareRepurchase,
+        totalDebt, cash, netDebt, equity, totalAssets,
+        grossMargin:  revenue > 0 ? grossProfit/revenue*100 : null,
+        ebitdaMargin: revenue > 0 ? ebitda/revenue*100 : null,
+        ebitMargin:   revenue > 0 ? ebit/revenue*100 : null,
+        netMargin:    revenue > 0 ? netIncome/revenue*100 : null,
+        fcfMargin:    revenue > 0 ? fcf/revenue*100 : null,
+        roe: roe ? roe*100 : null,
+        roa: roa ? roa*100 : null,
+        roic: roic ? roic*100 : null,
+        debtToEquity: debtEq,
+        netDebtEbitda: ebitda > 0 ? netDebt/ebitda : null,
+        currentRatio: n(r0.currentRatio),
+        quickRatio: n(r0.quickRatio),
+        interestCoverage: n(r0.interestCoverage),
+      },
+      valuation: { grahamNumber, pe, pb, ps, evEbitda, evFcf, ev: mktCap + netDebt },
+      history,
+      estimates: safe(estimates).slice(0,4).map(e => ({
+        date: e.date,
+        revenueAvg: n(e.revenueAvg),
+        revenueLow: n(e.revenueLow),
+        revenueHigh: n(e.revenueHigh),
+        ebitdaAvg: n(e.ebitdaAvg),
+        netIncomeAvg: n(e.netIncomeAvg),
+        netIncomeLow: n(e.netIncomeLow),
+        netIncomeHigh: n(e.netIncomeHigh),
+        epsAvg: n(e.epsAvg),
+        epsLow: n(e.epsLow),
+        epsHigh: n(e.epsHigh),
+      })),
+      earnings: [],
+      links,
+    });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
