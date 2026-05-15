@@ -25,7 +25,6 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options('/(.*)', cors(corsOptions)); // ✅ תיקון סינטקס preflight
 
 app.use(express.json());
 
