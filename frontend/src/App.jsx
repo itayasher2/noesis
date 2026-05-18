@@ -411,7 +411,7 @@ export default function App() {
                 </div>
               )}
 
-             {tab==='dcf'&&(<DCFTab data={data} dcfP={dcfP} setDcfP={setDcfP} />)}
+             {tab==='dcf'&&(<DCFTab data={data} dcfP={dcfP} setDcfP={setDcfP} dcfMode={dcfMode} setDcfMode={setDcfMode} />)}
 
               {tab==='multiples'&&(
                 <div>
