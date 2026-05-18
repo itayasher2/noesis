@@ -59,8 +59,7 @@ function calcRequiredPrice({ totalValue, targetReturn, years }) {
   return totalValue / Math.pow(1 + targetReturn, years);
 }
 
-export default function DCFTab({ data, dcfP, setDcfP }) {
-  const [dcfMode, setDcfMode] = useState('fcf');
+export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode }) {
   const [decayRate, setDecayRate] = useState(0);
   const [divGrowth, setDivGrowth] = useState(4);
   const [shareChange, setShareChange] = useState(-2);
