@@ -3,7 +3,6 @@ import { fmt, fmtB, fmtPct, fmtPrice } from '../utils/format';
 import SensitivityTable from './SensitivityTable';
 import Scenarios from './Scenarios';
 
-// ─── Core DCF calculation with Decay Rate ───────────────────────────────────
 function calcDCFAdvanced({ fcf, shares, totalDebt, cash, g1, decayRate, wacc, tgr }) {
   if (!fcf || !shares || fcf <= 0) return null;
   let rate = g1;
@@ -12,12 +11,11 @@ function calcDCFAdvanced({ fcf, shares, totalDebt, cash, g1, decayRate, wacc, tg
   const rows = [];
 
   for (let y = 1; y <= 10; y++) {
-    // Apply decay each year after year 1
     if (y > 1) rate = rate * (1 - decayRate);
     f = f * (1 + rate);
     const disc = f / Math.pow(1 + wacc, y);
     pv += disc;
-    rows.push({ y, fcf: f, pv: disc, growthRate: rate });
+    rows.push({ y, fcf: f, pv: disc, cumPV: pv, growthRate: rate });
   }
 
   const tv = f * (1 + tgr) / (wacc - tgr);
@@ -28,11 +26,9 @@ function calcDCFAdvanced({ fcf, shares, totalDebt, cash, g1, decayRate, wacc, tg
   return { fv, ev: pv + pvTV, pvTV, tv, rows, pvExplicit: pv };
 }
 
-// ─── CAGR / Required Return calculator ──────────────────────────────────────
-function calcCAGR({ fcf, shares, totalDebt, cash, dps, divGrowth, shareChangeRate, g1, decayRate, wacc, tgr, years, currentPrice }) {
+function calcCAGR({ fcf, shares, dps, divGrowth, shareChangeRate, g1, decayRate, wacc, tgr, years, currentPrice }) {
   if (!fcf || !shares || fcf <= 0 || currentPrice <= 0) return null;
 
-  // Project FCF with decay
   let rate = g1;
   let f = fcf;
   for (let y = 1; y <= years; y++) {
@@ -40,15 +36,11 @@ function calcCAGR({ fcf, shares, totalDebt, cash, dps, divGrowth, shareChangeRat
     f = f * (1 + rate);
   }
 
-  // Future shares (buybacks reduce, dilution increases)
   const futureShares = shares * Math.pow(1 + shareChangeRate, years);
-
-  // Terminal price = FCF * P/FCF multiple (use wacc-based terminal)
   const terminalFCFPerShare = f / futureShares;
-  const impliedMultiple = 1 / (wacc - tgr); // Gordon-style multiple
+  const impliedMultiple = 1 / (wacc - tgr);
   const futurePriceFromFCF = terminalFCFPerShare * impliedMultiple;
 
-  // Total dividends accumulated (growing)
   let totalDivs = 0;
   let d = dps || 0;
   for (let y = 1; y <= years; y++) {
@@ -56,19 +48,12 @@ function calcCAGR({ fcf, shares, totalDebt, cash, dps, divGrowth, shareChangeRat
     totalDivs += d;
   }
 
-  // Total return
   const totalValue = futurePriceFromFCF + totalDivs;
   const cagr = Math.pow(totalValue / currentPrice, 1 / years) - 1;
 
-  return {
-    futurePrice: futurePriceFromFCF,
-    totalDivs,
-    totalValue,
-    cagr: cagr * 100,
-  };
+  return { futurePrice: futurePriceFromFCF, totalDivs, totalValue, cagr: cagr * 100 };
 }
 
-// ─── Required buy price for target return ──────────────────────────────────
 function calcRequiredPrice({ totalValue, targetReturn, years }) {
   if (!totalValue || !targetReturn || !years) return null;
   return totalValue / Math.pow(1 + targetReturn, years);
@@ -76,15 +61,9 @@ function calcRequiredPrice({ totalValue, targetReturn, years }) {
 
 export default function DCFTab({ data, dcfP, setDcfP }) {
   const [dcfMode, setDcfMode] = useState('fcf');
-  const [decayRate, setDecayRate] = useState(0); // % per year decay
-  const [divGrowth, setDivGrowth] = useState(
-    (() => {
-      const hist = data.history || [];
-      // Estimate from historical dividend growth if available
-      return 4;
-    })()
-  );
-  const [shareChange, setShareChange] = useState(-2); // negative = buybacks
+  const [decayRate, setDecayRate] = useState(0);
+  const [divGrowth, setDivGrowth] = useState(4);
+  const [shareChange, setShareChange] = useState(-2);
   const [targetReturn, setTargetReturn] = useState(10);
   const [projYears, setProjYears] = useState(5);
 
@@ -104,7 +83,6 @@ export default function DCFTab({ data, dcfP, setDcfP }) {
   const baseFCF = dcfMode === 'ebitda' ? data.financials.ebitda : data.financials.fcf;
   const price = data.profile.price;
 
-  // Historical FCF CAGR
   const hist5y = (data.history || []).filter(r => r.fcf && r.fcf > 0);
   const historicalFCFCAGR = hist5y.length >= 2
     ? ((hist5y[hist5y.length - 1].fcf / hist5y[0].fcf) ** (1 / (hist5y.length - 1)) - 1) * 100
@@ -124,8 +102,6 @@ export default function DCFTab({ data, dcfP, setDcfP }) {
   const cagrResult = useMemo(() => calcCAGR({
     fcf: baseFCF,
     shares: data.profile.shares,
-    totalDebt: data.financials.totalDebt,
-    cash: data.financials.cash,
     dps: data.multiples.dps || 0,
     divGrowth: divGrowth / 100,
     shareChangeRate: shareChange / 100,
@@ -138,11 +114,7 @@ export default function DCFTab({ data, dcfP, setDcfP }) {
   }), [baseFCF, data, dcfP, decayRate, divGrowth, shareChange, projYears, price]);
 
   const requiredBuyPrice = cagrResult
-    ? calcRequiredPrice({
-        totalValue: cagrResult.totalValue,
-        targetReturn: targetReturn / 100,
-        years: projYears,
-      })
+    ? calcRequiredPrice({ totalValue: cagrResult.totalValue, targetReturn: targetReturn / 100, years: projYears })
     : null;
 
   const isOvervalued = dcf && price ? dcf.fv < price : false;
@@ -151,22 +123,18 @@ export default function DCFTab({ data, dcfP, setDcfP }) {
   return (
     <div className="fade-in">
 
-      {/* ── Mode Toggle ── */}
+      {/* Mode Toggle */}
       <div className="flex gap-2 mb-5">
         {['fcf', 'ebitda'].map(m => (
           <button key={m} onClick={() => setDcfMode(m)}
             className="px-4 py-1.5 text-xs font-semibold rounded-lg"
-            style={{
-              background: dcfMode === m ? 'var(--accent)' : 'var(--bg-subtle)',
-              color: dcfMode === m ? 'white' : 'var(--text-muted)',
-              border: '1px solid var(--border)',
-            }}>
+            style={{ background: dcfMode === m ? 'var(--accent)' : 'var(--bg-subtle)', color: dcfMode === m ? 'white' : 'var(--text-muted)', border: '1px solid var(--border)' }}>
             {m === 'fcf' ? 'FCF-based' : 'EBITDA-based'}
           </button>
         ))}
       </div>
 
-      {/* ── Parameters ── */}
+      {/* Parameters */}
       <div style={C.card} className="p-5 mb-5">
         <div className="text-xs font-bold uppercase tracking-widest mb-4" style={C.m}>DCF Parameters</div>
         <div className="grid grid-cols-3 gap-4 mb-4">
@@ -186,8 +154,8 @@ export default function DCFTab({ data, dcfP, setDcfP }) {
           ))}
         </div>
 
-        {/* Decay Rate — the key new feature */}
-        <div className="rounded-xl p-4 mb-4" style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent)' }}>
+        {/* Decay Rate */}
+        <div className="rounded-xl p-4" style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent)' }}>
           <div className="flex items-center justify-between mb-2">
             <div>
               <div className="text-xs font-bold" style={C.accent}>Growth Decay Rate (%/year)</div>
@@ -198,20 +166,20 @@ export default function DCFTab({ data, dcfP, setDcfP }) {
               className="w-20 h-9 px-3 text-sm text-right num"
               style={{ background: 'var(--bg-input)', border: '1px solid var(--accent)', borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)' }} />
           </div>
-          {decayRate > 0 && (
+          {decayRate > 0 ? (
             <div className="text-xs" style={C.s}>
               Example: {fmt(dcfP.g1, 1)}% → {fmt(dcfP.g1 * (1 - decayRate / 100), 1)}% → {fmt(dcfP.g1 * Math.pow(1 - decayRate / 100, 2), 1)}% → ...
             </div>
-          )}
-          {decayRate === 0 && (
+          ) : (
             <div className="text-xs" style={C.m}>Set to 0 for no decay (constant growth)</div>
           )}
         </div>
       </div>
 
-      {/* ── DCF Output ── */}
+      {/* DCF Output */}
       {dcf ? (
         <div>
+
           {/* Summary Banner */}
           <div className="rounded-xl p-4 mb-4 flex items-center justify-between"
             style={{ background: isOvervalued ? 'var(--red-bg)' : 'var(--green-bg)', border: `1px solid ${isOvervalued ? 'var(--red)' : 'var(--green)'}` }}>
@@ -242,6 +210,7 @@ export default function DCFTab({ data, dcfP, setDcfP }) {
                   <th className="pb-2 text-right">Growth</th>
                   <th className="pb-2 text-right">{dcfMode === 'ebitda' ? 'EBITDA' : 'FCF'} ($M)</th>
                   <th className="pb-2 text-right">PV ($M)</th>
+                  <th className="pb-2 text-right">Cum. PV ($M)</th>
                 </tr>
               </thead>
               <tbody>
@@ -253,12 +222,14 @@ export default function DCFTab({ data, dcfP, setDcfP }) {
                     </td>
                     <td className="py-1.5 text-right num" style={C.p}>{fmt(r.fcf / 1e6, 0)}</td>
                     <td className="py-1.5 text-right num" style={C.p}>{fmt(r.pv / 1e6, 0)}</td>
+                    <td className="py-1.5 text-right num font-medium" style={C.accent}>{fmt(r.cumPV / 1e6, 0)}</td>
                   </tr>
                 ))}
                 <tr style={{ background: 'var(--bg-subtle)' }}>
                   <td className="py-2 font-medium" style={C.p} colSpan={2}>Terminal Value</td>
                   <td className="py-2 text-right num" style={C.p}>{fmtB(dcf.tv)}</td>
                   <td className="py-2 text-right num" style={C.p}>{fmtB(dcf.pvTV)}</td>
+                  <td></td>
                 </tr>
               </tbody>
             </table>
@@ -291,7 +262,7 @@ export default function DCFTab({ data, dcfP, setDcfP }) {
             </div>
           </div>
 
-          {/* ── CAGR Calculator ── */}
+          {/* CAGR Calculator */}
           <div style={C.card} className="p-5 mb-5">
             <div className="text-xs font-bold uppercase tracking-widest mb-1" style={C.m}>CAGR & Return Calculator</div>
             <div className="text-xs mb-4" style={C.s}>What return will you get if you buy today? What price do you need to achieve your target?</div>
