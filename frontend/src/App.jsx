@@ -16,6 +16,7 @@ import ThesisTriggers from './components/ThesisTriggers';
 import Login from './components/Login';
 import HeroSection from './components/HeroSection';
 import ThesisTab from './components/ThesisTab';
+import DCFTab from './components/DCFTab';
 
 const API = 'https://web-production-bdb26.up.railway.app/api';
 
@@ -410,36 +411,7 @@ export default function App() {
                 </div>
               )}
 
-              {tab==='dcf'&&(
-                <div>
-                  <div className="flex gap-2 mb-4">
-                    <button onClick={()=>setDcfMode('fcf')} className="px-4 py-1.5 text-xs font-semibold rounded-lg" style={{background:dcfMode==='fcf'?'var(--accent)':'var(--bg-subtle)',color:dcfMode==='fcf'?'white':'var(--text-muted)',border:'1px solid var(--border)'}}>FCF-based</button>
-                    <button onClick={()=>setDcfMode('ebitda')} className="px-4 py-1.5 text-xs font-semibold rounded-lg" style={{background:dcfMode==='ebitda'?'var(--accent)':'var(--bg-subtle)',color:dcfMode==='ebitda'?'white':'var(--text-muted)',border:'1px solid var(--border)'}}>EBITDA-based</button>
-                  </div>
-                  <div className="grid grid-cols-4 gap-3 mb-5">
-                    {[{key:'g1',label:'Growth Yr 1-5 (%)'},{key:'g2',label:'Growth Yr 6-10 (%)'},{key:'wacc',label:'WACC (%)'},{key:'tgr',label:'Terminal Growth (%)'}].map(p=>(<div key={p.key}><label className="text-xs block mb-1" style={C.m}>{p.label}</label><input type="number" step="0.5" value={dcfP[p.key]} onChange={e=>setDcfP(prev=>({...prev,[p.key]:parseFloat(e.target.value)||0}))} className="w-full h-9 px-3 text-sm text-right num" style={{background:'var(--bg-input)',border:'1px solid var(--border)',borderRadius:'var(--radius-sm)',color:'var(--text-primary)'}} /></div>))}
-                  </div>
-                  <div className="text-xs mb-3 px-3 py-2 rounded-lg" style={{background: dcfMode==='ebitda'?'var(--accent-subtle)':'var(--bg-subtle)', color:'var(--text-muted)', border: dcfMode==='ebitda'?'1px solid var(--accent)':'none'}}>
-                    <span>DCF based on </span>
-                    <strong style={dcfMode==='ebitda'?C.accent:C.s}>{dcfMode==='ebitda'?'EBITDA':'FCF'}: {fmtB(dcfMode==='ebitda'?data.financials.ebitda:data.financials.fcf)}</strong>
-                    {dcfMode==='ebitda' && <span style={{marginLeft:8,color:'var(--accent)'}}>— recommended for high-CapEx companies</span>}
-                  </div>
-                  {dcf ? (
-                    <div>
-                      <div className="text-xs px-3 py-2 mb-4 rounded-lg" style={{background:'var(--amber-bg)',border:'1px solid var(--amber)',color:'var(--amber)'}}>Driven by <strong>{dcfP.g1}%</strong> near-term · <strong>{dcfP.g2}%</strong> long-term {dcfMode==='ebitda'?'EBITDA':'FCF'} growth · <strong>{dcfP.wacc}%</strong> WACC</div>
-                      <table className="w-full text-sm mb-4"><thead><tr className="text-xs" style={{...C.m,...C.bdr}}><th className="text-right pb-2">Year</th><th className="text-right pb-2">{dcfMode==='ebitda'?'EBITDA':'FCF'} ($M)</th><th className="text-right pb-2">PV ($M)</th></tr></thead><tbody>{dcf.rows.map(r=>(<tr key={r.y} style={C.bdr}><td className="py-1.5" style={C.s}>Yr {r.y}</td><td className="py-1.5 text-right num" style={C.p}>{fmt(r.fcf/1e6,0)}</td><td className="py-1.5 text-right num" style={C.p}>{fmt(r.pv/1e6,0)}</td></tr>))}<tr style={{background:'var(--bg-subtle)'}}><td className="py-2 font-medium" style={C.p}>Terminal Value</td><td className="py-2 text-right num" style={C.p}>{fmtB(dcf.tv)}</td><td className="py-2 text-right num" style={C.p}>{fmtB(dcf.pvTV)}</td></tr></tbody></table>
-                      <div className="rounded-xl p-4 mb-4" style={C.sub}>
-                        <div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>Valuation Bridge</div>
-                        <table className="w-full text-sm"><tbody>{[['Enterprise Value',fmtB(dcf.ev),C.p],['Less: Net Debt',`(${fmtB(data.financials.netDebt)})`,C.red],['Equity Value',fmtB(dcf.ev-data.financials.netDebt),C.p],['Shares',(data.profile.shares/1e9).toFixed(2)+'B',C.s]].map(([k,v,s])=>(<tr key={k} style={C.bdr}><td className="py-1.5" style={C.s}>{k}</td><td className="py-1.5 text-right font-medium num" style={s}>{v}</td></tr>))}<tr><td className="py-2 font-bold" style={C.green}>Fair Value / Share</td><td className="py-2 text-right text-lg font-black num" style={C.green}>{fmtPrice(dcf.fv)}</td></tr></tbody></table>
-                        <div className="mt-3 pt-3" style={{borderTop:'1px solid var(--border)'}}><div className="text-xs font-medium" style={{color:dcf.pvTV/dcf.ev>0.6?'var(--amber)':'var(--text-secondary)'}}>{dcf.pvTV/dcf.ev>0.6?'⚠':'ℹ'} {fmt(dcf.pvTV/dcf.ev*100,1)}% from Terminal Value — {dcf.pvTV/dcf.ev>0.7?'high dependency':'acceptable'}</div></div>
-                      </div>
-                      <div className="text-xs px-3 py-2 mb-4 rounded-lg" style={{background:'var(--bg-subtle)',...C.s}}>💡 1% WACC increase → ~{fmt(Math.abs((dcf.fv-(calcDCF({fcf:dcfMode==='ebitda'?data.financials.ebitda:data.financials.fcf,shares:data.profile.shares,totalDebt:data.financials.totalDebt,cash:data.financials.cash,g1:dcfP.g1/100,g2:dcfP.g2/100,wacc:(dcfP.wacc+1)/100,tgr:dcfP.tgr/100})?.fv||dcf.fv))/dcf.fv*100),1)}% fair value reduction</div>
-                    </div>
-                  ) : <p className="text-sm" style={C.m}>Insufficient data for DCF</p>}
-                  <SensitivityTable fcf={dcfMode==='ebitda'?data.financials.ebitda:data.financials.fcf} shares={data.profile.shares} totalDebt={data.financials.totalDebt} cash={data.financials.cash} baseWacc={dcfP.wacc/100} baseTgr={dcfP.tgr/100}/>
-                  <Scenarios fcf={dcfMode==='ebitda'?data.financials.ebitda:data.financials.fcf} shares={data.profile.shares} totalDebt={data.financials.totalDebt} cash={data.financials.cash} price={data.profile.price}/>
-                </div>
-              )}
+             {tab==='dcf'&&(<DCFTab data={data} dcfP={dcfP} setDcfP={setDcfP} />)}
 
               {tab==='multiples'&&(
                 <div>
