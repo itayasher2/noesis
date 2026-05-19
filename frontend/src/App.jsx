@@ -214,6 +214,8 @@ export default function App() {
   const [quarterlyHistory, setQuarterlyHistory] = useState(null);
   const [quarterlyLoading, setQuarterlyLoading] = useState(false);
   const [dcfMode, setDcfMode] = useState('fcf');
+  const [peFairValue, setPeFairValue] = useState(null);
+  const [activeModel, setActiveModel] = useState('dcf');
   const [user, setUser] = useState('ADMIN');
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('vp-theme') === 'dark');
 
@@ -340,8 +342,7 @@ export default function App() {
 
         {data && (<>
           <HeroSection data={data} scoreData={scoreData} dcf={dcf} dcfParams={dcfP}/>
-          <DecisionBox scoreData={scoreData} dcf={dcf} price={price} data={data} dcfParams={dcfP}/>
-
+          <DecisionBox scoreData={scoreData} dcf={activeModel==='pe' && peFairValue ? {fv: peFairValue} : dcf} price={price} data={data} dcfParams={dcfP}/>
           {scoreData && (
             <div style={{...C.card, padding:'16px 18px'}} className="mb-4 fade-in">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -414,8 +415,7 @@ export default function App() {
                 </div>
               )}
 
-              {tab==='dcf'&&(<DCFTab data={data} dcfP={dcfP} setDcfP={setDcfP} dcfMode={dcfMode} setDcfMode={setDcfMode}/>)}
-
+             {tab==='dcf'&&(<DCFTab data={data} dcfP={dcfP} setDcfP={setDcfP} dcfMode={dcfMode} setDcfMode={setDcfMode} onPEValue={setPeFairValue} activeModel={activeModel} setActiveModel={setActiveModel}/>)}
               {tab==='multiples'&&(
                 <div>
                   {(()=>{
