@@ -103,7 +103,7 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
   const eps = manualEPS > 0 ? manualEPS : autoEPS;
   const epsLooksSuspicious = autoEPS > 50 || autoEPS <= 0;
 
-  // EPS היסטורי מהנתונים
+  // Historical EPS from data
   const historicalEPS = (data.history || [])
     .filter(r => r.eps && r.eps > 0 && r.eps < 500)
     .map(r => ({ year: r.year, eps: r.eps }))
@@ -179,12 +179,12 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
       {/* Warnings */}
       {activeModel === 'pe' && (
         <div className="rounded-xl p-3 mb-4 text-xs" style={{ background:'var(--accent-subtle)', border:'1px solid var(--accent)', color:'var(--text-secondary)' }}>
-          💹 <strong style={{color:'var(--accent)'}}>P/E Valuation</strong> — מתאים לחברות CapEx כבד (TSMC, Intel). מקרין EPS קדימה ומכפיל ב-P/E Multiple. לא תלוי ב-FCF.
+          💹 <strong style={{color:'var(--accent)'}}>P/E Valuation</strong> — Best for high-CapEx companies (TSMC, Intel). Projects EPS forward and multiplies by P/E multiple. Not dependent on FCF.
         </div>
       )}
       {activeModel === 'dcf' && data.financials.fcf > 0 && data.financials.netIncome > 0 && data.financials.fcf < data.financials.netIncome * 0.3 && (
         <div className="rounded-xl p-3 mb-4 text-xs" style={{ background:'var(--amber-bg)', border:'1px solid var(--amber)', color:'var(--amber)' }}>
-          ⚠️ FCF נמוך מאוד ביחס לרווח — חברת CapEx כבד. שקול להשתמש ב-
+          ⚠️ FCF is very low vs earnings — high-CapEx company. Consider using
           <button onClick={() => setActiveModel('pe')} className="ml-1 underline font-bold">P/E Model</button>
         </div>
       )}
@@ -220,30 +220,30 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
               <div className="flex items-center justify-between mb-1">
                 <label className="text-xs" style={C.m}>
                   EPS ($) <span style={{color: epsLooksSuspicious ? 'var(--red)' : 'var(--text-muted)'}}>
-                    {epsLooksSuspicious ? '⚠️ נראה לא נכון — ערוך ידנית' : '— ערוך אם לא נכון'}
+                    {epsLooksSuspicious ? '⚠️ Looks incorrect — edit manually' : '— edit if incorrect'}
                   </span>
                 </label>
                 <button
                   onClick={() => setShowEPSHelp(!showEPSHelp)}
                   className="text-xs px-2 py-0.5 rounded"
                   style={{background:'var(--accent-subtle)',color:'var(--accent)',border:'1px solid var(--accent)'}}>
-                  {showEPSHelp ? '▲ הסתר' : '❓ איך מוצאים EPS?'}
+                  {showEPSHelp ? '▲ Hide' : '❓ How to find EPS?'}
                 </button>
               </div>
 
               {/* EPS Help Panel */}
               {showEPSHelp && (
                 <div className="rounded-xl p-4 mb-3" style={{background:'var(--bg-subtle)',border:'1px solid var(--border)'}}>
-                  <div className="text-xs font-bold mb-2" style={C.p}>📖 איך למצוא EPS נכון בדולרים</div>
+                  <div className="text-xs font-bold mb-2" style={C.p}>📖 How to find the correct EPS in USD</div>
 
                   {/* Step by step */}
                   <div className="flex flex-col gap-1.5 mb-3">
                     {[
-                      '1. כנס ל-Yahoo Finance',
-                      `2. חפש את הטיקר: ${ticker}`,
-                      '3. לחץ על "Statistics" בתפריט',
-                      '4. חפש "EPS (TTM)" תחת Valuation Measures',
-                      '5. העתק את המספר (בדולרים) והכנס למטה',
+                      '1. Go to Yahoo Finance',
+                      `2. Search for ticker: ${ticker}`,
+                      '3. Click "Statistics" in the menu',
+                      '4. Find "EPS (TTM)" under Valuation Measures',
+                      '5. Copy the number (in USD) and enter below',
                     ].map((step, i) => (
                       <div key={i} className="text-xs" style={C.s}>{step}</div>
                     ))}
@@ -256,15 +256,15 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold mb-3"
                     style={{background:'var(--accent)',color:'white',textDecoration:'none',display:'inline-flex'}}>
-                    🔗 פתח Yahoo Finance — {ticker} Statistics
+                    🔗 Open Yahoo Finance — {ticker} Statistics
                   </a>
 
                   {/* Historical EPS from data */}
                   {historicalEPS.length > 0 && (
                     <div>
-                      <div className="text-xs font-bold mb-2" style={C.m}>📊 EPS היסטורי מהנתונים שלנו</div>
+                      <div className="text-xs font-bold mb-2" style={C.m}>📊 Historical EPS from our data</div>
                       <div className="text-xs mb-1" style={{color:'var(--amber)'}}>
-                        ⚠️ ייתכן שהמספרים אינם בדולרים — השתמש רק כהשוואה
+                        ⚠️ These may not be in USD — use for reference only
                       </div>
                       <div className="flex gap-2 flex-wrap">
                         {historicalEPS.map(r => (
@@ -280,17 +280,17 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
               )}
 
               <input type="number" step="0.1" value={manualEPS > 0 ? manualEPS : ''}
-                placeholder={epsLooksSuspicious ? 'הכנס EPS ידנית בדולרים' : fmt(autoEPS, 2)}
+                placeholder={epsLooksSuspicious ? 'Enter EPS manually in USD' : fmt(autoEPS, 2)}
                 onChange={e => setManualEPS(parseFloat(e.target.value) || 0)}
                 className="w-full h-9 px-3 text-sm text-right num"
                 style={{ background:'var(--bg-input)', border:`1px solid ${epsLooksSuspicious?'var(--red)':'var(--border)'}`, borderRadius:'var(--radius-sm)', color:'var(--text-primary)' }} />
               {epsLooksSuspicious ? (
                 <div className="text-xs mt-0.5" style={{color:'var(--red)'}}>
-                  EPS אוטומטי = ${fmt(autoEPS,2)} — ייתכן שמדווח במטבע זר. לחץ "איך מוצאים EPS?" למעלה.
+                  Auto EPS = ${fmt(autoEPS,2)} — may be in foreign currency. Click "How to find EPS?" above.
                 </div>
               ) : (
                 <div className="text-xs mt-0.5" style={{color:'var(--accent)'}}>
-                  EPS אוטומטי: ${fmt(autoEPS,2)} — השאר ריק לאוטומטי
+                  Auto EPS: ${fmt(autoEPS,2)} — leave blank for auto
                 </div>
               )}
             </div>
@@ -568,12 +568,12 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
             </>
           ) : (
             <div className="rounded-xl p-6 text-center" style={{...C.sub,border:'1px solid var(--red)'}}>
-              <div className="text-sm font-bold mb-2" style={C.red}>⚠️ EPS לא זמין או לא מהימן</div>
-              <div className="text-xs mb-3" style={C.s}>הכנס EPS ידנית בשדה למעלה (בדולרים)</div>
+              <div className="text-sm font-bold mb-2" style={C.red}>⚠️ EPS unavailable or unreliable</div>
+              <div className="text-xs mb-3" style={C.s}>Enter EPS manually in the field above (in USD)</div>
               <a href={`https://finance.yahoo.com/quote/${ticker}/key-statistics`} target="_blank" rel="noopener noreferrer"
                 className="text-xs font-semibold px-3 py-1.5 rounded-lg"
                 style={{background:'var(--accent)',color:'white',textDecoration:'none',display:'inline-block'}}>
-                🔗 מצא EPS ב-Yahoo Finance
+                🔗 Find EPS on Yahoo Finance
               </a>
             </div>
           )}
