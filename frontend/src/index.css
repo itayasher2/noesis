@@ -197,3 +197,19 @@ html.dark #root { position: relative; z-index: 1; }
 html.dark .logo-dot {
   box-shadow: 0 0 8px rgba(59,130,246,0.6);
 }
+/* ── Mobile Responsive ── */
+@media (max-width: 640px) {
+  table {
+    font-size: 11px;
+  }
+  table td, table th {
+    padding: 6px 4px;
+  }
+  .num {
+    font-size: 11px;
+    letter-spacing: -0.03em;
+  }
+  input[type="number"] {
+    font-size: 14px;
+  }
+}
