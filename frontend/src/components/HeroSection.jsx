@@ -12,6 +12,14 @@ function getVerdictStyle(verdict) {
   return { color: '#991b1b', bg: '#fff8f8', border: '#e5b0b0' };
 }
 
+function fmtMktCap(val) {
+  if (!val || val <= 0) return null;
+  if (val >= 1e12) return `$${(val / 1e12).toFixed(2)}T`;
+  if (val >= 1e9)  return `$${(val / 1e9).toFixed(1)}B`;
+  if (val >= 1e6)  return `$${(val / 1e6).toFixed(0)}M`;
+  return `$${val.toLocaleString()}`;
+}
+
 export default function HeroSection({ data, scoreData, dcf, dcfParams }) {
   const [insight, setInsight] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -34,6 +42,7 @@ export default function HeroSection({ data, scoreData, dcf, dcfParams }) {
   if (!data || !scoreData) return null;
 
   const price = data.profile.price;
+  const mktCap = fmtMktCap(data.profile.marketCap);
   const verdict = insight?.verdict || (scoreData.composite >= 65 ? 'Attractive' : scoreData.composite >= 50 ? 'Fairly Valued' : scoreData.composite >= 35 ? 'High Expectations' : 'Caution');
   const style = getVerdictStyle(verdict);
 
@@ -80,6 +89,11 @@ export default function HeroSection({ data, scoreData, dcf, dcfParams }) {
               {data.profile.changePct >= 0 ? '+' : ''}{fmt(data.profile.changePct, 2)}%
             </span>
           </div>
+          {mktCap && (
+            <div className="text-xs mt-0.5" style={{color:'var(--text-muted)'}}>
+              Mkt Cap: <span className="font-semibold num" style={{color:'var(--text-secondary)'}}>{mktCap}</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -99,7 +113,7 @@ export default function HeroSection({ data, scoreData, dcf, dcfParams }) {
         )}
       </div>
 
-      {/* ── 3 sections — stacked on mobile, grid on desktop ── */}
+      {/* ── 3 sections ── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
 
         {/* Market vs Reality */}
