@@ -362,8 +362,10 @@ export default function App() {
               {/* Advanced toggle */}
               <button
                 onClick={() => { setShowAdvanced(v => !v); if (!showAdvanced) setTab('gordon'); }}
-                className="px-4 py-3 text-xs font-medium whitespace-nowrap relative transition-colors flex-shrink-0 ml-auto"
-                style={{color:'var(--text-muted)',borderLeft:'1px solid var(--border)'}}>
+                className="px-4 py-3 text-xs font-semibold whitespace-nowrap relative transition-colors flex-shrink-0 ml-auto"
+                style={{color: showAdvanced ? 'var(--accent)' : 'var(--text-secondary)', borderLeft:'1px solid var(--border)', background: showAdvanced ? 'var(--accent-subtle)' : 'transparent'}}>
+                 {showAdvanced ? '▲ Less' : '⚙ Advanced'}
+                 style={{color:'var(--text-muted)',borderLeft:'1px solid var(--border)'}}>
                 {showAdvanced ? '▲ Less' : '⚙ Advanced'}
               </button>
             </div>
