@@ -117,7 +117,7 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode }) {
 
   const baseFCF = dcfMode === 'ebitda' ? data.financials.ebitda : data.financials.fcf;
   const price = data.profile.price;
-  const eps = data.multiples?.eps || 0;
+  const eps = data.multiples?.eps && data.multiples.eps < 500 ? data.multiples.eps : data.financials.netIncome / data.profile.shares;
 
   // Historical CAGRs
   const hist5yFCF = (data.history || []).filter(r => r.fcf && r.fcf > 0);
