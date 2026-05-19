@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { fmt, fmtB, fmtPct, fmtPrice } from '../utils/format';
 import SensitivityTable from './SensitivityTable';
 import Scenarios from './Scenarios';
@@ -31,10 +31,7 @@ function calcPEValuation({ eps, niGrowth, decayRate, peMultiple, divGrowth, dps,
   const futureEPS = e;
   const futurePrice = futureEPS * peMultiple;
   let totalDivs = 0, d = dps || 0;
-  for (let y = 1; y <= years; y++) {
-    d = d * (1 + divGrowth);
-    totalDivs += d;
-  }
+  for (let y = 1; y <= years; y++) { d = d * (1 + divGrowth); totalDivs += d; }
   const totalValue = futurePrice + totalDivs;
   return { futurePrice, futureEPS, totalDivs, totalValue };
 }
@@ -60,8 +57,7 @@ function calcRequiredPrice({ totalValue, targetReturn, years }) {
   return totalValue / Math.pow(1 + targetReturn, years);
 }
 
-export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode }) {
-  const [activeModel, setActiveModel] = useState('dcf');
+export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEValue, activeModel, setActiveModel }) {
   const [decayRate, setDecayRate] = useState(0);
   const [divGrowth, setDivGrowth] = useState(4);
   const [shareChange, setShareChange] = useState(-2);
@@ -98,8 +94,6 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode }) {
   const baseFCF = dcfMode === 'ebitda' ? data.financials.ebitda : data.financials.fcf;
   const price = data.profile.price;
 
-  // EPS — use manual if set, otherwise try API, fallback to NI/shares
-  // If EPS from API > 200, it's probably in foreign currency (NT$, etc.) — ignore it
   const apiEPS = data.multiples?.eps;
   const autoEPS = apiEPS && apiEPS > 0 && apiEPS < 200
     ? apiEPS
@@ -145,6 +139,13 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode }) {
   const upside = dcf && price ? (dcf.fv / price - 1) * 100 : null;
   const peIsOvervalued = peFV && price ? peFV < price : false;
   const peUpside = peFV && price ? (peFV / price - 1) * 100 : null;
+
+  // ✅ שלח את peFV ל-App.jsx כשמשתנה
+  useEffect(() => {
+    if (onPEValue) {
+      onPEValue(activeModel === 'pe' ? peFV : null);
+    }
+  }, [activeModel, peFV, onPEValue]);
 
   return (
     <div className="fade-in">
@@ -208,7 +209,6 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode }) {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-            {/* EPS — ידני */}
             <div style={{gridColumn:'1/-1'}}>
               <label className="text-xs block mb-1" style={C.m}>
                 EPS ($) <span style={{color: epsLooksSuspicious ? 'var(--red)' : 'var(--text-muted)'}}>
@@ -220,16 +220,14 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode }) {
                 onChange={e => setManualEPS(parseFloat(e.target.value) || 0)}
                 className="w-full h-9 px-3 text-sm text-right num"
                 style={{ background:'var(--bg-input)', border:`1px solid ${epsLooksSuspicious?'var(--red)':'var(--border)'}`, borderRadius:'var(--radius-sm)', color:'var(--text-primary)' }} />
-              {epsLooksSuspicious && (
+              {epsLooksSuspicious ? (
                 <div className="text-xs mt-0.5" style={{color:'var(--red)'}}>
-                  EPS אוטומטי = ${fmt(autoEPS,2)} — ייתכן שמדווח במטבע זר (NT$, ¥). חפש EPS בדולרים ב-Yahoo Finance והכנס ידנית.
+                  EPS אוטומטי = ${fmt(autoEPS,2)} — ייתכן שמדווח במטבע זר. חפש EPS בדולרים ב-Yahoo Finance והכנס ידנית.
                 </div>
-              )}
-              {!epsLooksSuspicious && (
+              ) : (
                 <div className="text-xs mt-0.5" style={{color:'var(--accent)'}}>EPS אוטומטי: ${fmt(autoEPS,2)} — השאר ריק לאוטומטי</div>
               )}
             </div>
-
             <div>
               <label className="text-xs block mb-1" style={C.m}>Net Income Growth (%)</label>
               <input type="number" step="0.5" value={niGrowth}
@@ -359,7 +357,6 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode }) {
               </div>
             </div>
 
-            {/* CAGR Calculator */}
             <div style={C.card} className="p-4 mb-4">
               <div className="text-xs font-bold uppercase tracking-widest mb-1" style={C.m}>CAGR & Return Calculator</div>
               <div className="text-xs mb-4" style={C.s}>What return if you buy today? What price for your target return?</div>
@@ -429,7 +426,7 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode }) {
       {/* P/E OUTPUT */}
       {activeModel === 'pe' && (
         <div>
-          {eps > 0 && !epsLooksSuspicious || manualEPS > 0 ? (
+          {(eps > 0 && !epsLooksSuspicious) || manualEPS > 0 ? (
             <>
               <div className="rounded-xl p-4 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
                 style={{background:peIsOvervalued?'var(--red-bg)':'var(--green-bg)',border:`1px solid ${peIsOvervalued?'var(--red)':'var(--green)'}`}}>
@@ -486,7 +483,7 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode }) {
 
               <div style={C.card} className="p-4">
                 <div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>Return Settings</div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {[
                     {label:'Dividend Growth (%)',value:divGrowth,setter:v=>setDivGrowth(parseFloat(v)||0)},
                     {label:'Share Change (%)',value:shareChange,setter:v=>setShareChange(parseFloat(v)||0)},
