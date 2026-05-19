@@ -64,6 +64,7 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
   const [targetReturn, setTargetReturn] = useState(10);
   const [projYears, setProjYears] = useState(5);
   const [manualEPS, setManualEPS] = useState(0);
+  const [showEPSHelp, setShowEPSHelp] = useState(false);
 
   const [peMultiple, setPeMultiple] = useState(() => {
     const histPE = data.multiples?.pe;
@@ -93,6 +94,7 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
 
   const baseFCF = dcfMode === 'ebitda' ? data.financials.ebitda : data.financials.fcf;
   const price = data.profile.price;
+  const ticker = data.profile.ticker;
 
   const apiEPS = data.multiples?.eps;
   const autoEPS = apiEPS && apiEPS > 0 && apiEPS < 200
@@ -100,6 +102,12 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
     : (data.financials.netIncome && data.profile.shares ? data.financials.netIncome / data.profile.shares / 1e9 * 1000 : 0);
   const eps = manualEPS > 0 ? manualEPS : autoEPS;
   const epsLooksSuspicious = autoEPS > 50 || autoEPS <= 0;
+
+  // EPS היסטורי מהנתונים
+  const historicalEPS = (data.history || [])
+    .filter(r => r.eps && r.eps > 0 && r.eps < 500)
+    .map(r => ({ year: r.year, eps: r.eps }))
+    .slice(-5);
 
   const hist5yFCF = (data.history || []).filter(r => r.fcf && r.fcf > 0);
   const historicalFCFCAGR = hist5yFCF.length >= 2
@@ -140,11 +148,8 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
   const peIsOvervalued = peFV && price ? peFV < price : false;
   const peUpside = peFV && price ? (peFV / price - 1) * 100 : null;
 
-  // ✅ שלח את peFV ל-App.jsx כשמשתנה
   useEffect(() => {
-    if (onPEValue) {
-      onPEValue(activeModel === 'pe' ? peFV : null);
-    }
+    if (onPEValue) onPEValue(activeModel === 'pe' ? peFV : null);
   }, [activeModel, peFV, onPEValue]);
 
   return (
@@ -209,12 +214,71 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+
+            {/* ── EPS Field with Help ── */}
             <div style={{gridColumn:'1/-1'}}>
-              <label className="text-xs block mb-1" style={C.m}>
-                EPS ($) <span style={{color: epsLooksSuspicious ? 'var(--red)' : 'var(--text-muted)'}}>
-                  {epsLooksSuspicious ? '⚠️ נראה לא נכון — ערוך ידנית' : '— ערוך אם לא נכון'}
-                </span>
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs" style={C.m}>
+                  EPS ($) <span style={{color: epsLooksSuspicious ? 'var(--red)' : 'var(--text-muted)'}}>
+                    {epsLooksSuspicious ? '⚠️ נראה לא נכון — ערוך ידנית' : '— ערוך אם לא נכון'}
+                  </span>
+                </label>
+                <button
+                  onClick={() => setShowEPSHelp(!showEPSHelp)}
+                  className="text-xs px-2 py-0.5 rounded"
+                  style={{background:'var(--accent-subtle)',color:'var(--accent)',border:'1px solid var(--accent)'}}>
+                  {showEPSHelp ? '▲ הסתר' : '❓ איך מוצאים EPS?'}
+                </button>
+              </div>
+
+              {/* EPS Help Panel */}
+              {showEPSHelp && (
+                <div className="rounded-xl p-4 mb-3" style={{background:'var(--bg-subtle)',border:'1px solid var(--border)'}}>
+                  <div className="text-xs font-bold mb-2" style={C.p}>📖 איך למצוא EPS נכון בדולרים</div>
+
+                  {/* Step by step */}
+                  <div className="flex flex-col gap-1.5 mb-3">
+                    {[
+                      '1. כנס ל-Yahoo Finance',
+                      `2. חפש את הטיקר: ${ticker}`,
+                      '3. לחץ על "Statistics" בתפריט',
+                      '4. חפש "EPS (TTM)" תחת Valuation Measures',
+                      '5. העתק את המספר (בדולרים) והכנס למטה',
+                    ].map((step, i) => (
+                      <div key={i} className="text-xs" style={C.s}>{step}</div>
+                    ))}
+                  </div>
+
+                  {/* Yahoo Finance Link */}
+                  <a
+                    href={`https://finance.yahoo.com/quote/${ticker}/key-statistics`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold mb-3"
+                    style={{background:'var(--accent)',color:'white',textDecoration:'none',display:'inline-flex'}}>
+                    🔗 פתח Yahoo Finance — {ticker} Statistics
+                  </a>
+
+                  {/* Historical EPS from data */}
+                  {historicalEPS.length > 0 && (
+                    <div>
+                      <div className="text-xs font-bold mb-2" style={C.m}>📊 EPS היסטורי מהנתונים שלנו</div>
+                      <div className="text-xs mb-1" style={{color:'var(--amber)'}}>
+                        ⚠️ ייתכן שהמספרים אינם בדולרים — השתמש רק כהשוואה
+                      </div>
+                      <div className="flex gap-2 flex-wrap">
+                        {historicalEPS.map(r => (
+                          <div key={r.year} className="px-2 py-1 rounded text-xs" style={{background:'var(--bg-card)',border:'1px solid var(--border)'}}>
+                            <span style={C.m}>{r.year}: </span>
+                            <span className="font-bold num" style={C.p}>{fmt(r.eps,2)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <input type="number" step="0.1" value={manualEPS > 0 ? manualEPS : ''}
                 placeholder={epsLooksSuspicious ? 'הכנס EPS ידנית בדולרים' : fmt(autoEPS, 2)}
                 onChange={e => setManualEPS(parseFloat(e.target.value) || 0)}
@@ -222,12 +286,15 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
                 style={{ background:'var(--bg-input)', border:`1px solid ${epsLooksSuspicious?'var(--red)':'var(--border)'}`, borderRadius:'var(--radius-sm)', color:'var(--text-primary)' }} />
               {epsLooksSuspicious ? (
                 <div className="text-xs mt-0.5" style={{color:'var(--red)'}}>
-                  EPS אוטומטי = ${fmt(autoEPS,2)} — ייתכן שמדווח במטבע זר. חפש EPS בדולרים ב-Yahoo Finance והכנס ידנית.
+                  EPS אוטומטי = ${fmt(autoEPS,2)} — ייתכן שמדווח במטבע זר. לחץ "איך מוצאים EPS?" למעלה.
                 </div>
               ) : (
-                <div className="text-xs mt-0.5" style={{color:'var(--accent)'}}>EPS אוטומטי: ${fmt(autoEPS,2)} — השאר ריק לאוטומטי</div>
+                <div className="text-xs mt-0.5" style={{color:'var(--accent)'}}>
+                  EPS אוטומטי: ${fmt(autoEPS,2)} — השאר ריק לאוטומטי
+                </div>
               )}
             </div>
+
             <div>
               <label className="text-xs block mb-1" style={C.m}>Net Income Growth (%)</label>
               <input type="number" step="0.5" value={niGrowth}
@@ -502,7 +569,12 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
           ) : (
             <div className="rounded-xl p-6 text-center" style={{...C.sub,border:'1px solid var(--red)'}}>
               <div className="text-sm font-bold mb-2" style={C.red}>⚠️ EPS לא זמין או לא מהימן</div>
-              <div className="text-xs" style={C.s}>הכנס EPS ידנית בשדה למעלה (בדולרים)</div>
+              <div className="text-xs mb-3" style={C.s}>הכנס EPS ידנית בשדה למעלה (בדולרים)</div>
+              <a href={`https://finance.yahoo.com/quote/${ticker}/key-statistics`} target="_blank" rel="noopener noreferrer"
+                className="text-xs font-semibold px-3 py-1.5 rounded-lg"
+                style={{background:'var(--accent)',color:'white',textDecoration:'none',display:'inline-block'}}>
+                🔗 מצא EPS ב-Yahoo Finance
+              </a>
             </div>
           )}
         </div>
