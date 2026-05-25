@@ -27,42 +27,23 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           pip install anthropic requests -q
-          python3 << 'EOF'
+          python3 - << 'PYEOF'
           import anthropic, requests, os
-
           diff = open("pr_diff.txt").read()[:15000]
-
           client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-
           message = client.messages.create(
               model="claude-sonnet-4-20250514",
               max_tokens=1500,
               messages=[{
                   "role": "user",
-                  "content": f"""אתה מפתח בכיר שעושה Code Review. בדוק את ה-diff הבא:
-
-```diff
-          {diff}
-```
-
-          תן סקירה בעברית שכוללת:
-          1. באגים פוטנציאליים
-          2. שיפורי ביצועים
-          3. בעיות אבטחה
-          4. איכות קוד
-          5. מה טוב"""
+                  "content": "אתה מפתח בכיר. בדוק את הקוד הבא ותן סקירה בעברית:\n\n" + diff
               }]
           )
-
           review_text = message.content[0].text
-          comment = f"## AI Code Review\n\n{review_text}\n\n---\n*נוצר אוטומטית על ידי Claude*"
-
+          comment = "## AI Code Review\n\n" + review_text + "\n\n---\n*נוצר אוטומטית על ידי Claude*"
           requests.post(
               f"https://api.github.com/repos/{os.environ['REPO']}/issues/{os.environ['PR_NUMBER']}/comments",
-              headers={
-                  "Authorization": f"Bearer {os.environ['GH_TOKEN']}",
-                  "Accept": "application/vnd.github+json"
-              },
+              headers={"Authorization": f"Bearer {os.environ['GH_TOKEN']}", "Accept": "application/vnd.github+json"},
               json={"body": comment}
           )
-          EOF
+          PYEOF
