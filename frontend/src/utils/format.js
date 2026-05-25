@@ -4,7 +4,7 @@ export const fmt = (n, d = 2) => {
 };
 
 export const fmtB = (n) => {
-  if (!n || isNaN(n)) return 'N/A';
+  if (n == null || isNaN(n)) return 'N/A';
   const abs = Math.abs(n);
   const sign = n < 0 ? '-' : '';
   if (abs >= 1e12) return sign + '$' + fmt(abs / 1e12, 1) + 'T';
@@ -18,7 +18,7 @@ export const fmtPrice = (n) => n == null || isNaN(n) ? 'N/A' : '$' + fmt(n, 2);
 
 export const getBadge = (upside) => {
   if (upside == null || isNaN(upside)) return { label: 'N/A', color: 'gray' };
-  if (upside >= 20) return { label: 'בחסר', color: 'green' };
-  if (upside <= -20) return { label: 'בעודף', color: 'red' };
-  return { label: 'הוגן', color: 'amber' };
+  if (upside >= 20) return { label: 'Undervalued', color: 'green' };
+  if (upside <= -20) return { label: 'Overvalued', color: 'red' };
+  return { label: 'Fair', color: 'amber' };
 };

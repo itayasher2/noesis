@@ -72,7 +72,8 @@ ALL 8 fields are REQUIRED. If any field is missing the response is invalid.`;
     });
 
     const text = response.data.choices[0].message.content;
-    const drivers = JSON.parse(text);
+    const clean = text.replace(/```json|```/g, '').trim();
+    const drivers = JSON.parse(clean);
     res.json({ drivers });
   } catch (err) {
     console.error('Business drivers error:', err.response?.data || err.message);

@@ -39,7 +39,7 @@ router.get('/heatmap', async (req, res) => {
         const d = await r.json();
         data.push({
           symbol: sym,
-          price: parseFloat(d['price_52_week_high'] || 0),
+          price: parseFloat(d['close'] || d['price'] || d['last_price'] || 0),
           change: parseFloat(d['Perf.W'] || 0),
           changeAbs: 0,
           open: 0,

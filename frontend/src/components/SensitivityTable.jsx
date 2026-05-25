@@ -30,16 +30,16 @@ export default function SensitivityTable({ fcf, shares, totalDebt, cash, baseWac
   return (
     <div style={{ marginTop: '24px' }}>
       <div style={{ fontSize: '11px', color: '#9ca3af', marginBottom: '8px', textTransform: 'uppercase' }}>
-        טבלת רגישות DCF — WACC × שיעור צמיחה
+        DCF Sensitivity Table — WACC × Growth Rate
       </div>
       <div style={{ fontSize: '11px', color: '#9ca3af', marginBottom: '12px' }}>
-        כל תא = שווי הוגן למניה ($) — ירוק = בחסר, אדום = בעודף
+        Each cell = fair value per share ($) — green = undervalued, red = overvalued
       </div>
       <div style={{ overflowX: 'auto' }}>
         <table style={{ borderCollapse: 'collapse', fontSize: '12px', width: '100%' }}>
           <thead>
             <tr>
-              <th style={{ padding: '6px 10px', textAlign: 'right', color: '#6b7280', fontWeight: 500 }}>WACC \ צמיחה</th>
+              <th style={{ padding: '6px 10px', textAlign: 'right', color: '#6b7280', fontWeight: 500 }}>WACC \ Growth</th>
               {growths.map(g => (
                 <th key={g} style={{ padding: '6px 10px', textAlign: 'center', color: '#6b7280', fontWeight: 500 }}>
                   {(g * 100).toFixed(0)}%

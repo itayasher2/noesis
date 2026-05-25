@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API = import.meta.env.VITE_API_URL + '/api';
+const API = 'https://web-production-bdb26.up.railway.app/api';
 
 const IMPACT_COLOR = {
   positive: 'var(--green)',
@@ -125,26 +125,29 @@ export default function BusinessDrivers({ data }) {
                 </div>
 
                 {/* Description */}
-<p className="text-xs leading-relaxed mb-2" style={C.s}>{d.description}</p>
+                <p className="text-xs leading-relaxed mb-2" style={C.s}>{d.description}</p>
 
-{d.financialLink && (
-  <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-lg" style={{background:'var(--bg-subtle)'}}>
-    <span className="text-xs font-bold" style={{color:'var(--accent)'}}>💰</span>
-    <div>
-      <div className="text-xs font-bold" style={{color:'var(--accent)'}}>{d.metric}</div>
-      <div className="text-xs" style={C.s}>{d.financialLink}</div>
-      {d.valuationImpact && (
-  <div className="flex items-center gap-2 mt-2 px-3 py-2 rounded-lg" style={{background:'var(--green-bg)',border:'1px solid var(--green)'}}>
-    <span className="text-xs font-bold" style={{color:'var(--green)'}}>📈</span>
-    <div>
-      <div className="text-xs font-bold" style={{color:'var(--green)'}}>Valuation Impact</div>
-      <div className="text-xs" style={C.s}>{d.valuationImpact}</div>
-    </div>
-  </div>
-)}
-    </div>
-  </div>
-)}
+                {/* Financial link */}
+                {d.financialLink && (
+                  <div className="flex items-center gap-2 mb-2 px-3 py-2 rounded-lg" style={{background:'var(--bg-subtle)'}}>
+                    <span className="text-xs font-bold" style={{color:'var(--accent)'}}>💰</span>
+                    <div>
+                      <div className="text-xs font-bold" style={{color:'var(--accent)'}}>{d.metric}</div>
+                      <div className="text-xs" style={C.s}>{d.financialLink}</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Valuation impact */}
+                {d.valuationImpact && (
+                  <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-lg" style={{background:'var(--green-bg)',border:'1px solid var(--green)'}}>
+                    <span className="text-xs font-bold" style={{color:'var(--green)'}}>📈</span>
+                    <div>
+                      <div className="text-xs font-bold" style={{color:'var(--green)'}}>Valuation Impact</div>
+                      <div className="text-xs" style={C.s}>{d.valuationImpact}</div>
+                    </div>
+                  </div>
+                )}
                 {/* Magnitude bars */}
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs" style={C.m}>Magnitude:</span>

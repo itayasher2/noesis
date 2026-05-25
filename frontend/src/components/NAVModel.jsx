@@ -6,9 +6,9 @@ const fmtPct = (v) => v == null ? '—' : (v >= 0 ? '+' : '') + v.toFixed(1) + '
 
 function QualityBadge({ q }) {
   const map = {
-    high:   { bg: 'var(--green-bg)',  color: 'var(--green)',  label: 'גבוהה' },
-    medium: { bg: 'var(--amber-bg)', color: 'var(--amber)', label: 'בינונית' },
-    low:    { bg: 'var(--red-bg)',   color: 'var(--red)',   label: 'נמוכה' },
+    high:   { bg: 'var(--green-bg)',  color: 'var(--green)',  label: 'High' },
+    medium: { bg: 'var(--amber-bg)', color: 'var(--amber)', label: 'Medium' },
+    low:    { bg: 'var(--red-bg)',   color: 'var(--red)',   label: 'Low' },
   };
   const s = map[q] || map.low;
   return (
@@ -126,11 +126,11 @@ export default function NAVModel({ data }) {
   const premiumToBook = navBook > 0 ? (price / navBook - 1) * 100 : null;
 
   const scenarios = [
-    { name: 'Going Concern (ספרים)', nav: navBook, note: 'ערך ספרי מלא ללא דיסקאונטים' },
-    { name: 'Liquidation — Base', nav: navLiq, note: 'מכירה מהירה עם דיסקאונטים סטנדרטיים' },
-    { name: 'Replacement Cost', nav: navRep, note: 'עלות בניית הנכסים מחדש' },
-    { name: 'Adjusted (מותאם)', nav: navAdj, note: 'הנחות מותאמות אישית' },
-    { name: 'Stress Case', nav: navLiq * 0.75, note: 'פירוק מהיר + 25% stress נוסף' },
+    { name: 'Going Concern (Book)', nav: navBook, note: 'Full book value, no discounts' },
+    { name: 'Liquidation — Base', nav: navLiq, note: 'Quick sale with standard discounts' },
+    { name: 'Replacement Cost', nav: navRep, note: 'Cost to rebuild assets from scratch' },
+    { name: 'Adjusted', nav: navAdj, note: 'Custom discount assumptions' },
+    { name: 'Stress Case', nav: navLiq * 0.75, note: 'Fast liquidation + 25% additional stress' },
   ];
 
   const C = {
@@ -147,10 +147,10 @@ export default function NAVModel({ data }) {
   };
 
   const tabs = [
-    { id: 'summary', label: 'סיכום' },
-    { id: 'assets', label: 'פירוט נכסים' },
-    { id: 'scenarios', label: 'תרחישים' },
-    { id: 'adjust', label: 'הנחות' },
+    { id: 'summary', label: 'Summary' },
+    { id: 'assets', label: 'Assets' },
+    { id: 'scenarios', label: 'Scenarios' },
+    { id: 'adjust', label: 'Assumptions' },
   ];
 
   const verdictColor = premiumToLiq > 500
@@ -160,12 +160,12 @@ export default function NAVModel({ data }) {
     : { bg: 'var(--green-bg)', border: 'var(--green)', text: 'var(--green)' };
 
   const verdictText = premiumToLiq > 500
-    ? `מסחר ב-${Math.round(premiumToLiq)}% פרמיה מעל NAV פירוק — השווי נשען על נכסים בלתי מוחשיים`
+    ? `Trading at ${Math.round(premiumToLiq)}% premium to liquidation NAV — value relies on intangible assets`
     : premiumToLiq > 50
-    ? `פרמיה של ${Math.round(premiumToLiq)}% מעל NAV פירוק — בדוק איכות נכסים בלתי מוחשיים`
-    : `מסחר קרוב ל-NAV — פוטנציאל ערך משמעותי`;
+    ? `${Math.round(premiumToLiq)}% premium to liquidation NAV — verify intangible asset quality`
+    : `Trading near NAV — significant value potential`;
 
-  function AssetRow({ item, navForPct, isIntangible }) {
+  function AssetRow({ item, navForPct }) {
     const liqVal = item.liqMult != null ? item.book * item.liqMult : (item.liqVal || 0);
     const repVal = item.repVal != null ? item.repVal : item.book * (item.repMult || 1);
     const pctOfNav = navForPct > 0 ? (liqVal / navForPct * 100) : 0;
@@ -185,14 +185,14 @@ export default function NAVModel({ data }) {
   }
 
   const adjControls = [
-    { key: 'cashDiscount', label: 'דיסקאונט מזומן', min: 0, max: 20 },
-    { key: 'arDiscount', label: 'דיסקאונט חייבים', min: 0, max: 60 },
-    { key: 'inventoryDiscount', label: 'דיסקאונט מלאי', min: 0, max: 70 },
-    { key: 'ppeDiscount', label: 'דיסקאונט PP&E', min: 0, max: 70 },
-    { key: 'goodwillDiscount', label: 'דיסקאונט Goodwill', min: 0, max: 100 },
-    { key: 'ipDiscount', label: 'דיסקאונט פטנטים / IP', min: 0, max: 100 },
-    { key: 'brandDiscount', label: 'דיסקאונט Brand Value', min: 0, max: 100 },
-    { key: 'otherIntangiblesDiscount', label: 'דיסקאונט נכסים בלתי מוחשיים אחרים', min: 0, max: 100 },
+    { key: 'cashDiscount', label: 'Cash Discount', min: 0, max: 20 },
+    { key: 'arDiscount', label: 'Accounts Receivable Discount', min: 0, max: 60 },
+    { key: 'inventoryDiscount', label: 'Inventory Discount', min: 0, max: 70 },
+    { key: 'ppeDiscount', label: 'PP&E Discount', min: 0, max: 70 },
+    { key: 'goodwillDiscount', label: 'Goodwill Discount', min: 0, max: 100 },
+    { key: 'ipDiscount', label: 'Patents / IP Discount', min: 0, max: 100 },
+    { key: 'brandDiscount', label: 'Brand Value Discount', min: 0, max: 100 },
+    { key: 'otherIntangiblesDiscount', label: 'Other Intangibles Discount', min: 0, max: 100 },
   ];
 
   return (
@@ -216,18 +216,18 @@ export default function NAVModel({ data }) {
         <div>
           {/* Verdict */}
           <div style={{ background: verdictColor.bg, borderLeft: `3px solid ${verdictColor.border}`, padding: '10px 14px', marginBottom: 16, borderRadius: 0 }}>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2, textTransform: 'uppercase', letterSpacing: '0.05em' }}>פסיקת NAV</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2, textTransform: 'uppercase', letterSpacing: '0.05em' }}>NAV Verdict</div>
             <div style={{ fontSize: 13, fontWeight: 600, color: verdictColor.text }}>{verdictText}</div>
           </div>
 
           {/* Metric cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10, marginBottom: 20 }}>
             {[
-              { label: 'NAV ספרים / מניה', value: fmtPS(navBook), sub: fmtPct((navBook / price - 1) * 100) + ' vs שוק' },
-              { label: 'NAV פירוק / מניה', value: fmtPS(navLiq), sub: fmtPct((navLiq / price - 1) * 100) + ' vs שוק' },
-              { label: 'NAV החלפה / מניה', value: fmtPS(navRep), sub: fmtPct((navRep / price - 1) * 100) + ' vs שוק' },
-              { label: 'NAV מותאם / מניה', value: fmtPS(navAdj), sub: fmtPct((navAdj / price - 1) * 100) + ' vs שוק' },
-              { label: 'מחיר שוק', value: fmtPS(price), sub: premiumToLiq != null ? Math.round(premiumToLiq) + '% מעל פירוק' : '—' },
+              { label: 'Book NAV / Share', value: fmtPS(navBook), sub: fmtPct((navBook / price - 1) * 100) + ' vs market' },
+              { label: 'Liquidation NAV / Share', value: fmtPS(navLiq), sub: fmtPct((navLiq / price - 1) * 100) + ' vs market' },
+              { label: 'Replacement NAV / Share', value: fmtPS(navRep), sub: fmtPct((navRep / price - 1) * 100) + ' vs market' },
+              { label: 'Adjusted NAV / Share', value: fmtPS(navAdj), sub: fmtPct((navAdj / price - 1) * 100) + ' vs market' },
+              { label: 'Market Price', value: fmtPS(price), sub: premiumToLiq != null ? Math.round(premiumToLiq) + '% above liquidation' : '—' },
             ].map((c, i) => (
               <div key={i} style={{ ...C.sub, padding: '12px 14px' }}>
                 <div style={{ ...C.m, fontSize: 11, marginBottom: 4 }}>{c.label}</div>
@@ -240,23 +240,23 @@ export default function NAVModel({ data }) {
           {/* Comparison table */}
           <div style={{ ...C.card, padding: 16, marginBottom: 16 }}>
             <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', ...C.m, marginBottom: 12 }}>
-              השוואת שיטות הערכה
+              Valuation Methods Comparison
             </div>
             <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={C.bdr}>
-                  <th style={{ ...C.m, textAlign: 'left', padding: '6px 0', fontWeight: 500 }}>שיטה</th>
-                  <th style={{ ...C.m, textAlign: 'right', fontWeight: 500 }}>NAV / מניה</th>
-                  <th style={{ ...C.m, textAlign: 'right', fontWeight: 500 }}>vs שוק</th>
-                  <th style={{ ...C.m, textAlign: 'right', fontWeight: 500 }}>פרשנות</th>
+                  <th style={{ ...C.m, textAlign: 'left', padding: '6px 0', fontWeight: 500 }}>Method</th>
+                  <th style={{ ...C.m, textAlign: 'right', fontWeight: 500 }}>NAV / Share</th>
+                  <th style={{ ...C.m, textAlign: 'right', fontWeight: 500 }}>vs Market</th>
+                  <th style={{ ...C.m, textAlign: 'right', fontWeight: 500 }}>Assessment</th>
                 </tr>
               </thead>
               <tbody>
                 {[
-                  { name: 'Going Concern', nav: navBook, desc: 'ערך ספרי' },
-                  { name: 'Liquidation', nav: navLiq, desc: 'פירוק מהיר' },
-                  { name: 'Replacement', nav: navRep, desc: 'עלות החלפה' },
-                  { name: 'Adjusted', nav: navAdj, desc: 'מותאם' },
+                  { name: 'Going Concern', nav: navBook, desc: 'Book value' },
+                  { name: 'Liquidation', nav: navLiq, desc: 'Quick sale' },
+                  { name: 'Replacement', nav: navRep, desc: 'Rebuild cost' },
+                  { name: 'Adjusted', nav: navAdj, desc: 'Custom' },
                 ].map((row, i) => {
                   const up = (row.nav / price - 1) * 100;
                   return (
@@ -270,7 +270,7 @@ export default function NAVModel({ data }) {
                           background: up > 10 ? 'var(--green-bg)' : up > -20 ? 'var(--amber-bg)' : 'var(--red-bg)',
                           color: up > 10 ? 'var(--green)' : up > -20 ? 'var(--amber)' : 'var(--red)',
                         }}>
-                          {up > 10 ? 'אטרקטיבי' : up > -20 ? 'סביר' : 'יקר'}
+                          {up > 10 ? 'Attractive' : up > -20 ? 'Fair' : 'Expensive'}
                         </span>
                       </td>
                     </tr>
@@ -283,9 +283,9 @@ export default function NAVModel({ data }) {
           {/* Intangible dependency warning */}
           {totalAssets > 0 && (
             <div style={{ ...C.sub, padding: '10px 14px', fontSize: 12 }}>
-              <span style={{ fontWeight: 600, ...C.p }}>⚠ תלות בנכסים בלתי מוחשיים: </span>
+              <span style={{ fontWeight: 600, ...C.p }}>⚠ Intangible dependency: </span>
               <span style={C.s}>
-                {((goodwill + otherIntangibles) / totalAssets * 100).toFixed(1)}% מהנכסים הם בלתי מוחשיים — NAV פירוק נמוך משמעותית מערך ספרי
+                {((goodwill + otherIntangibles) / totalAssets * 100).toFixed(1)}% of assets are intangible — liquidation NAV is significantly below book value
               </span>
             </div>
           )}
@@ -296,9 +296,9 @@ export default function NAVModel({ data }) {
       {tab === 'assets' && (
         <div>
           {[
-            { title: 'נכסים שוטפים', items: currentAssets },
-            { title: 'נכסים קבועים (PP&E)', items: fixedAssets },
-            { title: 'נכסים בלתי מוחשיים', items: intangibles },
+            { title: 'Current Assets', items: currentAssets },
+            { title: 'Fixed Assets (PP&E)', items: fixedAssets },
+            { title: 'Intangible Assets', items: intangibles },
           ].map(section => (
             <div key={section.title} style={{ marginBottom: 20 }}>
               <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', ...C.m, marginBottom: 8 }}>
@@ -308,7 +308,7 @@ export default function NAVModel({ data }) {
                 <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse', minWidth: 520 }}>
                   <thead>
                     <tr style={{ ...C.bdr, background: 'var(--bg-subtle)' }}>
-                      {['נכס', 'ערך ספרי', 'Liquidation', 'Replacement', 'איכות', '% מ-NAV'].map((h, i) => (
+                      {['Asset', 'Book Value', 'Liquidation', 'Replacement', 'Quality', '% of NAV'].map((h, i) => (
                         <th key={i} style={{ ...C.m, padding: '8px 6px', textAlign: i === 0 ? 'left' : i === 4 ? 'center' : 'right', fontWeight: 500, fontSize: 12 }}>{h}</th>
                       ))}
                     </tr>
@@ -325,13 +325,13 @@ export default function NAVModel({ data }) {
 
           {/* Liabilities */}
           <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', ...C.m, marginBottom: 8 }}>
-            התחייבויות
+            Liabilities
           </div>
           <div style={C.card}>
             <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ ...C.bdr, background: 'var(--bg-subtle)' }}>
-                  {['סעיף', 'ערך', '% מ-NAV'].map((h, i) => (
+                  {['Item', 'Value', '% of NAV'].map((h, i) => (
                     <th key={i} style={{ ...C.m, padding: '8px 12px', textAlign: i === 0 ? 'left' : 'right', fontWeight: 500, fontSize: 12 }}>{h}</th>
                   ))}
                 </tr>
@@ -345,7 +345,7 @@ export default function NAVModel({ data }) {
                   </tr>
                 ))}
                 <tr style={{ background: 'var(--bg-subtle)' }}>
-                  <td style={{ ...C.p, padding: '8px 12px', fontWeight: 700 }}>NAV נטו (פירוק)</td>
+                  <td style={{ ...C.p, padding: '8px 12px', fontWeight: 700 }}>Net NAV (Liquidation)</td>
                   <td style={{ color: navLiq >= 0 ? 'var(--green)' : 'var(--red)', padding: '8px 12px', textAlign: 'right', fontWeight: 700, fontFamily: 'monospace', fontSize: 15 }}>{fmtPS(navLiq)}</td>
                   <td />
                 </tr>
@@ -362,7 +362,7 @@ export default function NAVModel({ data }) {
             <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ ...C.bdr, background: 'var(--bg-subtle)' }}>
-                  {['תרחיש', 'NAV / מניה', 'vs שוק', 'הנחה', 'דירוג'].map((h, i) => (
+                  {['Scenario', 'NAV / Share', 'vs Market', 'Note', 'Rating'].map((h, i) => (
                     <th key={i} style={{ ...C.m, padding: '8px 12px', textAlign: i === 0 ? 'left' : 'right', fontWeight: 500, fontSize: 12 }}>{h}</th>
                   ))}
                 </tr>
@@ -382,7 +382,7 @@ export default function NAVModel({ data }) {
                           background: up > 10 ? 'var(--green-bg)' : up > -20 ? 'var(--amber-bg)' : 'var(--red-bg)',
                           color: up > 10 ? 'var(--green)' : up > -20 ? 'var(--amber)' : 'var(--red)',
                         }}>
-                          {up > 10 ? 'אטרקטיבי' : up > -20 ? 'סביר' : 'יקר'}
+                          {up > 10 ? 'Attractive' : up > -20 ? 'Fair' : 'Expensive'}
                         </span>
                       </td>
                     </tr>
@@ -395,15 +395,15 @@ export default function NAVModel({ data }) {
           {/* Sensitivity analysis */}
           <div style={{ ...C.card, padding: 16 }}>
             <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', ...C.m, marginBottom: 12 }}>
-              רגישות NAV לדיסקאונט על נכסים בלתי מוחשיים
+              NAV Sensitivity to Intangibles Discount
             </div>
             <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={C.bdr}>
-                  <th style={{ ...C.m, padding: '6px 0', textAlign: 'left', fontWeight: 500 }}>דיסקאונט</th>
-                  <th style={{ ...C.m, padding: '6px 0', textAlign: 'right', fontWeight: 500 }}>NAV / מניה</th>
-                  <th style={{ ...C.m, padding: '6px 0', textAlign: 'right', fontWeight: 500 }}>vs שוק</th>
-                  <th style={{ ...C.m, padding: '6px 0', textAlign: 'right', fontWeight: 500 }}>vs NAV ספרים</th>
+                  <th style={{ ...C.m, padding: '6px 0', textAlign: 'left', fontWeight: 500 }}>Discount</th>
+                  <th style={{ ...C.m, padding: '6px 0', textAlign: 'right', fontWeight: 500 }}>NAV / Share</th>
+                  <th style={{ ...C.m, padding: '6px 0', textAlign: 'right', fontWeight: 500 }}>vs Market</th>
+                  <th style={{ ...C.m, padding: '6px 0', textAlign: 'right', fontWeight: 500 }}>vs Book NAV</th>
                 </tr>
               </thead>
               <tbody>
@@ -431,10 +431,10 @@ export default function NAVModel({ data }) {
       {tab === 'adjust' && (
         <div>
           <div style={{ ...C.sub, padding: '12px 16px', marginBottom: 16 }}>
-            <div style={{ ...C.m, fontSize: 11, marginBottom: 4 }}>NAV מותאם / מניה</div>
+            <div style={{ ...C.m, fontSize: 11, marginBottom: 4 }}>Adjusted NAV / Share</div>
             <div style={{ ...C.p, fontSize: 28, fontWeight: 700, fontFamily: 'monospace' }}>{fmtPS(navAdj)}</div>
             <div style={{ fontSize: 13, fontWeight: 600, color: (navAdj / price - 1) * 100 >= 0 ? 'var(--green)' : 'var(--red)', marginTop: 4 }}>
-              {fmtPct((navAdj / price - 1) * 100)} ביחס למחיר שוק
+              {fmtPct((navAdj / price - 1) * 100)} vs. market price
             </div>
           </div>
 
@@ -454,7 +454,7 @@ export default function NAVModel({ data }) {
           ))}
 
           <div style={{ ...C.sub, padding: '10px 14px', marginTop: 12, fontSize: 12, ...C.s }}>
-            💡 דיסקאונט 100% על Goodwill ו-Brand מקובל בתרחיש פירוק — חברות רוכשות לא משלמות על goodwill בפשיטת רגל.
+            💡 100% discount on Goodwill and Brand is standard in liquidation scenarios — acquirers do not pay for goodwill in bankruptcy.
           </div>
         </div>
       )}

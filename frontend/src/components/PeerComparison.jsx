@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API = import.meta.env.VITE_API_URL + '/api';
+const API = 'https://web-production-bdb26.up.railway.app/api';
 
 function fmt(n, d=1) { return n==null||isNaN(n)?'N/A':Number(n).toFixed(d); }
 

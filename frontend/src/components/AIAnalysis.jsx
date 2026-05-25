@@ -58,7 +58,7 @@ Respond ONLY with a valid JSON object (no markdown, no backticks):
   "sectorContext": "Is the valuation cheap/fair/expensive vs sector peers?"
 }`;
 
-      const response = await fetch('http://localhost:3001/api/valuation/ai-analysis', {
+      const response = await fetch('https://web-production-bdb26.up.railway.app/api/valuation/ai-analysis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt }),

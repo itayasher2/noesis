@@ -1,5 +1,5 @@
 // test comment v2
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { fmt, fmtB, fmtPct, fmtPrice } from './utils/format';
 import * as XLSX from 'xlsx';
@@ -22,6 +22,7 @@ const API = 'https://web-production-bdb26.up.railway.app/api';
 
 function UserMenu({ user, onLogout, darkMode, toggleTheme }) {
   const [open, setOpen] = useState(false);
+  if (!user) return null;
   return (
     <div style={{position:'relative'}}>
       <button onClick={() => setOpen(!open)}
@@ -184,6 +185,10 @@ export default function App() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [user, setUser] = useState('ADMIN');
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('vp-theme') === 'dark');
+
+  useEffect(() => {
+    document.documentElement.className = darkMode ? 'dark' : 'light';
+  }, []);
 
   const toggleTheme = () => {
     const next = !darkMode;
@@ -365,8 +370,6 @@ export default function App() {
                 onClick={() => { setShowAdvanced(v => !v); if (!showAdvanced) setTab('gordon'); }}
                 className="px-4 py-3 text-xs font-semibold whitespace-nowrap relative transition-colors flex-shrink-0 ml-auto"
                 style={{color: showAdvanced ? 'var(--accent)' : 'var(--text-secondary)', borderLeft:'1px solid var(--border)', background: showAdvanced ? 'var(--accent-subtle)' : 'transparent'}}>
-                 {showAdvanced ? '▲ Less' : '⚙ Advanced'}
-                 style={{color:'var(--text-muted)',borderLeft:'1px solid var(--border)'}}>
                 {showAdvanced ? '▲ Less' : '⚙ Advanced'}
               </button>
             </div>
