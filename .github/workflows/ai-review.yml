@@ -1,24 +1,19 @@
 name: AI Code Review
-
 on:
   pull_request:
     types: [opened, synchronize]
-
 jobs:
   review:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
       contents: read
-
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Get PR Diff
         run: git diff origin/${{ github.base_ref }}...HEAD > pr_diff.txt
-
       - name: AI Review
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -32,7 +27,7 @@ jobs:
           diff = open("pr_diff.txt").read()[:15000]
           client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
           message = client.messages.create(
-            model="claude-sonnet-4-5",
+              model="claude-sonnet-4-5-20251001",
               max_tokens=1500,
               messages=[{
                   "role": "user",
