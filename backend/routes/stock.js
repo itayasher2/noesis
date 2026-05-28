@@ -70,6 +70,21 @@ router.get('/history/:ticker', async (req, res) => {
   }
 });
 
+router.get('/price/:ticker', async (req, res) => {
+  try {
+    const { ticker } = req.params;
+    const q = await yahoo.quote(ticker);
+    res.json({
+      price:       q.regularMarketPrice,
+      change:      q.regularMarketChange,
+      changePct:   q.regularMarketChangePercent,
+      marketState: q.marketState, // 'REGULAR' | 'PRE' | 'POST' | 'CLOSED'
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get('/yahoo/:ticker', async (req, res) => {
   try {
     const { ticker } = req.params;

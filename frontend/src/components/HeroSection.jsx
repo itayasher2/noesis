@@ -12,6 +12,14 @@ function fmtMktCap(val) {
   return `$${val.toLocaleString()}`;
 }
 
+function isMarketOpen() {
+  const now = new Date();
+  const et = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+  const day = et.getDay();
+  const minutes = et.getHours() * 60 + et.getMinutes();
+  return day >= 1 && day <= 5 && minutes >= 570 && minutes < 960;
+}
+
 const VERDICT_CLASS = {
   'Strong Opportunity': 'buy',
   'Attractive':         'buy',
@@ -32,12 +40,16 @@ const VERDICT_ACTION = {
 
 export default function HeroSection({ data, scoreData, dcf }) {
   const [insight, setInsight] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [insightLoading, setInsightLoading] = useState(false);
+  const [livePrice, setLivePrice]     = useState(null);
+  const [livePct, setLivePct]         = useState(null);
+  const [marketOpen, setMarketOpen]   = useState(isMarketOpen());
 
+  // AI insight
   useEffect(() => {
     if (!data || !scoreData) return;
     setInsight(null);
-    setLoading(true);
+    setInsightLoading(true);
     axios.post(`${API}/valuation/hero-insight`, {
       profile: data.profile,
       financials: data.financials,
@@ -46,14 +58,43 @@ export default function HeroSection({ data, scoreData, dcf }) {
       history: data.history,
     }).then(res => setInsight(res.data))
       .catch(() => setInsight(null))
-      .finally(() => setLoading(false));
+      .finally(() => setInsightLoading(false));
+  }, [data?.profile?.ticker]);
+
+  // Live price polling
+  useEffect(() => {
+    if (!data?.profile?.ticker) return;
+    setLivePrice(null);
+    setLivePct(null);
+
+    const poll = async () => {
+      const open = isMarketOpen();
+      setMarketOpen(open);
+      if (!open) return;
+      try {
+        const res = await axios.get(`${API}/stock/price/${data.profile.ticker}`);
+        if (res.data?.price) {
+          setLivePrice(res.data.price);
+          setLivePct(res.data.changePct);
+          // Use server-side marketState if available
+          if (res.data.marketState) {
+            setMarketOpen(res.data.marketState === 'REGULAR');
+          }
+        }
+      } catch {}
+    };
+
+    poll();
+    const id = setInterval(poll, 30000);
+    return () => clearInterval(id);
   }, [data?.profile?.ticker]);
 
   if (!data || !scoreData) return null;
 
-  const price = data.profile.price;
-  const mktCap = fmtMktCap(data.profile.marketCap);
-  const verdict =
+  const price    = livePrice ?? data.profile.price;
+  const changePct = livePct  ?? data.profile.changePct;
+  const mktCap   = fmtMktCap(data.profile.marketCap);
+  const verdict  =
     scoreData.composite >= 80 ? 'Strong Opportunity' :
     scoreData.composite >= 65 ? 'Attractive' :
     scoreData.composite >= 50 ? 'Fairly Valued' :
@@ -91,11 +132,34 @@ export default function HeroSection({ data, scoreData, dcf }) {
         </div>
 
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
-          <div className="t-eyebrow" style={{ marginBottom: 4 }}>Last · live</div>
+          {/* Price label */}
+          <div className="t-eyebrow" style={{ marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6 }}>
+            {marketOpen ? (
+              <>
+                <span style={{
+                  display: 'inline-block', width: 6, height: 6, borderRadius: '50%',
+                  background: 'var(--green)', boxShadow: '0 0 6px var(--green)',
+                  animation: 'pulse 2s infinite',
+                }} />
+                LIVE
+              </>
+            ) : 'PREV CLOSE'}
+          </div>
+
+          {/* Price */}
           <div className="t-num-hero" style={{ fontSize: 38 }}>{fmtPrice(price)}</div>
-          <div className="t-meta" style={{ marginTop: 4, color: data.profile.changePct >= 0 ? 'var(--green)' : 'var(--red)' }}>
-            {data.profile.changePct >= 0 ? '+' : ''}{fmt(data.profile.changePct, 2)}% TODAY
-            {mktCap && <span style={{ color: 'var(--text-muted)', marginLeft: 10 }}>· MKT CAP {mktCap}</span>}
+
+          {/* Change + market closed */}
+          <div style={{ marginTop: 4, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
+            <span className="t-meta" style={{ color: changePct >= 0 ? 'var(--green)' : 'var(--red)' }}>
+              {changePct >= 0 ? '+' : ''}{fmt(changePct, 2)}% TODAY
+            </span>
+            {mktCap && (
+              <span className="t-meta" style={{ color: 'var(--text-muted)' }}>· MKT CAP {mktCap}</span>
+            )}
+            {!marketOpen && (
+              <span className="t-meta" style={{ color: 'var(--text-muted)', opacity: 0.7 }}>· Market Closed</span>
+            )}
           </div>
         </div>
       </div>
@@ -124,7 +188,7 @@ export default function HeroSection({ data, scoreData, dcf }) {
         <div style={{ padding: '10px 14px', flex: 1 }}>
           <div className="t-eyebrow" style={{ color: 'var(--accent)', marginBottom: 4 }}>Key insight · AI</div>
           <div className="t-body-sm" style={{ fontStyle: 'italic' }}>
-            {loading
+            {insightLoading
               ? `Analyzing ${data.profile.ticker}…`
               : `"${insight?.keyInsight || `Trades at ${upside !== null && upside > 0 ? 'a discount' : 'a premium'} to fair value with ${Math.abs(scoreData.expectationsGap || 0) < 6 ? 'reasonable' : 'aggressive'} growth assumptions.`}"`
             }

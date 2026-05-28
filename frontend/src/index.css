@@ -517,6 +517,11 @@ tr:hover { background: var(--bg-subtle) !important; }
 }
 .fade-in { animation: fadeUp 0.22s ease forwards; }
 
+@keyframes pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--green); }
+  50%       { opacity: 0.4; box-shadow: 0 0 2px var(--green); }
+}
+
 /* ── Selection ── */
 ::selection { background: var(--accent); color: #ffffff; }
 html.dark ::selection { color: var(--bg-base); }
