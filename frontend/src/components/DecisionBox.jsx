@@ -92,10 +92,10 @@ function calcDecision({ scoreData, dcf, price, data, dcfParams }) {
   return { action, conviction, primaryColor, bgColor, borderColor, reasons, actionSteps, upside, impliedGrowth, histFCFCAGR, fcfGap, fairValue, buyZoneLow, overvalued, extreme, pricePct };
 }
 
-export default function DecisionBox({ scoreData, dcf, price, data, dcfParams }) {
+export default function DecisionBox({ scoreData, dcf, price, data, dcfParams, darkMode }) {
   if (!data || !price) return null;
   const d = calcDecision({ scoreData, dcf, price, data, dcfParams });
-  const isDark = document.documentElement.classList.contains('dark');
+  const isDark = darkMode;
 
   const C = {
     p: { color:'var(--text-primary)' },

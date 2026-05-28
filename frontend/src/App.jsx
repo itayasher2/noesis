@@ -317,7 +317,7 @@ export default function App() {
 
           {/* Hero + Decision */}
           <HeroSection data={data} scoreData={scoreData} dcf={dcf} dcfParams={dcfP}/>
-          <DecisionBox scoreData={scoreData} dcf={activeModel==='pe'&&peFairValue?{fv:peFairValue}:dcf} price={price} data={data} dcfParams={dcfP}/>
+          <DecisionBox scoreData={scoreData} dcf={activeModel==='pe'&&peFairValue?{fv:peFairValue}:dcf} price={price} data={data} dcfParams={dcfP} darkMode={darkMode}/>
 
           {/* Investment Profile — compact */}
           {scoreData && (
@@ -393,7 +393,7 @@ export default function App() {
               {/* ── OVERVIEW ── */}
               {tab==='overview' && (
                 <div>
-                  <PriceChart ticker={data.profile.ticker}/>
+                  <PriceChart ticker={data.profile.ticker} darkMode={darkMode}/>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
                     {[
                       {title:'Profitability',rows:[['Revenue',fmtB(data.financials.revenue)],['EBITDA',fmtB(data.financials.ebitda)],['Net Income',fmtB(data.financials.netIncome)],['FCF',fmtB(data.financials.fcf)],['Gross Margin',fmtPct(data.financials.grossMargin)],['EBITDA Margin',fmtPct(data.financials.ebitdaMargin)],['Net Margin',fmtPct(data.financials.netMargin)],['FCF Margin',fmtPct(data.financials.fcfMargin)]]},

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-export default function PriceChart({ ticker }) {
+export default function PriceChart({ ticker, darkMode }) {
   const container = useRef(null);
 
   useEffect(() => {
@@ -16,7 +16,7 @@ export default function PriceChart({ ticker }) {
       symbol: ticker,
       interval: 'D',
       timezone: 'Etc/UTC',
-      theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
+      theme: darkMode ? 'dark' : 'light',
       style: '1',
       locale: 'en',
       allow_symbol_change: false,
@@ -36,7 +36,7 @@ export default function PriceChart({ ticker }) {
     return () => {
       if (container.current) container.current.innerHTML = '';
     };
-  }, [ticker]);
+  }, [ticker, darkMode]);
 
   return (
     <div
