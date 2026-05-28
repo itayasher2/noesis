@@ -115,13 +115,11 @@ export default function PeerComparison({ ticker, sector, currentPE, currentEVEbi
 
   const total = peerTickers.length + 1;
   const peRank = currentPE && peerPEs.length ? [...peerPEs, currentPE].filter(Boolean).sort((a,b)=>b-a).indexOf(currentPE)+1 : null;
-  const evRank = currentEVEbitda && peerEVs.length ? [...peerEVs, currentEVEbitda].filter(Boolean).sort((a,b)=>b-a).indexOf(currentEVEbitda)+1 : null;
 
   const currentPEG = currentPE && avgGrowth && avgGrowth > 0 ? currentPE/avgGrowth : null;
   const aboveAvgMargin = currentNetMargin && avgMargin && currentNetMargin > avgMargin;
   const belowAvgGrowth = currentRevGrowth !== null && avgGrowth !== null && currentRevGrowth < avgGrowth;
 
-  // Smart Takeaway
   const buildTakeaway = () => {
     if (pePremium === null) return `${ticker} peer comparison data loading`;
     const premiumStr = pePremium > 0 ? `+${fmt(pePremium,0)}% premium` : `${fmt(pePremium,0)}% discount`;
@@ -139,17 +137,17 @@ export default function PeerComparison({ ticker, sector, currentPE, currentEVEbi
   const isPremium = pePremium !== null && pePremium > 10;
   const isDiscount = pePremium !== null && pePremium < -10;
 
-  const getCellStyle = (val, peerAvg, higherIsBad=true) => {
-    if (!val || !peerAvg) return { text: 'text-gray-600', bg: '' };
+  const getCellStyle = (val, peerAvg, higherIsBad = true) => {
+    if (!val || !peerAvg) return { color: 'var(--text-secondary)' };
     const diff = (val - peerAvg) / peerAvg;
     if (higherIsBad) {
-      if (diff > 0.12) return { text: 'text-red-600 font-semibold', bg: 'bg-red-50' };
-      if (diff < -0.12) return { text: 'text-emerald-600 font-semibold', bg: 'bg-emerald-50' };
+      if (diff > 0.12) return { color: 'var(--red)', fontWeight: 600, background: 'rgba(239,68,68,0.10)' };
+      if (diff < -0.12) return { color: 'var(--green)', fontWeight: 600, background: 'rgba(16,185,129,0.10)' };
     } else {
-      if (diff > 0.12) return { text: 'text-emerald-600 font-semibold', bg: 'bg-emerald-50' };
-      if (diff < -0.12) return { text: 'text-red-600 font-semibold', bg: 'bg-red-50' };
+      if (diff > 0.12) return { color: 'var(--green)', fontWeight: 600, background: 'rgba(16,185,129,0.10)' };
+      if (diff < -0.12) return { color: 'var(--red)', fontWeight: 600, background: 'rgba(239,68,68,0.10)' };
     }
-    return { text: 'text-gray-600', bg: '' };
+    return { color: 'var(--text-secondary)' };
   };
 
   const allRows = [
@@ -159,102 +157,134 @@ export default function PeerComparison({ ticker, sector, currentPE, currentEVEbi
 
   const metrics = [
     { key: 'pe', label: 'P/E', peerAvg: avgPE, peerMed: medPE, higherIsBad: true, primary: false },
-    { key: 'evEbitda', label: 'EV/EBITDA', peerAvg: avgEV, peerMed: medEV, higherIsBad: true, primary: true, star: true, tooltip: 'Primary metric for mature, cash-generative companies' },
+    { key: 'evEbitda', label: 'EV/EBITDA', peerAvg: avgEV, peerMed: medEV, higherIsBad: true, primary: true, star: true },
     { key: 'ps', label: 'P/S', peerAvg: avgPS, peerMed: null, higherIsBad: true, primary: false },
     { key: 'pb', label: 'P/B', peerAvg: avgPB, peerMed: null, higherIsBad: true, primary: false },
     { key: 'netMargin', label: 'Net Margin', peerAvg: avgMargin, peerMed: null, higherIsBad: false, primary: false, suffix: '%' },
     { key: 'revGrowth', label: 'Rev Growth', peerAvg: avgGrowth, peerMed: null, higherIsBad: false, primary: false, suffix: '%' },
   ];
 
+  const card = {
+    background: 'var(--bg-subtle)',
+    border: '1px solid var(--border)',
+    borderRadius: 12,
+    padding: 12,
+  };
+
   return (
     <div>
-      <div className="text-xs font-medium text-gray-400 uppercase mb-4">Peer Comparison — {sector}</div>
+      <div className="t-eyebrow" style={{ marginBottom: 16 }}>Peer Comparison — {sector}</div>
 
       {/* Takeaway */}
-      <div className={`rounded-xl p-4 mb-4 border-l-4 ${isPremium ? 'bg-red-50 border-red-400' : isDiscount ? 'bg-emerald-50 border-emerald-400' : 'bg-gray-50 border-gray-300'}`}>
-        <div className="text-xs font-medium text-gray-400 uppercase mb-1">Peer Takeaway</div>
-        <div className="text-sm font-medium text-gray-800">{takeaway}</div>
+      <div style={{
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 16,
+        borderLeft: `4px solid ${isPremium ? 'var(--red)' : isDiscount ? 'var(--green)' : 'var(--border-strong)'}`,
+        background: isPremium ? 'rgba(239,68,68,0.08)' : isDiscount ? 'rgba(16,185,129,0.08)' : 'var(--bg-subtle)',
+        border: `1px solid ${isPremium ? 'rgba(239,68,68,0.20)' : isDiscount ? 'rgba(16,185,129,0.20)' : 'var(--border)'}`,
+        borderLeftWidth: 4,
+      }}>
+        <div className="t-eyebrow" style={{ marginBottom: 4 }}>Peer Takeaway</div>
+        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.5 }}>{takeaway}</div>
         {isPremium && belowAvgGrowth && (
-          <div className="text-xs text-red-600 mt-1.5 font-medium">
+          <div style={{ fontSize: 12, color: 'var(--red)', marginTop: 6, fontWeight: 500 }}>
             ⚠ Premium valuation not supported by relative growth vs peers
           </div>
         )}
         {isPremium && aboveAvgMargin && (
-          <div className="text-xs text-amber-600 mt-1">
+          <div style={{ fontSize: 12, color: 'var(--amber)', marginTop: 4 }}>
             ✓ Premium partially justified by above-average margins ({fmt(currentNetMargin,1)}% vs peer avg {fmt(avgMargin,1)}%)
           </div>
         )}
       </div>
 
-      {/* Cards */}
+      {/* Summary cards */}
       {pePremium !== null && (
-        <div className="grid grid-cols-4 gap-3 mb-4">
-          <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
-            <div className="text-xs text-gray-400 mb-1">P/E vs Peer Avg</div>
-            <div className={`text-lg font-bold ${pePremium > 10 ? 'text-red-500' : pePremium < -10 ? 'text-emerald-600' : 'text-gray-700'}`}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 16 }}>
+          <div style={card}>
+            <div className="t-eyebrow" style={{ marginBottom: 4 }}>P/E vs Peer Avg</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: pePremium > 10 ? 'var(--red)' : pePremium < -10 ? 'var(--green)' : 'var(--text-primary)' }}>
               {pePremium > 0 ? '+' : ''}{fmt(pePremium,0)}%
             </div>
-            <div className="text-xs text-gray-400">{pePremium > 0 ? 'Premium' : 'Discount'} to peers</div>
+            <div className="t-meta">{pePremium > 0 ? 'Premium' : 'Discount'} to peers</div>
           </div>
-          <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
-            <div className="text-xs text-gray-400 mb-1">EV/EBITDA vs Avg</div>
-            <div className={`text-lg font-bold ${evPremium > 10 ? 'text-red-500' : evPremium < -10 ? 'text-emerald-600' : 'text-gray-700'}`}>
+          <div style={card}>
+            <div className="t-eyebrow" style={{ marginBottom: 4 }}>EV/EBITDA vs Avg</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: evPremium > 10 ? 'var(--red)' : evPremium < -10 ? 'var(--green)' : 'var(--text-primary)' }}>
               {evPremium !== null ? (evPremium > 0 ? '+' : '')+fmt(evPremium,0)+'%' : 'N/A'}
             </div>
-            <div className="text-xs text-gray-400">{evPremium > 0 ? 'Premium' : 'Discount'} to peers</div>
+            <div className="t-meta">{evPremium > 0 ? 'Premium' : 'Discount'} to peers</div>
           </div>
-          <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
-            <div className="text-xs text-gray-400 mb-1">P/E Rank in Group</div>
-            <div className="text-lg font-bold text-gray-700">{peRank !== null ? `${peRank}/${total}` : 'N/A'}</div>
-            <div className="text-xs text-gray-400">
-              {peRank === 1 ? 'Most expensive in group' : peRank === total ? 'Cheapest in group' : `Higher than most peers`}
+          <div style={card}>
+            <div className="t-eyebrow" style={{ marginBottom: 4 }}>P/E Rank in Group</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>
+              {peRank !== null ? `${peRank}/${total}` : 'N/A'}
+            </div>
+            <div className="t-meta">
+              {peRank === 1 ? 'Most expensive' : peRank === total ? 'Cheapest in group' : 'Higher than most'}
             </div>
           </div>
-          <div className={`rounded-xl p-3 border ${avgImplied !== null && avgImplied > 0 ? 'bg-emerald-50 border-emerald-100' : 'bg-red-50 border-red-100'}`}>
-            <div className="text-xs text-gray-400 mb-1">If valued at peer avg</div>
-            <div className={`text-lg font-bold ${avgImplied > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+          <div style={{
+            ...card,
+            background: avgImplied !== null && avgImplied > 0 ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)',
+            border: `1px solid ${avgImplied !== null && avgImplied > 0 ? 'rgba(16,185,129,0.20)' : 'rgba(239,68,68,0.20)'}`,
+          }}>
+            <div className="t-eyebrow" style={{ marginBottom: 4 }}>If valued at peer avg</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: avgImplied > 0 ? 'var(--green)' : 'var(--red)' }}>
               {avgImplied !== null ? (avgImplied > 0 ? '+' : '')+fmt(avgImplied,0)+'%' : 'N/A'}
             </div>
-            <div className="text-xs text-gray-400">{avgImplied > 0 ? 'implied upside' : 'implied downside'}</div>
+            <div className="t-meta">{avgImplied > 0 ? 'implied upside' : 'implied downside'}</div>
           </div>
         </div>
       )}
 
-      {loading && <div className="text-sm text-gray-400 py-4 text-center">Loading peer data...</div>}
+      {loading && (
+        <div style={{ textAlign: 'center', padding: '16px 0', fontSize: 13, color: 'var(--text-muted)' }}>
+          Loading peer data…
+        </div>
+      )}
 
       {!loading && (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
             <thead>
-              <tr className="text-xs text-gray-400 border-b">
-                <th className="text-left pb-2 pr-4">Company</th>
+              <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                <th style={{ textAlign: 'left', paddingBottom: 8, paddingRight: 16, color: 'var(--text-muted)', fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Company</th>
                 {metrics.map(m => (
-                  <th key={m.key} className={`text-right pb-2 px-2 ${m.primary ? 'text-emerald-600 font-semibold' : ''}`}>
+                  <th key={m.key} style={{ textAlign: 'right', paddingBottom: 8, paddingLeft: 8, paddingRight: 8, fontSize: 11, fontWeight: m.primary ? 600 : 500, textTransform: 'uppercase', letterSpacing: '0.08em', color: m.primary ? 'var(--green)' : 'var(--text-muted)' }}>
                     {m.star ? '★ ' : ''}{m.label}
-                    {m.tooltip && <span className="ml-1 text-gray-300 cursor-help" title={m.tooltip}>ⓘ</span>}
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {allRows.map(c => (
-                <tr key={c.ticker} className={`border-b border-gray-50 ${c.isCurrent ? 'bg-emerald-50' : 'hover:bg-gray-50'}`}>
-                  <td className="py-2 pr-4">
-                    <div className="flex items-center gap-2">
+                <tr key={c.ticker} style={{
+                  borderBottom: '1px solid var(--border)',
+                  background: c.isCurrent ? 'rgba(16,185,129,0.06)' : 'transparent',
+                }}>
+                  <td style={{ padding: '8px 16px 8px 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       {(c.logo || LOGOS[c.ticker]) && (
-                        <img src={c.logo || LOGOS[c.ticker]} className="w-6 h-6 rounded object-contain bg-white border border-gray-100" alt="" onError={e => e.target.style.display='none'} />
+                        <img
+                          src={c.logo || LOGOS[c.ticker]}
+                          style={{ width: 24, height: 24, borderRadius: 4, objectFit: 'contain', background: 'white', border: '1px solid var(--border)' }}
+                          alt=""
+                          onError={e => e.target.style.display='none'}
+                        />
                       )}
                       <div>
-                        <div className={`font-medium ${c.isCurrent ? 'text-emerald-700' : 'text-gray-700'}`}>{c.ticker}</div>
-                        <div className="text-xs text-gray-400">{c.name?.slice(0,18)}</div>
+                        <div style={{ fontWeight: 500, fontSize: 13, color: c.isCurrent ? 'var(--green)' : 'var(--text-primary)' }}>{c.ticker}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{c.name?.slice(0,18)}</div>
                       </div>
                     </div>
                   </td>
                   {metrics.map(m => {
                     const val = c[m.key];
-                    const { text, bg } = c.isCurrent ? getCellStyle(val, m.peerAvg, m.higherIsBad) : { text: 'text-gray-600', bg: '' };
+                    const cellStyle = c.isCurrent ? getCellStyle(val, m.peerAvg, m.higherIsBad) : { color: 'var(--text-secondary)' };
                     return (
-                      <td key={m.key} className={`py-2 px-2 text-right ${bg} ${c.isCurrent ? text : 'text-gray-600'} ${m.primary && c.isCurrent ? 'font-semibold' : ''}`}>
+                      <td key={m.key} style={{ padding: '8px', textAlign: 'right', ...cellStyle, fontWeight: m.primary && c.isCurrent ? 600 : cellStyle.fontWeight }}>
                         {val != null ? fmt(val)+(m.suffix||'x') : 'N/A'}
                       </td>
                     );
@@ -262,31 +292,31 @@ export default function PeerComparison({ ticker, sector, currentPE, currentEVEbi
                 </tr>
               ))}
 
-              {/* Peer Avg Row — highlighted */}
-              <tr className="border-t-2 border-gray-200 bg-blue-50">
-                <td className="py-2 pr-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded bg-blue-100 flex items-center justify-center text-xs text-blue-500 font-bold">≈</div>
-                    <div className="text-xs font-bold text-blue-600">Peer Avg</div>
+              {/* Peer Avg */}
+              <tr style={{ borderTop: '2px solid var(--border-strong)', background: 'rgba(125,211,252,0.06)' }}>
+                <td style={{ padding: '8px 16px 8px 0' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ width: 24, height: 24, borderRadius: 4, background: 'rgba(125,211,252,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: 'var(--accent)', fontWeight: 700 }}>≈</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent)' }}>Peer Avg</div>
                   </div>
                 </td>
                 {metrics.map(m => (
-                  <td key={m.key} className="py-2 px-2 text-right text-xs font-bold text-blue-600">
+                  <td key={m.key} style={{ padding: '8px', textAlign: 'right', fontSize: 12, fontWeight: 700, color: 'var(--accent)' }}>
                     {m.peerAvg != null ? fmt(m.peerAvg)+(m.suffix||'x') : '—'}
                   </td>
                 ))}
               </tr>
 
-              {/* Peer Median Row */}
-              <tr className="bg-gray-50">
-                <td className="py-2 pr-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded bg-gray-200 flex items-center justify-center text-xs text-gray-500">M</div>
-                    <div className="text-xs text-gray-500">Peer Median</div>
+              {/* Peer Median */}
+              <tr style={{ background: 'var(--bg-subtle)' }}>
+                <td style={{ padding: '8px 16px 8px 0' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ width: 24, height: 24, borderRadius: 4, background: 'var(--bg-elevated)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: 'var(--text-muted)' }}>M</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Peer Median</div>
                   </div>
                 </td>
                 {metrics.map(m => (
-                  <td key={m.key} className="py-2 px-2 text-right text-xs text-gray-500">
+                  <td key={m.key} style={{ padding: '8px', textAlign: 'right', fontSize: 12, color: 'var(--text-muted)' }}>
                     {m.peerMed != null ? fmt(m.peerMed)+(m.suffix||'x') : '—'}
                   </td>
                 ))}
@@ -298,42 +328,42 @@ export default function PeerComparison({ ticker, sector, currentPE, currentEVEbi
 
       {/* PEG + Quality */}
       {!loading && peers.length > 0 && (
-        <div className="grid grid-cols-2 gap-3 mt-4">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>
           {currentPEG !== null && (
-            <div className="bg-blue-50 rounded-xl p-3 border border-blue-100">
-              <div className="text-xs font-medium text-blue-600 uppercase mb-1">Growth-Adjusted Valuation (PEG)</div>
-              <div className={`text-xl font-bold ${currentPEG > 3 ? 'text-red-500' : currentPEG > 1.5 ? 'text-amber-600' : 'text-emerald-600'}`}>
+            <div style={{ ...card, background: 'rgba(125,211,252,0.06)', border: '1px solid rgba(125,211,252,0.18)' }}>
+              <div className="t-eyebrow" style={{ color: 'var(--accent)', marginBottom: 6 }}>Growth-Adjusted Valuation (PEG)</div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: currentPEG > 3 ? 'var(--red)' : currentPEG > 1.5 ? 'var(--amber)' : 'var(--green)' }}>
                 {fmt(currentPEG,2)}x
               </div>
-              <div className="text-xs text-gray-600 mt-1">
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 6, lineHeight: 1.4 }}>
                 {currentPEG > 3
-                  ? `Elevated vs typical PEG (<1.5x) — valuation exceeds growth profile`
+                  ? 'Elevated vs typical PEG (<1.5x) — valuation exceeds growth profile'
                   : currentPEG > 1.5
-                  ? `Above typical range — moderate growth justification`
-                  : `Below 1.5x — growth supports current valuation`}
+                  ? 'Above typical range — moderate growth justification'
+                  : 'Below 1.5x — growth supports current valuation'}
               </div>
             </div>
           )}
-          <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
-            <div className="text-xs font-medium text-gray-500 uppercase mb-2">Quality vs Peers</div>
-            <div className="flex flex-col gap-1.5 text-xs text-gray-600">
+          <div style={card}>
+            <div className="t-eyebrow" style={{ marginBottom: 8 }}>Quality vs Peers</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12, color: 'var(--text-secondary)' }}>
               {avgMargin !== null && currentNetMargin !== null && (
-                <div className="flex justify-between">
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Net Margin</span>
-                  <span className={currentNetMargin > avgMargin ? 'text-emerald-600 font-medium' : 'text-red-500 font-medium'}>
+                  <span style={{ color: currentNetMargin > avgMargin ? 'var(--green)' : 'var(--red)', fontWeight: 500 }}>
                     {fmt(currentNetMargin,1)}% vs {fmt(avgMargin,1)}% avg {currentNetMargin > avgMargin ? '↑' : '↓'}
                   </span>
                 </div>
               )}
               {avgGrowth !== null && currentRevGrowth !== null && (
-                <div className="flex justify-between">
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Rev Growth</span>
-                  <span className={currentRevGrowth > avgGrowth ? 'text-emerald-600 font-medium' : 'text-red-500 font-medium'}>
+                  <span style={{ color: currentRevGrowth > avgGrowth ? 'var(--green)' : 'var(--red)', fontWeight: 500 }}>
                     {fmt(currentRevGrowth,1)}% vs {fmt(avgGrowth,1)}% avg {currentRevGrowth > avgGrowth ? '↑' : '↓'}
                   </span>
                 </div>
               )}
-              <div className="mt-1 pt-1 border-t border-gray-200 text-xs font-medium text-gray-600">
+              <div style={{ marginTop: 4, paddingTop: 6, borderTop: '1px solid var(--border)', fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)' }}>
                 {aboveAvgMargin && belowAvgGrowth
                   ? '✓ Margin premium / ⚠ Growth below peers — mixed picture'
                   : aboveAvgMargin
