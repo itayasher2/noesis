@@ -1,0 +1,95 @@
+<!doctype html>
+<html class="dark">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body { margin:0; background:var(--bg-base) }
+  .stage { padding: 0; min-height: 360px; position:relative; z-index:1 }
+  .backdrop {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 90% 60% at 50% -10%, rgba(0,212,255,0.05) 0%, transparent 60%);
+    z-index: 0;
+  }
+  .backdrop::before {
+    content: ''; position: absolute; inset: 0;
+    background-image: radial-gradient(circle, rgba(140,180,255,0.06) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .palette-wrap {
+    position: relative; z-index: 2;
+    padding: 24px;
+    display: flex; justify-content: center;
+  }
+  /* The modal-on-page version (no backdrop dim, just the card) */
+  .palette {
+    width: 600px; max-width: 100%;
+    background: var(--bg-card);
+    border: 1px solid rgba(0,212,255,0.35);
+    box-shadow: 0 0 0 1px rgba(0,212,255,0.35), 0 0 24px rgba(0,212,255,0.18);
+    border-radius: 10px; overflow: hidden;
+  }
+  .palette-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 10px 18px;
+    border-left: 2px solid transparent;
+    cursor: pointer;
+  }
+  .palette-row.selected {
+    background: var(--bg-subtle);
+    border-left-color: var(--accent);
+    box-shadow: inset 0 0 0 1px rgba(0,212,255,0.08);
+  }
+  .palette-sym {
+    font-family: var(--font-wordmark); font-weight: 900;
+    font-size: 13px; letter-spacing: 1.5px; min-width: 60px;
+  }
+  .palette-row.selected .palette-sym { color: var(--accent); }
+  .palette-name { font-size: 13px; color: var(--text-primary); font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="backdrop"></div>
+  <div class="palette-wrap">
+    <div class="palette">
+      <div style="display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border)">
+        <span style="color:var(--accent);font-size:16px">▶</span>
+        <div style="flex:1;font-size:14px;color:var(--text-primary)">AAPL</div>
+        <kbd style="padding:2px 7px;font-size:10px;font-family:var(--font-mono);background:var(--bg-subtle);color:var(--text-muted);border:1px solid var(--border);border-radius:3px">ESC</kbd>
+      </div>
+      <div class="palette-row selected">
+        <div class="palette-sym">AAPL</div>
+        <div style="flex:1">
+          <div class="palette-name">Apple Inc.</div>
+          <div class="t-meta" style="margin-top:2px">Consumer Tech</div>
+        </div>
+        <div class="badge up" style="font-size:8px;padding:3px 7px">Live</div>
+        <span style="color:var(--accent);font-size:14px">↵</span>
+      </div>
+      <div class="palette-row">
+        <div class="palette-sym">AMD</div>
+        <div style="flex:1">
+          <div class="palette-name">Advanced Micro Devices</div>
+          <div class="t-meta" style="margin-top:2px">Semiconductors</div>
+        </div>
+      </div>
+      <div class="palette-row">
+        <div class="palette-sym">AMZN</div>
+        <div style="flex:1">
+          <div class="palette-name">Amazon.com</div>
+          <div class="t-meta" style="margin-top:2px">E-Commerce</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;padding:8px 14px;border-top:1px solid var(--border);background:var(--bg-subtle);font-family:var(--font-mono);font-size:10px;color:var(--text-muted);letter-spacing:.06em;text-transform:uppercase">
+        <span style="display:inline-flex;align-items:center;gap:4px"><kbd style="padding:1px 5px;font-size:9px;background:var(--bg-card);border:1px solid var(--border);border-radius:3px;color:var(--text-primary)">↑↓</kbd> navigate</span>
+        <span style="display:inline-flex;align-items:center;gap:4px"><kbd style="padding:1px 5px;font-size:9px;background:var(--bg-card);border:1px solid var(--border);border-radius:3px;color:var(--text-primary)">↵</kbd> select</span>
+        <span style="display:inline-flex;align-items:center;gap:4px"><kbd style="padding:1px 5px;font-size:9px;background:var(--bg-card);border:1px solid var(--border);border-radius:3px;color:var(--text-primary)">ESC</kbd> close</span>
+        <span style="margin-left:auto">3 / 12 results</span>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

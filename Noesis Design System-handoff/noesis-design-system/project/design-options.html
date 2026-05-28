@@ -1,0 +1,635 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Noesis · Modern Direction Options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:wght@400;500;700;900&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #15161a; color: #e6ecf5; font-family: 'Inter', system-ui, sans-serif; }
+
+  /* ── Page chrome ───────────────────────────── */
+  .page { padding: 32px 32px 64px; max-width: 1480px; margin: 0 auto; }
+  .page-header { margin-bottom: 28px; }
+  .page-title { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 6px; }
+  .page-sub { font-size: 13px; color: #8593ab; max-width: 620px; line-height: 1.6; margin: 0; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px;
+  }
+
+  .option {
+    background: #1a1c22;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .opt-head {
+    padding: 18px 22px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  }
+  .opt-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #e6ecf5;
+  }
+  .opt-name .num { color: #8593ab; margin-right: 8px; }
+  .opt-sub { font-size: 12px; color: #8593ab; }
+
+  .opt-stage {
+    height: 540px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     A · QUANT TERMINAL
+     ════════════════════════════════════════════════════════════════ */
+  .a {
+    background: #050608;
+    background-image: radial-gradient(circle, rgba(140,180,255,0.06) 1px, transparent 1px);
+    background-size: 24px 24px;
+    color: #e6ecf5;
+    font-family: 'Inter', sans-serif;
+    padding: 18px 22px;
+    height: 100%;
+  }
+  .a .a-top {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .a .a-brand { display: flex; align-items: center; gap: 8px; }
+  .a .a-dot { width: 8px; height: 8px; border-radius: 50%; background: #3ddc84; box-shadow: 0 0 8px rgba(61,220,132,0.6); }
+  .a .a-wm { font-family: 'Arial Black', sans-serif; font-size: 13px; letter-spacing: 2px; color: #e6ecf5; line-height: 1; }
+  .a .a-tag { font-family: Arial, sans-serif; font-style: italic; font-size: 7px; letter-spacing: 1.5px; color: #4a5872; margin-top: 2px; }
+  .a .a-input {
+    background: #0a0d14;
+    border: 1px solid rgba(140,180,255,0.08);
+    border-radius: 6px; padding: 6px 12px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #8593ab;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .a .a-input kbd { background: rgba(0,212,255,0.1); color: #00d4ff; border: 1px solid rgba(0,212,255,0.2); border-radius: 3px; padding: 1px 5px; font-size: 9px; }
+  .a .a-ticker {
+    background: #0a0d14; border: 1px solid rgba(140,180,255,0.08); border-radius: 6px;
+    height: 28px; overflow: hidden; position: relative;
+    margin-bottom: 16px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  }
+  .a .a-tick-row {
+    display: flex; align-items: center; height: 100%; padding: 0 14px;
+    gap: 22px; white-space: nowrap;
+    animation: aScroll 40s linear infinite;
+  }
+  @keyframes aScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .a .a-tick { color: #8593ab; display: inline-flex; gap: 6px; }
+  .a .a-tick b { color: #e6ecf5; font-weight: 500; }
+  .a .up { color: #3ddc84; }
+  .a .dn { color: #ff5470; }
+
+  .a .a-verdict {
+    background: #0a0d14;
+    border: 1px solid rgba(140,180,255,0.08);
+    border-left: 2px solid #3ddc84;
+    border-radius: 10px;
+    padding: 16px 18px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    margin-bottom: 14px;
+    position: relative;
+  }
+  .a .a-verdict::before {
+    content: ''; position: absolute; inset: 0; border-radius: inherit;
+    background: linear-gradient(180deg, rgba(255,255,255,0.025) 0%, transparent 30%);
+    pointer-events: none;
+  }
+  .a .a-row1 { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+  .a .a-eyebrow {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 500;
+    color: #4a5872; letter-spacing: 0.12em; text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .a .a-tk { font-family: 'Arial Black', sans-serif; font-size: 14px; letter-spacing: 1.5px; color: #e6ecf5; }
+  .a .a-co { font-size: 12px; color: #8593ab; margin-top: 2px; }
+  .a .a-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 36px; font-weight: 500;
+    letter-spacing: -0.03em; line-height: 1;
+    color: #e6ecf5;
+    font-variant-numeric: tabular-nums;
+  }
+  .a .a-delta { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500; color: #3ddc84; margin-top: 4px; }
+  .a .a-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+  .a .a-badge {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 600;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    border-radius: 4px; padding: 5px 9px;
+    background: rgba(61,220,132,0.08);
+    color: #3ddc84;
+    border: 1px solid rgba(61,220,132,0.25);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .a .a-badge::before { content: ''; width: 6px; height: 6px; border-radius: 1px; background: #3ddc84; box-shadow: 0 0 6px #3ddc84; }
+  .a .a-badge.ghost { background: transparent; color: #8593ab; border-color: rgba(140,180,255,0.18); }
+  .a .a-badge.ghost::before { background: #4a5872; box-shadow: none; }
+  .a .a-grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .a .a-cell {
+    background: #0a0d14; border: 1px solid rgba(140,180,255,0.08);
+    border-radius: 8px; padding: 12px 14px;
+  }
+  .a .a-cell-lbl { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #4a5872; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
+  .a .a-cell-v { font-family: 'JetBrains Mono', monospace; font-size: 17px; font-weight: 500; color: #e6ecf5; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .a .a-cell-sub { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #8593ab; margin-top: 2px; }
+
+  /* ════════════════════════════════════════════════════════════════
+     B · LIQUID GLASS
+     ════════════════════════════════════════════════════════════════ */
+  .b {
+    background:
+      radial-gradient(ellipse 60% 50% at 20% 20%, rgba(167,139,250,0.25) 0%, transparent 60%),
+      radial-gradient(ellipse 70% 60% at 80% 80%, rgba(125,211,252,0.22) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 50% at 50% 50%, rgba(244,114,182,0.10) 0%, transparent 70%),
+      #0a0a1a;
+    color: #f0f0fa;
+    font-family: 'Inter', sans-serif;
+    padding: 18px 22px;
+    height: 100%;
+  }
+  .b .b-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .b .b-brand {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 14px;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 100px;
+  }
+  .b .b-dot { width: 8px; height: 8px; border-radius: 50%; background: linear-gradient(135deg, #7dd3fc 0%, #a78bfa 100%); box-shadow: 0 0 12px rgba(167,139,250,0.6); }
+  .b .b-wm { font-family: 'Arial Black', sans-serif; font-size: 12px; letter-spacing: 2px; color: #f0f0fa; }
+  .b .b-input {
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 100px; padding: 7px 16px;
+    font-size: 12px; color: rgba(240,240,250,0.6);
+  }
+
+  .b .b-verdict {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 24px;
+    padding: 22px 24px;
+    margin-bottom: 14px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 60px -10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  .b .b-verdict::before {
+    content: ''; position: absolute; top: -50%; right: -20%; width: 60%; height: 200%;
+    background: radial-gradient(circle, rgba(125,211,252,0.3) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .b .b-row1 { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; position: relative; }
+  .b .b-eyebrow { font-size: 11px; font-weight: 500; color: rgba(240,240,250,0.5); margin-bottom: 4px; letter-spacing: 0.04em; }
+  .b .b-tk { font-size: 15px; font-weight: 600; color: #f0f0fa; }
+  .b .b-co { font-size: 12px; color: rgba(240,240,250,0.6); }
+  .b .b-num {
+    font-family: 'JetBrains Mono', monospace; font-size: 38px; font-weight: 400;
+    letter-spacing: -0.04em; line-height: 1; color: #f0f0fa; font-variant-numeric: tabular-nums;
+  }
+  .b .b-delta { font-size: 13px; font-weight: 500; color: #7dd3fc; margin-top: 4px; letter-spacing: -0.01em; }
+  .b .b-chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 14px;
+    background: rgba(125,211,252,0.15);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(125,211,252,0.3);
+    border-radius: 100px;
+    font-size: 12px; font-weight: 500;
+    color: #7dd3fc;
+    box-shadow: 0 0 20px rgba(125,211,252,0.25);
+  }
+  .b .b-chip::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #7dd3fc; box-shadow: 0 0 8px #7dd3fc; }
+  .b .b-chip.muted { background: rgba(255,255,255,0.06); color: rgba(240,240,250,0.75); border-color: rgba(255,255,255,0.1); box-shadow: none; }
+  .b .b-chip.muted::before { background: rgba(255,255,255,0.4); box-shadow: none; }
+  .b .b-chips { display: flex; gap: 8px; flex-wrap: wrap; position: relative; }
+  .b .b-grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .b .b-cell {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px;
+    padding: 14px 16px;
+  }
+  .b .b-cell-lbl { font-size: 10px; color: rgba(240,240,250,0.5); margin-bottom: 8px; }
+  .b .b-cell-v { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 400; color: #f0f0fa; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .b .b-cell-sub { font-size: 10px; color: rgba(240,240,250,0.5); margin-top: 2px; }
+
+  /* ════════════════════════════════════════════════════════════════
+     C · EDITORIAL PRINT
+     ════════════════════════════════════════════════════════════════ */
+  .c {
+    background:
+      radial-gradient(circle, rgba(107,26,26,0.04) 1px, transparent 1px),
+      #f5efe4;
+    background-size: 28px 28px;
+    color: #1a1410;
+    font-family: 'Inter', sans-serif;
+    padding: 20px 26px;
+    height: 100%;
+  }
+  .c .c-top { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid #1a1410; margin-bottom: 18px; }
+  .c .c-brand-row { display: flex; align-items: baseline; gap: 14px; }
+  .c .c-dot { width: 7px; height: 7px; background: #6b1a1a; border-radius: 50%; align-self: center; }
+  .c .c-wm { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: #1a1410; letter-spacing: -0.01em; }
+  .c .c-vol { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #6b6258; letter-spacing: 0.08em; }
+  .c .c-date { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #6b6258; }
+
+  .c .c-verdict {
+    background: #faf6ed;
+    border: 1px solid #d8cdb8;
+    border-radius: 4px;
+    padding: 24px 26px;
+    margin-bottom: 14px;
+  }
+  .c .c-eyebrow {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    color: #6b1a1a; letter-spacing: 0.18em; text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .c .c-co { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; color: #1a1410; letter-spacing: -0.015em; line-height: 1.1; margin-bottom: 2px; }
+  .c .c-tk { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #6b6258; letter-spacing: 0.04em; }
+
+  .c .c-num-row { display: flex; align-items: baseline; justify-content: space-between; margin-top: 18px; padding-top: 14px; border-top: 1px solid #d8cdb8; }
+  .c .c-num { font-family: 'JetBrains Mono', monospace; font-size: 48px; font-weight: 400; color: #1a1410; letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .c .c-delta { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 500; color: #2e6e3e; letter-spacing: -0.02em; }
+
+  .c .c-verdict-word {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px; font-weight: 900;
+    color: #2e6e3e;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    margin: 14px 0 4px;
+  }
+  .c .c-verdict-sub { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #6b6258; }
+
+  .c .c-grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border-top: 1px solid #1a1410; border-bottom: 1px solid #1a1410; }
+  .c .c-cell { padding: 12px 14px; }
+  .c .c-cell + .c-cell { border-left: 1px solid #d8cdb8; }
+  .c .c-cell-lbl { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #6b6258; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 6px; }
+  .c .c-cell-v { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: #1a1410; letter-spacing: -0.02em; line-height: 1; }
+  .c .c-cell-sub { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #6b6258; margin-top: 4px; letter-spacing: 0.04em; }
+
+  /* ════════════════════════════════════════════════════════════════
+     D · BRUTALIST GRID
+     ════════════════════════════════════════════════════════════════ */
+  .d {
+    background: #fafaf7;
+    background-image:
+      linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+    background-size: 18px 18px;
+    color: #0a0a0a;
+    font-family: 'Geist', 'Inter', sans-serif;
+    padding: 20px 24px;
+    height: 100%;
+  }
+  .d .d-top {
+    display: flex; align-items: center; justify-content: space-between;
+    border: 2px solid #0a0a0a; padding: 8px 14px; background: #fafaf7;
+    margin-bottom: 16px;
+  }
+  .d .d-brand { display: flex; align-items: center; gap: 10px; }
+  .d .d-dot { width: 12px; height: 12px; background: #0e6e3e; border-radius: 0; }
+  .d .d-wm { font-family: 'Geist', 'Inter', sans-serif; font-size: 14px; font-weight: 800; letter-spacing: -0.01em; }
+  .d .d-search { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #555; }
+
+  .d .d-verdict {
+    border: 2px solid #0a0a0a;
+    background: #fff;
+    padding: 0;
+    margin-bottom: 14px;
+  }
+  .d .d-v-head {
+    background: #0e6e3e;
+    color: #fff;
+    padding: 12px 18px;
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 16px;
+  }
+  .d .d-v-word {
+    font-family: 'Geist', 'Inter', sans-serif;
+    font-size: 30px; font-weight: 800;
+    letter-spacing: -0.02em; line-height: 1;
+  }
+  .d .d-v-conv {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    border: 1.5px solid #fff;
+    padding: 5px 10px;
+    border-radius: 0;
+  }
+  .d .d-v-body {
+    padding: 16px 18px;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 20px;
+  }
+  .d .d-co { font-size: 18px; font-weight: 700; letter-spacing: -0.015em; line-height: 1.2; }
+  .d .d-tk { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #555; margin-top: 4px; letter-spacing: 0.04em; }
+  .d .d-num { font-family: 'JetBrains Mono', monospace; font-size: 32px; font-weight: 600; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .d .d-delta { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: #0e6e3e; margin-top: 4px; }
+
+  .d .d-grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: -1px; border: 2px solid #0a0a0a; }
+  .d .d-cell { padding: 12px 14px; background: #fff; }
+  .d .d-cell + .d-cell { border-left: 2px solid #0a0a0a; }
+  .d .d-cell-lbl { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #555; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 6px; }
+  .d .d-cell-v { font-family: 'Geist', 'Inter', sans-serif; font-size: 18px; font-weight: 700; color: #0a0a0a; letter-spacing: -0.02em; line-height: 1; }
+  .d .d-cell-sub { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #0e6e3e; font-weight: 600; margin-top: 4px; letter-spacing: 0.04em; }
+
+  /* ── Tag at bottom of each ── */
+  .opt-foot {
+    padding: 14px 22px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex; gap: 20px; flex-wrap: wrap;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: #8593ab; letter-spacing: 0.06em;
+  }
+  .opt-foot span b { color: #e6ecf5; font-weight: 500; }
+
+  /* ── Vote bar at top ── */
+  .vote-card {
+    background: #1a1c22;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 28px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    flex-wrap: wrap;
+  }
+  .vote-card h3 { margin: 0; font-size: 15px; font-weight: 600; }
+  .vote-card p { margin: 4px 0 0; font-size: 12px; color: #8593ab; }
+  .vote-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .vote-btn {
+    background: #0a0d14;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #e6ecf5;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .vote-btn:hover { border-color: #00d4ff; color: #00d4ff; box-shadow: 0 0 16px rgba(0,212,255,0.15); }
+
+  @media (max-width: 1100px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-header">
+    <h1 class="page-title">Modern direction · 4 options</h1>
+    <p class="page-sub">Same component (verdict header for AAPL), same data — four different aesthetic systems.
+    Pick one (or two to blend) and I'll rebuild the design system + UI kit around it.</p>
+  </div>
+
+  <div class="vote-card">
+    <div>
+      <h3>How to choose</h3>
+      <p>Scroll through. Each option keeps the Noesis dot + wordmark + analyst voice — only the visual system changes.</p>
+    </div>
+    <div class="vote-actions">
+      <span class="vote-btn">Reply "A"</span>
+      <span class="vote-btn">"B"</span>
+      <span class="vote-btn">"C"</span>
+      <span class="vote-btn">"D"</span>
+      <span class="vote-btn">Mix A+C</span>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- ════════ A ════════ -->
+    <div class="option">
+      <div class="opt-head">
+        <div>
+          <div class="opt-name"><span class="num">A ·</span> Quant Terminal</div>
+          <div class="opt-sub" style="margin-top:4px">Bloomberg + Linear + Vercel. Dark, dense, monospace chrome, hairline borders, ticker tape, cyan glow.</div>
+        </div>
+      </div>
+      <div class="opt-stage a">
+        <div class="a-top">
+          <div class="a-brand">
+            <div class="a-dot"></div>
+            <div>
+              <div class="a-wm">NOESIS</div>
+              <div class="a-tag">Understand Value. Act Smarter.</div>
+            </div>
+          </div>
+          <div class="a-input">Search ticker… <kbd>⌘K</kbd></div>
+        </div>
+        <div class="a-ticker">
+          <div class="a-tick-row">
+            <span class="a-tick"><b>AAPL</b> 184.32 <span class="up">+1.42%</span></span>
+            <span class="a-tick"><b>NVDA</b> 487.18 <span class="up">+2.84%</span></span>
+            <span class="a-tick"><b>MSFT</b> 412.05 <span class="up">+0.31%</span></span>
+            <span class="a-tick"><b>TSLA</b> 248.91 <span class="dn">−3.12%</span></span>
+            <span class="a-tick"><b>GOOG</b> 142.65 <span class="up">+0.84%</span></span>
+            <span class="a-tick"><b>AAPL</b> 184.32 <span class="up">+1.42%</span></span>
+            <span class="a-tick"><b>NVDA</b> 487.18 <span class="up">+2.84%</span></span>
+            <span class="a-tick"><b>MSFT</b> 412.05 <span class="up">+0.31%</span></span>
+            <span class="a-tick"><b>TSLA</b> 248.91 <span class="dn">−3.12%</span></span>
+            <span class="a-tick"><b>GOOG</b> 142.65 <span class="up">+0.84%</span></span>
+          </div>
+        </div>
+        <div class="a-verdict">
+          <div class="a-row1">
+            <div>
+              <div class="a-eyebrow">AAPL · Consumer Tech</div>
+              <div class="a-tk">APPLE INC.</div>
+              <div class="a-co">NASDAQ · 154K employees · USA</div>
+            </div>
+            <div style="text-align:right">
+              <div class="a-eyebrow">Last</div>
+              <div class="a-num">$184.32</div>
+              <div class="a-delta">+1.42% TODAY</div>
+            </div>
+          </div>
+          <div class="a-badges">
+            <div class="a-badge">● Attractive · BUY</div>
+            <div class="a-badge ghost">Conviction · Medium</div>
+            <div class="a-badge ghost">+24.3% vs FV</div>
+          </div>
+        </div>
+        <div class="a-grid3">
+          <div class="a-cell"><div class="a-cell-lbl">FAIR VALUE</div><div class="a-cell-v">$229.14</div><div class="a-cell-sub">DCF · base case</div></div>
+          <div class="a-cell"><div class="a-cell-lbl">IMPLIED Δ</div><div class="a-cell-v">+24.3%</div><div class="a-cell-sub">upside</div></div>
+          <div class="a-cell"><div class="a-cell-lbl">CONFIDENCE</div><div class="a-cell-v">HIGH</div><div class="a-cell-sub">3/3 models</div></div>
+        </div>
+      </div>
+      <div class="opt-foot">
+        <span><b>Vibe</b> trading desk</span>
+        <span><b>Font</b> JetBrains Mono chrome · Inter prose</span>
+        <span><b>Accent</b> electric cyan</span>
+        <span><b>Strength</b> dense, factual, fast to scan</span>
+      </div>
+    </div>
+
+    <!-- ════════ B ════════ -->
+    <div class="option">
+      <div class="opt-head">
+        <div>
+          <div class="opt-name"><span class="num">B ·</span> Liquid Glass</div>
+          <div class="opt-sub" style="margin-top:4px">visionOS-style depth. Translucent panels, ambient color halos, soft lavender/aqua. Premium, calm, glossy.</div>
+        </div>
+      </div>
+      <div class="opt-stage b">
+        <div class="b-top">
+          <div class="b-brand">
+            <div class="b-dot"></div>
+            <div class="b-wm">NOESIS</div>
+          </div>
+          <div class="b-input">Search ticker…</div>
+        </div>
+        <div class="b-verdict">
+          <div class="b-row1">
+            <div>
+              <div class="b-eyebrow">Apple Inc. · NASDAQ</div>
+              <div class="b-tk">AAPL</div>
+              <div class="b-co" style="margin-top:6px">Consumer Tech · 154K employees</div>
+            </div>
+            <div style="text-align:right">
+              <div class="b-eyebrow">Current</div>
+              <div class="b-num">$184.32</div>
+              <div class="b-delta">+1.42% today</div>
+            </div>
+          </div>
+          <div class="b-chips">
+            <div class="b-chip">Attractive · Buy</div>
+            <div class="b-chip muted">Medium conviction</div>
+            <div class="b-chip muted">+24.3% vs fair value</div>
+          </div>
+        </div>
+        <div class="b-grid3">
+          <div class="b-cell"><div class="b-cell-lbl">Fair value</div><div class="b-cell-v">$229.14</div><div class="b-cell-sub">DCF base</div></div>
+          <div class="b-cell"><div class="b-cell-lbl">Upside</div><div class="b-cell-v">+24.3%</div><div class="b-cell-sub">vs market</div></div>
+          <div class="b-cell"><div class="b-cell-lbl">Confidence</div><div class="b-cell-v">High</div><div class="b-cell-sub">3/3 models</div></div>
+        </div>
+      </div>
+      <div class="opt-foot">
+        <span><b>Vibe</b> visionOS · premium fintech</span>
+        <span><b>Font</b> Inter throughout · mono only for numbers</span>
+        <span><b>Accent</b> lavender + aqua ambient</span>
+        <span><b>Strength</b> calm, expensive-feeling, novel</span>
+      </div>
+    </div>
+
+    <!-- ════════ C ════════ -->
+    <div class="option">
+      <div class="opt-head">
+        <div>
+          <div class="opt-name"><span class="num">C ·</span> Editorial Print</div>
+          <div class="opt-sub" style="margin-top:4px">Bloomberg Markets magazine + WSJ. Cream paper, oxblood accent, serif headlines, big tabular numbers. Confident, considered.</div>
+        </div>
+      </div>
+      <div class="opt-stage c">
+        <div class="c-top">
+          <div class="c-brand-row">
+            <div class="c-dot"></div>
+            <div class="c-wm">Noesis</div>
+            <div class="c-vol">VOL. I · NO. 47</div>
+          </div>
+          <div class="c-date">FRI · 22 MAY · 2026</div>
+        </div>
+        <div class="c-verdict">
+          <div class="c-eyebrow">EQUITY VALUATION · DAILY READ</div>
+          <div class="c-co">Apple Inc.</div>
+          <div class="c-tk">NASDAQ: AAPL · Consumer Technology</div>
+          <div class="c-verdict-word">Attractive.</div>
+          <div class="c-verdict-sub">BUY · Medium conviction · trading 24.3% below DCF</div>
+          <div class="c-num-row">
+            <div class="c-num">$184.32</div>
+            <div class="c-delta">▲ 1.42%</div>
+          </div>
+        </div>
+        <div class="c-grid3">
+          <div class="c-cell"><div class="c-cell-lbl">Fair value</div><div class="c-cell-v">$229.14</div><div class="c-cell-sub">DCF · BASE CASE</div></div>
+          <div class="c-cell"><div class="c-cell-lbl">Upside</div><div class="c-cell-v">+24.3%</div><div class="c-cell-sub">VS MARKET</div></div>
+          <div class="c-cell"><div class="c-cell-lbl">Confidence</div><div class="c-cell-v">High</div><div class="c-cell-sub">3 OF 3 MODELS</div></div>
+        </div>
+      </div>
+      <div class="opt-foot">
+        <span><b>Vibe</b> WSJ · Bloomberg Markets</span>
+        <span><b>Font</b> Playfair serif headlines · Inter body · mono numbers</span>
+        <span><b>Accent</b> oxblood + forest green</span>
+        <span><b>Strength</b> confident, considered, prestige</span>
+      </div>
+    </div>
+
+    <!-- ════════ D ════════ -->
+    <div class="option">
+      <div class="opt-head">
+        <div>
+          <div class="opt-name"><span class="num">D ·</span> Brutalist Grid</div>
+          <div class="opt-sub" style="margin-top:4px">Linear + Notion + Geist. Off-white, sharp 2px black borders, saturated solid color blocks for verdicts. Honest, structured, no fluff.</div>
+        </div>
+      </div>
+      <div class="opt-stage d">
+        <div class="d-top">
+          <div class="d-brand">
+            <div class="d-dot"></div>
+            <div class="d-wm">NOESIS</div>
+          </div>
+          <div class="d-search">/ search ticker</div>
+        </div>
+        <div class="d-verdict">
+          <div class="d-v-head">
+            <div class="d-v-word">BUY</div>
+            <div class="d-v-conv">Medium conviction</div>
+          </div>
+          <div class="d-v-body">
+            <div>
+              <div class="d-co">Apple Inc.</div>
+              <div class="d-tk">NASDAQ · AAPL · CONSUMER TECH</div>
+            </div>
+            <div style="text-align:right">
+              <div class="d-num">$184.32</div>
+              <div class="d-delta">+1.42% +24.3% vs FV</div>
+            </div>
+          </div>
+        </div>
+        <div class="d-grid3">
+          <div class="d-cell"><div class="d-cell-lbl">FAIR VALUE</div><div class="d-cell-v">$229.14</div><div class="d-cell-sub">DCF · BASE</div></div>
+          <div class="d-cell"><div class="d-cell-lbl">UPSIDE</div><div class="d-cell-v">+24.3%</div><div class="d-cell-sub">VS MARKET</div></div>
+          <div class="d-cell"><div class="d-cell-lbl">CONFIDENCE</div><div class="d-cell-v">HIGH</div><div class="d-cell-sub">3/3 MODELS</div></div>
+        </div>
+      </div>
+      <div class="opt-foot">
+        <span><b>Vibe</b> Linear · Notion · Geist</span>
+        <span><b>Font</b> Geist sans · JetBrains Mono labels</span>
+        <span><b>Accent</b> saturated forest green block</span>
+        <span><b>Strength</b> opinionated, scannable, modern</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

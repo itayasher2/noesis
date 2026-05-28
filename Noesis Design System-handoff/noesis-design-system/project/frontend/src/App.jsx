@@ -1,5 +1,4 @@
-// test comment v2
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import { fmt, fmtB, fmtPct, fmtPrice } from './utils/format';
 import * as XLSX from 'xlsx';
@@ -17,116 +16,75 @@ import ThesisTriggers from './components/ThesisTriggers';
 import HeroSection from './components/HeroSection';
 import ThesisTab from './components/ThesisTab';
 import DCFTab from './components/DCFTab';
-import CommandPalette from './components/CommandPalette';
-import Login from './components/Login';
 
 const API = 'https://web-production-bdb26.up.railway.app/api';
 
-const TICKER_ITEMS = [
-  { sym:'AAPL',  price:'$189.30', chg:'+0.84%', up:true },
-  { sym:'NVDA',  price:'$875.40', chg:'+2.31%', up:true },
-  { sym:'MSFT',  price:'$415.20', chg:'+0.47%', up:true },
-  { sym:'TSLA',  price:'$177.90', chg:'-1.23%', up:false },
-  { sym:'AMZN',  price:'$182.50', chg:'+1.09%', up:true },
-  { sym:'META',  price:'$502.60', chg:'+0.73%', up:true },
-  { sym:'GOOGL', price:'$162.40', chg:'-0.35%', up:false },
-  { sym:'JPM',   price:'$198.70', chg:'+0.62%', up:true },
-  { sym:'BRK.B', price:'$389.10', chg:'+0.18%', up:true },
-  { sym:'V',     price:'$271.30', chg:'+0.55%', up:true },
-];
-
-function TickerTape() {
-  const items = [...TICKER_ITEMS, ...TICKER_ITEMS];
-  return (
-    <div className="ticker mb-4">
-      <div className="ticker-track">
-        {items.map((item, i) => (
-          <span key={i} className="ticker-item">
-            <span className="ticker-sym">{item.sym}</span>
-            <span className="num" style={{color:'var(--text-secondary)',fontSize:11}}>{item.price}</span>
-            <span className={item.up ? 'ticker-up' : 'ticker-down'} style={{fontSize:11}}>{item.chg}</span>
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function MenuRow({ label, sub, danger, onClick }) {
-  const [hover, setHover] = useState(false);
-  return (
-    <button onClick={onClick}
-      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
-      style={{
-        width: '100%', padding: '9px 14px',
-        display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2,
-        background: hover ? (danger ? 'var(--red-bg)' : 'var(--bg-subtle)') : 'transparent',
-        border: 'none', cursor: 'pointer',
-        borderBottom: '1px solid var(--border)',
-        textAlign: 'left',
-      }}>
-      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: danger ? 'var(--red)' : 'var(--text-primary)' }}>{label}</div>
-      <div className="t-meta">{sub}</div>
-    </button>
-  );
-}
-
 function UserMenu({ user, onLogout, darkMode, toggleTheme }) {
   const [open, setOpen] = useState(false);
-  if (!user) return null;
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{position:'relative'}}>
       <button onClick={() => setOpen(!open)}
-        style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          padding: '6px 14px',
-          background: 'rgba(255,255,255,0.06)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255,255,255,0.12)',
-          borderRadius: 'var(--radius-pill)',
-          color: 'var(--text-primary)',
-          fontFamily: 'var(--font-mono)',
-          fontSize: 11, fontWeight: 500,
-          letterSpacing: '0.08em',
-          textTransform: 'uppercase',
-          cursor: 'pointer',
-        }}>
-        <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'var(--gradient-brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 10, fontWeight: 700 }}>
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+        style={{background:'var(--bg-subtle)',color:'var(--text-secondary)',border:'1px solid var(--border-strong)'}}>
+        <div style={{width:22,height:22,borderRadius:'50%',background:'var(--gradient-brand)',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:10,fontWeight:700}}>
           {user.charAt(0).toUpperCase()}
         </div>
         <span className="hidden sm:inline">{user}</span>
-        <span style={{ fontSize: 9, opacity: 0.5 }}>{open ? '▲' : '▼'}</span>
+        <span style={{fontSize:9,opacity:0.5}}>{open?'▲':'▼'}</span>
       </button>
       {open && <>
-        <div style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setOpen(false)} />
-        <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, width: 250, zIndex: 50, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', boxShadow: 'var(--shadow-md)', overflow: 'hidden' }}>
-          {/* Header */}
-          <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)', background: 'var(--bg-subtle)', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--gradient-brand)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700 }}>{user.charAt(0).toUpperCase()}</div>
-            <div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', color: 'var(--text-primary)' }}>{user}</div>
-              <div className="t-meta">PRO PLAN</div>
+        <div style={{position:'fixed',inset:0,zIndex:40}} onClick={() => setOpen(false)}/>
+        <div style={{position:'absolute',top:'calc(100% + 8px)',right:0,width:220,zIndex:50,background:'var(--bg-card)',border:'1px solid var(--border)',borderRadius:'var(--radius)',boxShadow:'var(--shadow-md)',overflow:'hidden'}}>
+          <div style={{padding:'14px 16px',borderBottom:'1px solid var(--border)',background:'var(--bg-subtle)'}}>
+            <div style={{display:'flex',alignItems:'center',gap:10}}>
+              <div style={{width:32,height:32,borderRadius:'50%',background:'var(--gradient-brand)',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:13,fontWeight:700,flexShrink:0}}>
+                {user.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <div style={{fontSize:13,fontWeight:600,color:'var(--text-primary)'}}>{user}</div>
+                <div style={{fontSize:11,color:'var(--text-muted)'}}>Pro Plan</div>
+              </div>
             </div>
           </div>
           {[
-            { label: 'Account',       sub: 'Profile' },
-            { label: 'Subscription',  sub: 'Pro · monthly' },
-            { label: 'Notifications', sub: 'Alerts' },
-            { label: 'Settings',      sub: 'Preferences' },
-            { label: 'Usage',         sub: 'API · limits' },
-            { label: 'Help',          sub: 'Docs · contact' },
-          ].map(it => <MenuRow key={it.label} label={it.label} sub={it.sub} onClick={() => setOpen(false)} />)}
-          <MenuRow
-            label={darkMode ? 'Light Mode' : 'Dark Mode'}
-            sub="Switch appearance"
-            onClick={() => { toggleTheme(); setOpen(false); }}
-          />
-          <MenuRow
-            label="Sign out" sub="Log out of Noesis"
-            danger
-            onClick={() => { onLogout(); setOpen(false); }}
-          />
+            {icon:'👤',label:'Account',sub:'Manage your profile'},
+            {icon:'💳',label:'Subscription',sub:'Pro · Renews monthly'},
+            {icon:'🔔',label:'Notifications',sub:'Alerts & updates'},
+            {icon:'⚙️',label:'Settings',sub:'Preferences'},
+            {icon:'📊',label:'Usage',sub:'API calls & limits'},
+            {icon:'❓',label:'Help & Support',sub:'Docs & contact'},
+          ].map(item => (
+            <button key={item.label} onClick={() => setOpen(false)}
+              style={{width:'100%',padding:'10px 16px',display:'flex',alignItems:'center',gap:12,background:'transparent',border:'none',cursor:'pointer',borderBottom:'1px solid var(--border)',transition:'background 0.1s'}}
+              onMouseEnter={e=>e.currentTarget.style.background='var(--bg-subtle)'}
+              onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+              <span style={{fontSize:15}}>{item.icon}</span>
+              <div style={{textAlign:'left'}}>
+                <div style={{fontSize:12,fontWeight:500,color:'var(--text-primary)'}}>{item.label}</div>
+                <div style={{fontSize:10,color:'var(--text-muted)'}}>{item.sub}</div>
+              </div>
+            </button>
+          ))}
+          <button onClick={() => { toggleTheme(); setOpen(false); }}
+            style={{width:'100%',padding:'10px 16px',display:'flex',alignItems:'center',gap:12,background:'transparent',border:'none',cursor:'pointer',borderBottom:'1px solid var(--border)',transition:'background 0.1s'}}
+            onMouseEnter={e=>e.currentTarget.style.background='var(--bg-subtle)'}
+            onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+            <span style={{fontSize:15}}>{darkMode ? '☀️' : '🌙'}</span>
+            <div style={{textAlign:'left'}}>
+              <div style={{fontSize:12,fontWeight:500,color:'var(--text-primary)'}}>{darkMode ? 'Light Mode' : 'Dark Mode'}</div>
+              <div style={{fontSize:10,color:'var(--text-muted)'}}>Switch appearance</div>
+            </div>
+          </button>
+          <button onClick={() => { onLogout(); setOpen(false); }}
+            style={{width:'100%',padding:'10px 16px',display:'flex',alignItems:'center',gap:12,background:'transparent',border:'none',cursor:'pointer',transition:'background 0.1s'}}
+            onMouseEnter={e=>e.currentTarget.style.background='var(--red-bg)'}
+            onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+            <span style={{fontSize:15}}>🚪</span>
+            <div style={{textAlign:'left'}}>
+              <div style={{fontSize:12,fontWeight:500,color:'var(--red)'}}>Sign Out</div>
+              <div style={{fontSize:10,color:'var(--text-muted)'}}>Log out of Noesis</div>
+            </div>
+          </button>
         </div>
       </>}
     </div>
@@ -223,21 +181,8 @@ export default function App() {
   const [peFairValue, setPeFairValue] = useState(null);
   const [activeModel, setActiveModel] = useState('dcf');
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [user, setUser] = useState(() => localStorage.getItem('noesis-auth') || null);
-  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('vp-theme') !== 'light');
-  const [paletteOpen, setPaletteOpen] = useState(false);
-
-  useEffect(() => {
-    document.documentElement.className = darkMode ? 'dark' : 'light';
-  }, [darkMode]);
-
-  useEffect(() => {
-    const handler = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setPaletteOpen(true); }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, []);
+  const [user, setUser] = useState('ADMIN');
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('vp-theme') === 'dark');
 
   const toggleTheme = () => {
     const next = !darkMode;
@@ -246,13 +191,12 @@ export default function App() {
     localStorage.setItem('vp-theme', next ? 'dark' : 'light');
   };
 
-  const analyze = async (sym) => {
-    const t = (sym || ticker).trim();
-    if (!t) return;
+  const analyze = async () => {
+    if (!ticker.trim()) return;
     setLoading(true); setError(''); setData(null);
     setPeriod('annual'); setQuarterlyHistory(null);
     try {
-      const res = await axios.get(`${API}/valuation/${t.toUpperCase()}`);
+      const res = await axios.get(`${API}/valuation/${ticker.trim().toUpperCase()}`);
       setData(res.data); setTab('overview');
     } catch(e) {
       setError('No data found. Please check the ticker.');
@@ -333,71 +277,35 @@ export default function App() {
 
   const allTabs = [...mainTabs, ...advancedTabs];
 
-  if (!user) return <Login onLogin={u => setUser(u)} />;
-
   return (
     <div style={{minHeight:'100vh',background:'var(--bg-base)'}} dir="ltr">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
 
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div className="logo-dot" />
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <div className="flex items-center gap-2">
+            <div className="logo-dot"></div>
             <div>
-              <div className="wordmark" style={{ fontSize: 15 }}>NOESIS</div>
-              <div className="wordmark-tag" style={{ fontSize: 7 }}>Understand Value. Act Smarter.</div>
+              <div style={{fontSize:15,fontWeight:700,letterSpacing:2,color:'var(--text-primary)',fontFamily:'"Arial Black",sans-serif',lineHeight:1.2}}>NOESIS</div>
+              <div style={{fontSize:7,letterSpacing:1.5,color:'var(--text-muted)',fontFamily:'Arial,sans-serif',fontStyle:'italic',marginTop:2}}>Understand Value. Act Smarter.</div>
             </div>
           </div>
           <UserMenu user={user} onLogout={() => { localStorage.removeItem('noesis-auth'); setUser(null); }} darkMode={darkMode} toggleTheme={toggleTheme}/>
         </div>
 
-        {/* Ticker Tape */}
-        <TickerTape />
-
         {/* Search */}
-        <div style={{ display: 'flex', gap: 10, marginBottom: 18, alignItems: 'center' }}>
-          <button
-            onClick={() => setPaletteOpen(true)}
-            style={{
-              flex: 1, height: 42,
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '0 16px',
-              background: 'rgba(255,255,255,0.06)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              borderRadius: 'var(--radius-pill)',
-              color: 'var(--text-muted)',
-              fontSize: 13,
-              fontFamily: 'var(--font-sans)',
-              cursor: 'pointer',
-              textAlign: 'left',
-              transition: 'border-color 0.15s, background 0.15s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.10)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
-          >
-            <span style={{ color: ticker ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: ticker ? 500 : 400 }}>
-              {ticker || 'Search ticker…   AAPL · TSLA · MSFT · NVDA'}
-            </span>
-            <kbd style={{ padding: '2px 8px', fontSize: 10, fontFamily: 'var(--font-mono)', background: 'rgba(255,255,255,0.10)', color: 'rgba(240,240,250,0.8)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 4, letterSpacing: '0.04em', flexShrink: 0 }}>⌘K</kbd>
-          </button>
-          <button onClick={analyze} disabled={loading} className="btn-brand" style={{ height: 42, padding: '0 24px', flexShrink: 0 }}>
+        <div className="flex gap-2 mb-4 sm:mb-6">
+          <input className="flex-1 h-11 px-3 sm:px-4 text-sm rounded-xl"
+            style={{background:'var(--bg-input)',border:'1px solid var(--border)',color:'var(--text-primary)',minWidth:0}}
+            placeholder="Enter ticker: AAPL · TSLA · MSFT · NVDA..."
+            value={ticker} onChange={e=>setTicker(e.target.value)}
+            onKeyDown={e=>e.key==='Enter'&&analyze()} />
+          <button onClick={analyze} disabled={loading} className="btn-brand h-11 px-4 sm:px-7 text-sm whitespace-nowrap">
             {loading ? '⟳' : 'Analyze ▶'}
           </button>
         </div>
 
-        {error && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', marginBottom: 16, background: 'var(--red-bg)', border: '1px solid var(--red-border)', color: 'var(--red)', borderRadius: 'var(--radius-sm)', fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.04em' }}>
-            <span>✕</span>{error}
-          </div>
-        )}
-
-        <CommandPalette
-          open={paletteOpen}
-          onClose={() => setPaletteOpen(false)}
-          onPick={(sym) => { setTicker(sym); analyze(sym); }}
-        />
+        {error && <div className="px-4 py-3 rounded-xl text-sm mb-4" style={{background:'var(--red-bg)',color:'var(--red)',border:'1px solid var(--red)'}}>{error}</div>}
 
         {data && (<>
 
@@ -405,81 +313,72 @@ export default function App() {
           <HeroSection data={data} scoreData={scoreData} dcf={dcf} dcfParams={dcfP}/>
           <DecisionBox scoreData={scoreData} dcf={activeModel==='pe'&&peFairValue?{fv:peFairValue}:dcf} price={price} data={data} dcfParams={dcfP}/>
 
-          {/* Investment Profile — 4-up KPI grid */}
+          {/* Investment Profile — compact */}
           {scoreData && (
-            <>
-              <div className="mb-4 fade-in" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
-                {[
-                  {
-                    label: 'Fair Value',
-                    value: dcf ? fmtPrice(dcf.fv) : 'N/A',
-                    sub: 'DCF · BASE CASE',
-                    subColor: 'var(--text-muted)',
-                    spark: true,
-                  },
-                  {
-                    label: 'Implied Δ',
-                    value: dcf?.fv ? ((dcf.fv / price - 1) >= 0 ? '+' : '') + fmt((dcf.fv / price - 1) * 100, 1) + '%' : 'N/A',
-                    sub: dcf?.fv && dcf.fv >= price ? 'UPSIDE' : 'DOWNSIDE',
-                    subColor: dcf?.fv && dcf.fv >= price ? 'var(--green)' : 'var(--red)',
-                  },
-                  {
-                    label: 'FCF · TTM',
-                    value: fmtB(data.financials.fcf),
-                    sub: `${fmt(data.financials.fcfMargin, 1)}% MARGIN`,
-                    subColor: 'var(--text-muted)',
-                  },
-                  {
-                    label: 'Confidence',
-                    value: (scoreData.confidence || 'MEDIUM').toUpperCase(),
-                    sub: `${scoreData.dataQuality === 'high' ? 3 : 2} / 3 MODELS`,
-                    subColor: scoreData.confidence === 'High' ? 'var(--green)' : 'var(--amber)',
-                  },
-                ].map(c => (
-                  <div key={c.label} className="card" style={{ padding: '12px 14px' }}>
-                    <div className="t-eyebrow" style={{ marginBottom: 8 }}>{c.label}</div>
-                    <div className="t-num-lg">{c.value}</div>
-                    {c.spark && (
-                      <svg className="spark up" width="100%" height="20" viewBox="0 0 100 20" preserveAspectRatio="none" style={{ marginTop: 8, display: 'block' }}>
-                        <path d="M0 16 L15 12 L30 14 L45 8 L60 10 L75 4 L100 2" />
-                      </svg>
-                    )}
-                    <div className="t-meta" style={{ marginTop: 4, color: c.subColor }}>{c.sub}</div>
+            <div style={{...C.card,padding:'12px 16px'}} className="mb-4 fade-in">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div style={{fontSize:16,fontWeight:700,color:scoreData.ratingColor}}>
+                    {scoreData.composite>=80?'Strong Opportunity':scoreData.composite>=65?'Attractive':scoreData.composite>=50?'Fairly Valued':scoreData.composite>=35?'High Expectations':scoreData.composite>=20?'Caution':'Speculative'}
                   </div>
-                ))}
+                  <div className="text-xs" style={C.m}>
+                    Confidence: <strong style={{color:scoreData.confColor}}>{scoreData.confidence}</strong>
+                    <span className="mx-1">·</span>
+                    Style: <strong style={C.s}>{scoreData.companyStyle}</strong>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  {[
+                    {label:'Risk',value:scoreData.riskScore>=65?'Low':scoreData.riskScore>=40?'Mod':'High',color:scoreData.riskScore>=65?'var(--green)':scoreData.riskScore>=40?'var(--amber)':'var(--red)'},
+                    {label:'Quality',value:scoreData.qualityScore>=65?'High':scoreData.qualityScore>=40?'Solid':'Weak',color:scoreData.qualityScore>=65?'var(--green)':scoreData.qualityScore>=40?'var(--amber)':'var(--red)'},
+                    {label:'Valuation',value:scoreData.valuationScore>=65?'Cheap':scoreData.valuationScore>=40?'Fair':'Exp.',color:scoreData.valuationScore>=65?'var(--green)':scoreData.valuationScore>=40?'var(--amber)':'var(--red)'},
+                  ].map(item=>(
+                    <div key={item.label} className="text-center px-2 py-1 rounded-lg" style={{background:'var(--bg-subtle)',border:'1px solid var(--border)'}}>
+                      <div style={{fontSize:9,color:'var(--text-muted)'}}>{item.label}</div>
+                      <div style={{fontSize:11,fontWeight:700,color:item.color}}>{item.value}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              {Math.abs(scoreData.expectationsGap) > 8 && (
-                <div className="mb-4 fade-in" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'var(--amber-bg)', border: '1px solid var(--amber-border)', color: 'var(--amber)', borderRadius: 'var(--radius-sm)', fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.04em' }}>
-                  <span>⚠</span>
-                  Market implies <b style={{ marginLeft: 4 }}>{fmt(scoreData.impliedGrowth, 1)}%</b>&nbsp;FCF growth vs <b>{fmt(scoreData.revCAGR || 0, 1)}%</b>&nbsp;historical — significant gap
+              {Math.abs(scoreData.expectationsGap)>8 && (
+                <div className="mt-2 px-3 py-1.5 rounded-lg text-xs" style={{background:'var(--amber-bg)',border:'1px solid var(--amber)',color:'var(--amber)'}}>
+                  ⚠ Market implies <strong>{fmt(scoreData.impliedGrowth,1)}%</strong> FCF growth vs <strong>{fmt(scoreData.revCAGR||0,1)}%</strong> historical — significant gap
                 </div>
               )}
-            </>
+            </div>
           )}
 
           {/* Tabs */}
           <div style={C.card} className="mb-4">
-            <div className="tab-bar" style={{ overflowX: 'auto', scrollbarWidth: 'none' }}>
-              {mainTabs.map(t => (
-                <button key={t.id} className={`tab ${tab === t.id ? 'active' : ''}`}
-                  onClick={() => setTab(t.id)}>{t.label}</button>
+            <div className="flex overflow-x-auto" style={{...C.bdr,scrollbarWidth:'none'}}>
+              {mainTabs.map(t=>(
+                <button key={t.id} onClick={()=>setTab(t.id)}
+                  className="px-4 py-3 text-xs font-medium whitespace-nowrap relative transition-colors flex-shrink-0"
+                  style={tab===t.id?{color:'var(--accent)'}:{color:'var(--text-muted)'}}>
+                  {t.label}
+                  {tab===t.id&&<div style={{position:'absolute',bottom:0,left:0,right:0,height:2,background:'var(--gradient-brand)',borderRadius:'2px 2px 0 0'}}></div>}
+                </button>
               ))}
+              {/* Advanced toggle */}
               <button
-                className={`tab ${showAdvanced ? 'active' : ''}`}
                 onClick={() => { setShowAdvanced(v => !v); if (!showAdvanced) setTab('gordon'); }}
-                style={{ marginLeft: 'auto', borderLeft: '1px solid var(--border)' }}>
+                className="px-4 py-3 text-xs font-semibold whitespace-nowrap relative transition-colors flex-shrink-0 ml-auto"
+                style={{color: showAdvanced ? 'var(--accent)' : 'var(--text-secondary)', borderLeft:'1px solid var(--border)', background: showAdvanced ? 'var(--accent-subtle)' : 'transparent'}}>
+                 {showAdvanced ? '▲ Less' : '⚙ Advanced'}
+                 style={{color:'var(--text-muted)',borderLeft:'1px solid var(--border)'}}>
                 {showAdvanced ? '▲ Less' : '⚙ Advanced'}
               </button>
             </div>
 
             {/* Advanced tabs row */}
             {showAdvanced && (
-              <div className="tab-bar" style={{ background: 'var(--bg-subtle)', overflowX: 'auto', scrollbarWidth: 'none' }}>
-                {advancedTabs.map(t => (
-                  <button key={t.id} className={`tab ${tab === t.id ? 'active' : ''}`}
-                    onClick={() => setTab(t.id)}
-                    style={{ fontSize: '9.5px', padding: '8px 14px' }}>
+              <div className="flex overflow-x-auto" style={{borderBottom:'1px solid var(--border)',scrollbarWidth:'none',background:'var(--bg-subtle)'}}>
+                {advancedTabs.map(t=>(
+                  <button key={t.id} onClick={()=>setTab(t.id)}
+                    className="px-3 py-2 text-xs font-medium whitespace-nowrap relative transition-colors flex-shrink-0"
+                    style={tab===t.id?{color:'var(--accent)'}:{color:'var(--text-muted)'}}>
                     {t.label}
+                    {tab===t.id&&<div style={{position:'absolute',bottom:0,left:0,right:0,height:2,background:'var(--gradient-brand)',borderRadius:'2px 2px 0 0'}}></div>}
                   </button>
                 ))}
               </div>
@@ -490,7 +389,7 @@ export default function App() {
               {/* ── OVERVIEW ── */}
               {tab==='overview' && (
                 <div>
-                  <PriceChart ticker={data.profile.ticker} darkMode={darkMode}/>
+                  <PriceChart ticker={data.profile.ticker}/>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
                     {[
                       {title:'Profitability',rows:[['Revenue',fmtB(data.financials.revenue)],['EBITDA',fmtB(data.financials.ebitda)],['Net Income',fmtB(data.financials.netIncome)],['FCF',fmtB(data.financials.fcf)],['Gross Margin',fmtPct(data.financials.grossMargin)],['EBITDA Margin',fmtPct(data.financials.ebitdaMargin)],['Net Margin',fmtPct(data.financials.netMargin)],['FCF Margin',fmtPct(data.financials.fcfMargin)]]},
