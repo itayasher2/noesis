@@ -359,28 +359,44 @@ export default function App() {
           <button
             onClick={() => setPaletteOpen(true)}
             style={{
-              flex: 1, height: 42,
+              flex: 1, height: 44,
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '0 16px',
-              background: 'rgba(255,255,255,0.06)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255,255,255,0.12)',
+              padding: '0 18px',
+              background: darkMode ? 'rgba(255,255,255,0.06)' : '#ffffff',
+              backdropFilter: darkMode ? 'blur(20px)' : 'none',
+              WebkitBackdropFilter: darkMode ? 'blur(20px)' : 'none',
+              border: darkMode ? '1px solid rgba(255,255,255,0.14)' : '1.5px solid rgba(0,0,0,0.18)',
               borderRadius: 'var(--radius-pill)',
               color: 'var(--text-muted)',
               fontSize: 13,
               fontFamily: 'var(--font-sans)',
               cursor: 'pointer',
               textAlign: 'left',
-              transition: 'border-color 0.15s, background 0.15s',
+              transition: 'border-color 0.15s, background 0.15s, box-shadow 0.15s',
+              boxShadow: darkMode ? 'none' : '0 1px 4px rgba(0,0,0,0.08)',
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.10)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = darkMode ? 'rgba(255,255,255,0.10)' : '#f8f8ff';
+              e.currentTarget.style.borderColor = darkMode ? 'rgba(255,255,255,0.22)' : 'rgba(0,102,255,0.45)';
+              if (!darkMode) e.currentTarget.style.boxShadow = '0 0 0 3px rgba(0,102,255,0.10)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = darkMode ? 'rgba(255,255,255,0.06)' : '#ffffff';
+              e.currentTarget.style.borderColor = darkMode ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.18)';
+              e.currentTarget.style.boxShadow = darkMode ? 'none' : '0 1px 4px rgba(0,0,0,0.08)';
+            }}
           >
             <span style={{ color: ticker ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: ticker ? 500 : 400 }}>
               {ticker || 'Search ticker…   AAPL · TSLA · MSFT · NVDA'}
             </span>
-            <kbd style={{ padding: '2px 8px', fontSize: 10, fontFamily: 'var(--font-mono)', background: 'rgba(255,255,255,0.10)', color: 'rgba(240,240,250,0.8)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 4, letterSpacing: '0.04em', flexShrink: 0 }}>⌘K</kbd>
+            <kbd style={{
+              padding: '2px 8px', fontSize: 10,
+              fontFamily: 'var(--font-mono)',
+              background: darkMode ? 'rgba(255,255,255,0.10)' : 'rgba(0,102,255,0.08)',
+              color: darkMode ? 'rgba(240,240,250,0.8)' : 'var(--accent)',
+              border: darkMode ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,102,255,0.20)',
+              borderRadius: 4, letterSpacing: '0.04em', flexShrink: 0,
+            }}>⌘K</kbd>
           </button>
           <button onClick={analyze} disabled={loading} className="btn-brand" style={{ height: 42, padding: '0 24px', flexShrink: 0 }}>
             {loading ? '⟳' : 'Analyze ▶'}
