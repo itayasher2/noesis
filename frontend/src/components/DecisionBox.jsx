@@ -31,7 +31,7 @@ function calcDecision({ scoreData, dcf, price, data, dcfParams }) {
 
   if (composite >= 70 && upside > 20) {
     action = 'BUY'; conviction = upside > 40 ? 'High' : 'Medium';
-    primaryColor = '#065f46'; bgColor = '#f8fdfb'; borderColor = '#a7f3d0';
+    primaryColor = 'var(--green)'; bgColor = 'var(--green-bg)'; borderColor = 'var(--green-border)';
     reasons = [
       upside ? `Undervalued ~${fmt(Math.abs(upside),0)}% vs intrinsic value` : 'Trading below fair value',
       fcfGap < 3 ? 'Market pricing reasonable growth' : 'Growth expectations manageable',
@@ -44,7 +44,7 @@ function calcDecision({ scoreData, dcf, price, data, dcfParams }) {
     ];
   } else if (composite >= 45 && upside > -10) {
     action = 'HOLD'; conviction = 'Medium';
-    primaryColor = '#78350f'; bgColor = '#fdfaf5'; borderColor = '#e5d5b0';
+    primaryColor = 'var(--amber)'; bgColor = 'var(--amber-bg)'; borderColor = 'var(--amber-border)';
     reasons = [
       upside ? `Near fair value (${upside >= 0 ? '+' : ''}${fmt(upside,0)}% vs DCF)` : 'Near fair value',
       fcfGap > 5 ? 'Market pricing above-average growth' : 'Growth expectations reasonable',
@@ -57,7 +57,7 @@ function calcDecision({ scoreData, dcf, price, data, dcfParams }) {
     ];
   } else if (composite >= 25) {
     action = 'REDUCE'; conviction = 'Medium';
-    primaryColor = '#92400e'; bgColor = '#fffbf5'; borderColor = '#e5d0b0';
+    primaryColor = 'var(--orange)'; bgColor = 'var(--amber-bg)'; borderColor = 'var(--orange-border)';
     reasons = [
       upside ? `Overvalued ~${fmt(Math.abs(upside),0)}% vs intrinsic value` : 'Trading above fair value',
       fcfGap > 8 ? 'Market pricing unrealistic growth' : 'Execution risk elevated',
@@ -70,7 +70,7 @@ function calcDecision({ scoreData, dcf, price, data, dcfParams }) {
     ];
   } else {
     action = 'AVOID'; conviction = 'High';
-    primaryColor = '#991b1b'; bgColor = '#fff8f8'; borderColor = '#e5b0b0';
+    primaryColor = 'var(--red)'; bgColor = 'var(--red-bg)'; borderColor = 'var(--red-border)';
     reasons = [
       upside ? `Significantly overvalued ~${fmt(Math.abs(upside),0)}%` : 'Trading well above fair value',
       fcfGap > 10 ? 'Aggressive growth priced in — high risk' : 'Valuation risk extreme',
@@ -92,10 +92,9 @@ function calcDecision({ scoreData, dcf, price, data, dcfParams }) {
   return { action, conviction, primaryColor, bgColor, borderColor, reasons, actionSteps, upside, impliedGrowth, histFCFCAGR, fcfGap, fairValue, buyZoneLow, overvalued, extreme, pricePct };
 }
 
-export default function DecisionBox({ scoreData, dcf, price, data, dcfParams, darkMode }) {
+export default function DecisionBox({ scoreData, dcf, price, data, dcfParams }) {
   if (!data || !price) return null;
   const d = calcDecision({ scoreData, dcf, price, data, dcfParams });
-  const isDark = darkMode;
 
   const C = {
     p: { color:'var(--text-primary)' },
@@ -104,12 +103,9 @@ export default function DecisionBox({ scoreData, dcf, price, data, dcfParams, da
   };
 
   return (
-    <div className="mb-4 fade-in" style={{
-      background: isDark ? 'var(--bg-card)' : d.bgColor,
-      border: isDark ? `1.5px solid ${d.primaryColor}30` : `1.5px solid ${d.borderColor}`,
-      borderRadius: 'var(--radius)',
+    <div className="mb-4 fade-in verdict-card" style={{
+      borderLeftColor: d.primaryColor,
       padding: '16px',
-      boxShadow: '0 1px 6px rgba(0,0,0,0.06)',
     }}>
 
       {/* ── Hero row ── */}
@@ -129,7 +125,7 @@ export default function DecisionBox({ scoreData, dcf, price, data, dcfParams, da
         </div>
         <div className="text-right flex-shrink-0">
           <div className="text-xs font-bold mb-1" style={{color:d.primaryColor,opacity:0.7}}>vs Fair Value</div>
-          <div className="text-2xl font-black num" style={{color:d.upside>=0?'#059669':d.upside>-20?'#92400e':'#991b1b'}}>
+          <div className="text-2xl font-black num" style={{color:d.upside>=0?'var(--green)':d.upside>-20?'var(--amber)':'var(--red)'}}>
             {d.upside!==null?(d.upside>=0?'+':'')+fmt(d.upside,1)+'%':'N/A'}
           </div>
           <div className="text-xs mt-0.5" style={C.m}>{fmtPrice(d.fairValue)} fair value</div>
@@ -166,25 +162,25 @@ export default function DecisionBox({ scoreData, dcf, price, data, dcfParams, da
       </div>
 
       {/* ── Price Level Bar ── */}
-      <div style={{background:isDark?'var(--bg-subtle)':'rgba(255,255,255,0.5)',borderRadius:10,padding:'12px 14px',marginBottom:14,border:`1px solid ${d.primaryColor}20`}}>
+      <div style={{background:'var(--bg-subtle)',borderRadius:10,padding:'12px 14px',marginBottom:14,border:`1px solid ${d.primaryColor}20`}}>
         <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{color:d.primaryColor,opacity:0.6}}>Price Levels</div>
-        <div className="relative h-7 rounded-lg overflow-hidden" style={{background:isDark?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.03)'}}>
-          <div className="absolute inset-y-0 left-0" style={{width:'30%',background:'rgba(5,150,105,0.08)'}}/>
-          <div className="absolute inset-y-0" style={{left:'30%',width:'25%',background:'rgba(180,140,60,0.08)'}}/>
-          <div className="absolute inset-y-0" style={{left:'55%',width:'25%',background:'rgba(180,100,40,0.08)'}}/>
-          <div className="absolute inset-y-0 right-0" style={{left:'80%',background:'rgba(150,30,30,0.08)'}}/>
+        <div className="relative h-7 rounded-lg overflow-hidden" style={{background:'rgba(255,255,255,0.03)'}}>
+          <div className="absolute inset-y-0 left-0" style={{width:'30%',background:'rgba(61,220,132,0.08)'}}/>
+          <div className="absolute inset-y-0" style={{left:'30%',width:'25%',background:'rgba(255,181,71,0.06)'}}/>
+          <div className="absolute inset-y-0" style={{left:'55%',width:'25%',background:'rgba(255,149,64,0.06)'}}/>
+          <div className="absolute inset-y-0 right-0" style={{left:'80%',background:'rgba(255,84,112,0.08)'}}/>
           <div className="absolute inset-0 flex items-center">
-            <span className="text-xs font-medium px-1" style={{color:'#065f46',opacity:0.8,width:'30%',fontSize:10}}>Buy</span>
-            <span className="text-xs font-medium px-1" style={{color:'#78350f',opacity:0.8,width:'25%',fontSize:10}}>Fair</span>
-            <span className="text-xs font-medium px-1" style={{color:'#92400e',opacity:0.8,width:'25%',fontSize:10}}>Pricey</span>
-            <span className="text-xs font-medium px-1" style={{color:'#991b1b',opacity:0.8,fontSize:10}}>Ext.</span>
+            <span className="text-xs font-medium px-1" style={{color:'var(--green)',opacity:0.8,width:'30%',fontSize:10}}>Buy</span>
+            <span className="text-xs font-medium px-1" style={{color:'var(--amber)',opacity:0.8,width:'25%',fontSize:10}}>Fair</span>
+            <span className="text-xs font-medium px-1" style={{color:'var(--orange)',opacity:0.8,width:'25%',fontSize:10}}>Pricey</span>
+            <span className="text-xs font-medium px-1" style={{color:'var(--red)',opacity:0.8,fontSize:10}}>Ext.</span>
           </div>
           <div className="absolute top-1 bottom-1 w-0.5 rounded" style={{left:d.pricePct+'%',background:d.primaryColor,opacity:0.8}}/>
           <div className="absolute text-xs font-bold num" style={{
             left:Math.min(85,Math.max(2,d.pricePct))+'%',
             top:'50%',transform:'translateY(-50%)',
             color:d.primaryColor,
-            background:isDark?'var(--bg-card)':'white',
+            background:'var(--bg-card)',
             padding:'1px 4px',borderRadius:3,fontSize:9,
             boxShadow:'0 1px 3px rgba(0,0,0,0.08)',
           }}>
@@ -204,7 +200,7 @@ export default function DecisionBox({ scoreData, dcf, price, data, dcfParams, da
         <span className="font-bold uppercase tracking-widest">Confidence:</span>
         {[['Data',scoreData?.dataQuality],['Models',scoreData?.modelConsistency],['Stability',scoreData?.assumptionStability]].map(([l,v])=>(
           <span key={l} style={{opacity:1}}>
-            {l}: <strong style={{color:v==='high'?'#065f46':v==='medium'?'#78350f':'#991b1b'}}>{v||'N/A'}</strong>
+            {l}: <strong style={{color:v==='high'?'var(--green)':v==='medium'?'var(--amber)':'var(--red)'}}>{v||'N/A'}</strong>
           </span>
         ))}
         <span className="w-full sm:w-auto sm:ml-auto text-xs" style={{opacity:1}}>

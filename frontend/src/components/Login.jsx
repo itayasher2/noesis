@@ -5,13 +5,28 @@ const USERS = [
   { username: 'itay', password: 'itay123' },
 ];
 
+function Field({ label, type = 'text', value, onChange, onEnter }) {
+  return (
+    <div>
+      <label className="t-eyebrow" style={{ display: 'block', marginBottom: 6 }}>{label}</label>
+      <input
+        type={type}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        onKeyDown={e => e.key === 'Enter' && onEnter()}
+        style={{ width: '100%', height: 40, boxSizing: 'border-box', padding: '0 14px' }}
+      />
+    </div>
+  );
+}
+
 export default function Login({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
+  const submit = () => {
     setLoading(true);
     setError('');
     setTimeout(() => {
@@ -23,113 +38,78 @@ export default function Login({ onLogin }) {
         setError('Invalid username or password');
       }
       setLoading(false);
-    }, 600);
+    }, 500);
   };
 
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'var(--bg-base)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: 20,
     }}>
-      <div style={{
-        width: 380,
-        background: 'var(--bg-card)',
-        border: '1px solid var(--border)',
-        borderRadius: 'var(--radius)',
-        padding: '40px 36px',
-        boxShadow: 'var(--shadow-md)',
-      }}>
-        {/* Logo */}
-        <div className="flex items-center gap-2 mb-8">
-          <div className="logo-dot"></div>
+      <div className="card glow" style={{ width: 380, padding: '32px 32px 28px' }}>
+
+        {/* Brand */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 }}>
+          <div className="logo-dot" style={{ width: 10, height: 10 }} />
           <div>
-            <div style={{fontSize:17,fontWeight:700,letterSpacing:2,color:'var(--text-primary)',fontFamily:'"Arial Black",sans-serif',lineHeight:1.2}}>NOESIS</div>
-            <div style={{fontSize:7.5,letterSpacing:1.5,color:'var(--text-muted)',fontFamily:'Arial,sans-serif',fontStyle:'italic',marginTop:2}}>Understand Value. Act Smarter.</div>
+            <div className="wordmark" style={{ fontSize: 16 }}>NOESIS</div>
+            <div className="wordmark-tag" style={{ fontSize: 7.5 }}>Understand Value. Act Smarter.</div>
           </div>
         </div>
 
         {/* Title */}
-        <div className="mb-6">
-          <div style={{fontSize:18,fontWeight:600,color:'var(--text-primary)',marginBottom:4}}>Sign in</div>
-          <div style={{fontSize:13,color:'var(--text-muted)'}}>Enter your credentials to access Noesis</div>
+        <div style={{ marginBottom: 22 }}>
+          <div className="t-eyebrow" style={{ marginBottom: 8, fontSize: 12 }}>Sign in</div>
+          <div className="t-body-sm">Enter credentials to access Noesis</div>
         </div>
 
         {/* Fields */}
-        <div className="flex flex-col gap-4 mb-6">
-          <div>
-            <label style={{fontSize:12,fontWeight:500,color:'var(--text-muted)',display:'block',marginBottom:6}}>USERNAME</label>
-            <input
-              type="text"
-              value={username}
-              onChange={e => setUsername(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleLogin()}
-              placeholder="Enter username"
-              style={{
-                width: '100%',
-                height: 42,
-                padding: '0 14px',
-                background: 'var(--bg-input)',
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius-sm)',
-                color: 'var(--text-primary)',
-                fontSize: 14,
-                outline: 'none',
-                boxSizing: 'border-box',
-              }}
-            />
-          </div>
-          <div>
-            <label style={{fontSize:12,fontWeight:500,color:'var(--text-muted)',display:'block',marginBottom:6}}>PASSWORD</label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleLogin()}
-              placeholder="Enter password"
-              style={{
-                width: '100%',
-                height: 42,
-                padding: '0 14px',
-                background: 'var(--bg-input)',
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius-sm)',
-                color: 'var(--text-primary)',
-                fontSize: 14,
-                outline: 'none',
-                boxSizing: 'border-box',
-              }}
-            />
-          </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 18 }}>
+          <Field label="Username" value={username} onChange={setUsername} onEnter={submit} />
+          <Field label="Password" type="password" value={password} onChange={setPassword} onEnter={submit} />
         </div>
 
+        {/* Error strip */}
         {error && (
           <div style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '10px 14px',
             background: 'var(--red-bg)',
-            border: '1px solid var(--red)',
+            border: '1px solid var(--red-border)',
             color: 'var(--red)',
             borderRadius: 'var(--radius-sm)',
-            padding: '10px 14px',
-            fontSize: 13,
-            marginBottom: 16,
+            fontFamily: 'var(--font-mono)', fontSize: 11,
+            letterSpacing: '0.04em',
+            marginBottom: 14,
           }}>
-            {error}
+            <span>✕</span>{error}
           </div>
         )}
 
         <button
-          onClick={handleLogin}
+          onClick={submit}
           disabled={loading || !username || !password}
-          className="btn-brand w-full"
-          style={{height: 44, fontSize: 14}}
+          className="btn-brand"
+          style={{ height: 42, width: '100%', justifyContent: 'center' }}
         >
-          {loading ? '⟳ Signing in...' : 'Sign In →'}
+          {loading ? '⟳ Signing in…' : 'Sign in →'}
         </button>
 
-        <div style={{fontSize:11,color:'var(--text-muted)',textAlign:'center',marginTop:20}}>
-          Noesis · Equity Valuation Platform
+        <div className="t-meta" style={{ textAlign: 'center', marginTop: 20 }}>
+          NOESIS · EQUITY VALUATION PLATFORM
+        </div>
+
+        <div style={{
+          marginTop: 16,
+          padding: '8px 12px',
+          border: '1px dashed var(--border)',
+          borderRadius: 'var(--radius-sm)',
+          background: 'var(--bg-subtle)',
+        }}>
+          <div className="t-meta" style={{ textAlign: 'center' }}>
+            admin / noesis2025 · itay / itay123
+          </div>
         </div>
       </div>
     </div>

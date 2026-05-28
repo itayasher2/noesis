@@ -4,14 +4,6 @@ import { fmt, fmtPrice } from '../utils/format';
 
 const API = 'https://web-production-bdb26.up.railway.app/api';
 
-function getVerdictStyle(verdict) {
-  if (!verdict) return { color: '#065f46', bg: '#f0fdf4', border: '#a7f3d0' };
-  if (verdict === 'Strong Opportunity' || verdict === 'Attractive') return { color: '#065f46', bg: '#f0fdf4', border: '#a7f3d0' };
-  if (verdict === 'Fairly Valued') return { color: '#78350f', bg: '#fdfaf5', border: '#e5d5b0' };
-  if (verdict === 'High Expectations' || verdict === 'Caution') return { color: '#92400e', bg: '#fffbf5', border: '#e5d0b0' };
-  return { color: '#991b1b', bg: '#fff8f8', border: '#e5b0b0' };
-}
-
 function fmtMktCap(val) {
   if (!val || val <= 0) return null;
   if (val >= 1e12) return `$${(val / 1e12).toFixed(2)}T`;
@@ -20,7 +12,25 @@ function fmtMktCap(val) {
   return `$${val.toLocaleString()}`;
 }
 
-export default function HeroSection({ data, scoreData, dcf, dcfParams }) {
+const VERDICT_CLASS = {
+  'Strong Opportunity': 'buy',
+  'Attractive':         'buy',
+  'Fairly Valued':      'hold',
+  'High Expectations':  'reduce',
+  'Caution':            'reduce',
+  'Speculative':        'avoid',
+};
+
+const VERDICT_ACTION = {
+  'Strong Opportunity': 'BUY',
+  'Attractive':         'BUY',
+  'Fairly Valued':      'HOLD',
+  'High Expectations':  'REDUCE',
+  'Caution':            'REDUCE',
+  'Speculative':        'AVOID',
+};
+
+export default function HeroSection({ data, scoreData, dcf }) {
   const [insight, setInsight] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -43,153 +53,83 @@ export default function HeroSection({ data, scoreData, dcf, dcfParams }) {
 
   const price = data.profile.price;
   const mktCap = fmtMktCap(data.profile.marketCap);
-  const verdict = insight?.verdict || (scoreData.composite >= 65 ? 'Attractive' : scoreData.composite >= 50 ? 'Fairly Valued' : scoreData.composite >= 35 ? 'High Expectations' : 'Caution');
-  const style = getVerdictStyle(verdict);
-
-  const fairLow = dcf?.fv ? dcf.fv * 0.85 : null;
-  const fairHigh = dcf?.fv ? dcf.fv * 1.05 : null;
+  const verdict =
+    scoreData.composite >= 80 ? 'Strong Opportunity' :
+    scoreData.composite >= 65 ? 'Attractive' :
+    scoreData.composite >= 50 ? 'Fairly Valued' :
+    scoreData.composite >= 35 ? 'High Expectations' :
+    'Caution';
+  const klass  = VERDICT_CLASS[verdict] || 'hold';
+  const action = VERDICT_ACTION[verdict] || 'HOLD';
   const upside = dcf?.fv ? (dcf.fv / price - 1) * 100 : null;
-  const implied = scoreData.impliedGrowth;
-  const historical = scoreData.revCAGR;
-  const fcfGap = implied && historical ? implied - historical : null;
 
   return (
-    <div className="mb-4 fade-in" style={{
-      background: style.bg,
-      border: `1.5px solid ${style.border}`,
-      borderRadius: 'var(--radius)',
-      padding: '16px',
-      boxShadow: '0 1px 8px rgba(0,0,0,0.06)',
-    }}>
+    <div className={`verdict-card ${klass} mb-4 fade-in`}>
 
-      {/* ── Top row ── */}
-      <div className="flex items-start justify-between mb-4 gap-2">
-        <div className="flex items-center gap-2 min-w-0">
+      {/* Top row */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
           {data.profile.logo && (
-            <img src={data.profile.logo} className="w-8 h-8 rounded-lg object-contain flex-shrink-0"
-              style={{border:'1px solid var(--border)'}} alt="" />
+            <img
+              src={data.profile.logo}
+              style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'contain', background: 'white', padding: 4, border: '1px solid var(--border)', flexShrink: 0 }}
+              alt=""
+              onError={e => { e.target.style.display = 'none'; }}
+            />
           )}
-          <div className="min-w-0">
-            <div className="text-xs font-bold uppercase tracking-widest mb-0.5 truncate"
-              style={{color: style.color, opacity: 0.7}}>
-              {data.profile.ticker} · {data.profile.sector}
+          <div style={{ minWidth: 0 }}>
+            <div className="t-eyebrow" style={{ marginBottom: 4 }}>{data.profile.ticker} · {data.profile.sector}</div>
+            <div className="wordmark" style={{ fontSize: 15, letterSpacing: '1.5px' }}>
+              {data.profile.name.toUpperCase()}
             </div>
-            <div className="font-bold truncate" style={{fontSize:16,color:'var(--text-primary)',lineHeight:1.2}}>
-              {data.profile.name}
+            <div className="t-meta" style={{ marginTop: 4 }}>
+              {data.profile.exchange}
+              {data.profile.employees ? ` · ${(data.profile.employees / 1000).toFixed(0)}K employees` : ''}
+              {data.profile.country ? ` · ${data.profile.country}` : ''}
             </div>
           </div>
         </div>
 
-        <div className="text-right flex-shrink-0">
-          <div className="text-xs font-bold mb-0.5" style={{color: style.color, opacity: 0.7}}>Verdict</div>
-          <div style={{fontSize:13,fontWeight:600,color:style.color}}>{verdict}</div>
-          <div className="text-lg font-bold num mt-0.5" style={{color:'var(--text-primary)'}}>
-            {fmtPrice(price)}
-            <span className="text-xs font-semibold ml-1" style={{color: data.profile.changePct >= 0 ? '#065f46' : '#991b1b'}}>
-              {data.profile.changePct >= 0 ? '+' : ''}{fmt(data.profile.changePct, 2)}%
-            </span>
+        <div style={{ textAlign: 'right', flexShrink: 0 }}>
+          <div className="t-eyebrow" style={{ marginBottom: 4 }}>Last · live</div>
+          <div className="t-num-hero" style={{ fontSize: 38 }}>{fmtPrice(price)}</div>
+          <div className="t-meta" style={{ marginTop: 4, color: data.profile.changePct >= 0 ? 'var(--green)' : 'var(--red)' }}>
+            {data.profile.changePct >= 0 ? '+' : ''}{fmt(data.profile.changePct, 2)}% TODAY
+            {mktCap && <span style={{ color: 'var(--text-muted)', marginLeft: 10 }}>· MKT CAP {mktCap}</span>}
           </div>
-          {mktCap && (
-            <div className="text-xs mt-0.5" style={{color:'var(--text-muted)'}}>
-              Mkt Cap: <span className="font-semibold num" style={{color:'var(--text-secondary)'}}>{mktCap}</span>
-            </div>
-          )}
         </div>
       </div>
 
-      {/* ── Key Insight ── */}
-      <div className="mb-4 px-3 py-2 rounded-xl" style={{
-        background: style.color + '08',
-        borderLeft: `3px solid ${style.color}`,
-      }}>
-        <div className="text-xs font-bold uppercase tracking-widest mb-1"
-          style={{color: style.color, opacity: 0.7}}>Key Insight</div>
-        {loading ? (
-          <div className="text-xs" style={{color:'var(--text-muted)',fontStyle:'italic'}}>Analyzing {data.profile.ticker}...</div>
-        ) : (
-          <div className="text-xs leading-relaxed" style={{color:'var(--text-secondary)',fontStyle:'italic'}}>
-            "{insight?.keyInsight || 'Generating insight...'}"
+      {/* Badges */}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
+        <div className={`badge ${klass}`}>{verdict} · {action}</div>
+        <div className="badge ghost">Confidence · {scoreData.confidence || 'Medium'}</div>
+        {upside !== null && (
+          <div className={`badge ${upside >= 0 ? 'up' : 'down'}`}>
+            {upside >= 0 ? '+' : ''}{fmt(upside, 1)}% vs Fair Value
           </div>
         )}
+        <div className="badge ghost">Style · {scoreData.companyStyle || 'Blend'}</div>
       </div>
 
-      {/* ── 3 sections ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-
-        {/* Market vs Reality */}
-        <div className="rounded-xl p-3" style={{background:'rgba(255,255,255,0.5)',border:'1px solid var(--border)'}}>
-          <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{color:'var(--text-muted)'}}>
-            Market vs Reality
-          </div>
-          <div className="text-xs leading-relaxed" style={{color:'var(--text-secondary)'}}>
-            {loading ? 'Loading...' : (insight?.whyMarket || '—')}
-          </div>
-          {fcfGap !== null && (
-            <div className="mt-2 pt-2 flex justify-between text-xs" style={{borderTop:'1px solid var(--border)'}}>
-              <span style={{color:'var(--text-muted)'}}>Implied vs Hist.</span>
-              <span className="font-bold num" style={{color:fcfGap>8?'#991b1b':'#92400e'}}>
-                {fmt(implied,1)}% vs {fmt(historical,1)}%
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Fair Value */}
-        <div className="rounded-xl p-3" style={{background:'rgba(255,255,255,0.5)',border:'1px solid var(--border)'}}>
-          <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{color:'var(--text-muted)'}}>
-            Fair Value Range
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <div className="flex justify-between text-xs">
-              <span style={{color:'var(--text-muted)'}}>DCF range</span>
-              <span className="font-bold num" style={{color:'var(--text-primary)'}}>
-                {fairLow && fairHigh ? `${fmtPrice(fairLow)}–${fmtPrice(fairHigh)}` : '—'}
-              </span>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span style={{color:'var(--text-muted)'}}>Price</span>
-              <span className="font-bold num" style={{color:'var(--text-primary)'}}>{fmtPrice(price)}</span>
-            </div>
-            {upside !== null && (
-              <div className="flex justify-between text-xs pt-1" style={{borderTop:'1px solid var(--border)'}}>
-                <span style={{color:'var(--text-muted)'}}>vs Fair Value</span>
-                <span className="font-bold num" style={{color:upside>=0?'#065f46':'#991b1b'}}>
-                  {upside>=0?'+':''}{fmt(upside,1)}%
-                </span>
-              </div>
-            )}
+      {/* AI Insight strip */}
+      <div style={{
+        display: 'flex',
+        background: 'var(--bg-subtle)',
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--radius-sm)',
+        overflow: 'hidden',
+      }}>
+        <div style={{ width: 3, background: 'var(--accent)', boxShadow: '0 0 8px var(--accent)', flexShrink: 0 }} />
+        <div style={{ padding: '10px 14px', flex: 1 }}>
+          <div className="t-eyebrow" style={{ color: 'var(--accent)', marginBottom: 4 }}>Key insight · AI</div>
+          <div className="t-body-sm" style={{ fontStyle: 'italic' }}>
+            {loading
+              ? `Analyzing ${data.profile.ticker}…`
+              : `"${insight?.keyInsight || `Trades at ${upside !== null && upside > 0 ? 'a discount' : 'a premium'} to fair value with ${Math.abs(scoreData.expectationsGap || 0) < 6 ? 'reasonable' : 'aggressive'} growth assumptions.`}"`
+            }
           </div>
         </div>
-
-        {/* Risk & Opportunity */}
-        <div className="rounded-xl p-3" style={{background:'rgba(255,255,255,0.5)',border:'1px solid var(--border)'}}>
-          <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{color:'var(--text-muted)'}}>
-            Risk & Opportunity
-          </div>
-          {loading ? (
-            <div className="text-xs" style={{color:'var(--text-muted)'}}>Loading...</div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              <div>
-                <div className="text-xs font-semibold mb-0.5" style={{color:'#991b1b'}}>⚠ Risk</div>
-                <div className="text-xs leading-relaxed" style={{color:'var(--text-secondary)'}}>{insight?.mainRisk||'—'}</div>
-              </div>
-              <div style={{borderTop:'1px solid var(--border)',paddingTop:6}}>
-                <div className="text-xs font-semibold mb-0.5" style={{color:'#065f46'}}>↑ Opportunity</div>
-                <div className="text-xs leading-relaxed" style={{color:'var(--text-secondary)'}}>{insight?.opportunity||'—'}</div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ── Bottom info ── */}
-      <div className="flex items-center gap-2 flex-wrap text-xs" style={{color:'var(--text-muted)'}}>
-        <span className="font-bold">{data.profile.ticker}</span>
-        <span>·</span>
-        <span>{data.profile.exchange}</span>
-        {data.profile.employees && <><span>·</span><span>{(data.profile.employees/1000).toFixed(0)}K employees</span></>}
-        {data.profile.country && <><span>·</span><span>{data.profile.country}</span></>}
       </div>
     </div>
   );
