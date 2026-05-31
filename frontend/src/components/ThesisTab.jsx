@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { fmt, fmtPrice } from '../utils/format';
+import { useLanguage } from '../i18n.jsx';
 
 const API = 'https://web-production-bdb26.up.railway.app/api';
 
@@ -27,6 +28,7 @@ export default function ThesisTab({ data, scoreData, dcf, dcfParams }) {
   const [thesis, setThesis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [generated, setGenerated] = useState(false);
+  const { t } = useLanguage();
 
   const generate = async () => {
     setLoading(true);
@@ -47,10 +49,21 @@ export default function ThesisTab({ data, scoreData, dcf, dcfParams }) {
     setLoading(false);
   };
 
+  // Card style with backdrop-filter for proper dark/light glass effect
+  const cardBase = {
+    background: 'var(--bg-card)',
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)',
+    border: '1px solid var(--border)',
+    borderRadius: 10,
+    padding: '14px 18px',
+    marginBottom: 12,
+  };
+
   const C = {
-    card: { background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, padding: '14px 18px', marginBottom: 12 },
+    card:  cardBase,
     label: { fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8, paddingBottom: 6, borderBottom: '1px solid var(--border)' },
-    text: { fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.7 },
+    text:  { fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.7 },
     point: { fontSize: 13.5, color: 'var(--text-primary)', lineHeight: 1.6, padding: '6px 0', borderBottom: '1px solid var(--border)' },
   };
 
@@ -59,10 +72,10 @@ export default function ThesisTab({ data, scoreData, dcf, dcfParams }) {
       <div style={{ textAlign: 'center', padding: '48px 24px' }}>
         <div style={{ fontSize: 32, marginBottom: 12 }}>📋</div>
         <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
-          Investment Memo
+          {t('investmentMemo')}
         </div>
         <div style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 24, maxWidth: 400, margin: '0 auto 24px' }}>
-          Generate a professional investment memo for {data.profile.name} — thesis, bull & bear case, valuation assessment, and key risks.
+          {t('generateMemoDesc', data.profile.name)}
         </div>
         <button onClick={generate} disabled={loading}
           style={{
@@ -70,7 +83,7 @@ export default function ThesisTab({ data, scoreData, dcf, dcfParams }) {
             border: 'none', borderRadius: 10, padding: '12px 32px',
             fontSize: 15, fontWeight: 600, cursor: 'pointer',
           }}>
-          {loading ? '⟳ Generating...' : '⚡ Generate Investment Memo'}
+          {loading ? t('generatingMemo') : t('generateMemoCta')}
         </button>
       </div>
     );
@@ -79,7 +92,7 @@ export default function ThesisTab({ data, scoreData, dcf, dcfParams }) {
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: '48px 24px' }}>
-        <div style={{ fontSize: 14, color: 'var(--text-muted)' }}>⟳ Analyzing {data.profile.ticker}...</div>
+        <div style={{ fontSize: 14, color: 'var(--text-muted)' }}>{t('analyzingTicker', data.profile.ticker)}</div>
       </div>
     );
   }
@@ -95,7 +108,7 @@ export default function ThesisTab({ data, scoreData, dcf, dcfParams }) {
             <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: -0.5 }}>
               {data.profile.ticker}
             </div>
-            <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{data.profile.name} · Investment Memo</div>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{data.profile.name} · {t('investmentMemo')}</div>
           </div>
         </div>
         <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>
@@ -105,32 +118,32 @@ export default function ThesisTab({ data, scoreData, dcf, dcfParams }) {
           <RecBadge rec={thesis.recommendation} />
           {thesis.targetPrice && (
             <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-              Target: <strong>{fmtPrice(thesis.targetPrice)}</strong>
+              {t('target')} <strong>{fmtPrice(thesis.targetPrice)}</strong>
               <span style={{ marginLeft: 6, color: thesis.targetPrice > data.profile.price ? 'var(--green)' : 'var(--red)', fontWeight: 600 }}>
                 ({thesis.targetPrice > data.profile.price ? '+' : ''}{fmt((thesis.targetPrice/data.profile.price-1)*100, 1)}%)
               </span>
             </span>
           )}
-          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Score: {scoreData?.composite}/100</span>
+          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('score')} {scoreData?.composite}/100</span>
         </div>
       </div>
 
       {/* Thesis */}
       <div style={C.card}>
-        <div style={C.label}>Investment Thesis</div>
+        <div style={C.label}>{t('investmentThesis')}</div>
         <p style={C.text}>{thesis.thesis}</p>
       </div>
 
       {/* Business Quality */}
       <div style={C.card}>
-        <div style={C.label}>Business Quality</div>
+        <div style={C.label}>{t('businessQuality')}</div>
         <p style={C.text}>{thesis.businessQuality}</p>
       </div>
 
       {/* Bull & Bear */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
         <div style={{ ...C.card, marginBottom: 0, borderLeft: '3px solid var(--green)' }}>
-          <div style={{ ...C.label, color: 'var(--green)' }}>🟢 Bull Case</div>
+          <div style={{ ...C.label, color: 'var(--green)' }}>{t('bullCase')}</div>
           {thesis.bullPoints?.map((p, i) => (
             <div key={i} style={{ ...C.point, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
               <span style={{ color: 'var(--green)', fontWeight: 700, flexShrink: 0 }}>↑</span>
@@ -139,7 +152,7 @@ export default function ThesisTab({ data, scoreData, dcf, dcfParams }) {
           ))}
         </div>
         <div style={{ ...C.card, marginBottom: 0, borderLeft: '3px solid var(--red)' }}>
-          <div style={{ ...C.label, color: 'var(--red)' }}>🔴 Bear Case</div>
+          <div style={{ ...C.label, color: 'var(--red)' }}>{t('bearCase')}</div>
           {thesis.bearPoints?.map((p, i) => (
             <div key={i} style={{ ...C.point, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
               <span style={{ color: 'var(--red)', fontWeight: 700, flexShrink: 0 }}>↓</span>
@@ -151,14 +164,14 @@ export default function ThesisTab({ data, scoreData, dcf, dcfParams }) {
 
       {/* Valuation */}
       <div style={C.card}>
-        <div style={C.label}>Valuation Assessment</div>
+        <div style={C.label}>{t('valuationAssessment')}</div>
         <p style={C.text}>{thesis.valuationAssessment}</p>
       </div>
 
       {/* Risks & Catalysts */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
         <div style={{ ...C.card, marginBottom: 0 }}>
-          <div style={C.label}>⚠ Key Risks</div>
+          <div style={C.label}>{t('keyRisks')}</div>
           {thesis.keyRisks?.map((r, i) => (
             <div key={i} style={{ ...C.point, display: 'flex', gap: 8 }}>
               <span style={{ color: 'var(--red)', flexShrink: 0 }}>•</span>
@@ -167,7 +180,7 @@ export default function ThesisTab({ data, scoreData, dcf, dcfParams }) {
           ))}
         </div>
         <div style={{ ...C.card, marginBottom: 0 }}>
-          <div style={C.label}>⚡ Catalysts</div>
+          <div style={C.label}>{t('catalysts')}</div>
           {thesis.catalysts?.map((c, i) => (
             <div key={i} style={{ ...C.point, display: 'flex', gap: 8 }}>
               <span style={{ color: 'var(--green)', flexShrink: 0 }}>•</span>
@@ -179,13 +192,13 @@ export default function ThesisTab({ data, scoreData, dcf, dcfParams }) {
 
       {/* What Changes View */}
       <div style={{ ...C.card, background: 'var(--amber-bg)', border: '1px solid var(--amber-border)' }}>
-        <div style={{ ...C.label, color: 'var(--amber)' }}>🔄 What Changes Our View</div>
+        <div style={{ ...C.label, color: 'var(--amber)' }}>{t('whatChangesView')}</div>
         <p style={C.text}>{thesis.whatChangesView}</p>
       </div>
 
       {/* Bottom Line */}
       <div style={{ ...C.card, background: 'var(--bg-subtle)', borderLeft: '3px solid var(--accent)' }}>
-        <div style={C.label}>Bottom Line</div>
+        <div style={C.label}>{t('bottomLine')}</div>
         <p style={{ ...C.text, fontWeight: 600, fontStyle: 'italic' }}>{thesis.bottomLine}</p>
       </div>
 
@@ -193,12 +206,12 @@ export default function ThesisTab({ data, scoreData, dcf, dcfParams }) {
       <div style={{ textAlign: 'center', marginTop: 16 }}>
         <button onClick={generate} disabled={loading}
           style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 20px', fontSize: 13, color: 'var(--text-muted)', cursor: 'pointer' }}>
-          ↺ Regenerate
+          {t('regenerate')}
         </button>
       </div>
 
       <div style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', marginTop: 12 }}>
-        AI-generated analysis based on financial data. Not investment advice.
+        {t('aiDisclaimer')}
       </div>
     </div>
   );

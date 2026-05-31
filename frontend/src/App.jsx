@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { fmt, fmtB, fmtPct, fmtPrice } from './utils/format';
 import * as XLSX from 'xlsx';
+import { useLanguage } from './i18n.jsx';
 import FinancialsChart from './components/FinancialsChart';
 import SensitivityTable from './components/SensitivityTable';
 import Scenarios from './components/Scenarios';
@@ -71,8 +72,35 @@ function MenuRow({ label, sub, danger, onClick }) {
   );
 }
 
+function LangToggle() {
+  const { lang, toggle } = useLanguage();
+  return (
+    <button
+      onClick={toggle}
+      title={lang === 'en' ? 'Switch to Hebrew' : 'Switch to English'}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 5,
+        padding: '5px 10px',
+        background: 'rgba(255,255,255,0.06)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        border: '1px solid rgba(255,255,255,0.12)',
+        borderRadius: 'var(--radius-pill)',
+        cursor: 'pointer',
+        fontSize: 14,
+        transition: 'background 0.15s, border-color 0.15s',
+      }}
+    >
+      <span style={{ opacity: lang === 'he' ? 1 : 0.4, transition: 'opacity 0.15s' }}>🇮🇱</span>
+      <span style={{ fontSize: 9, color: 'var(--text-muted)', opacity: 0.4 }}>|</span>
+      <span style={{ opacity: lang === 'en' ? 1 : 0.4, transition: 'opacity 0.15s' }}>🇺🇸</span>
+    </button>
+  );
+}
+
 function UserMenu({ user, onLogout, darkMode, toggleTheme }) {
   const [open, setOpen] = useState(false);
+  const { t } = useLanguage();
   if (!user) return null;
   return (
     <div style={{ position: 'relative' }}>
@@ -106,24 +134,24 @@ function UserMenu({ user, onLogout, darkMode, toggleTheme }) {
             <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--gradient-brand)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700 }}>{user.charAt(0).toUpperCase()}</div>
             <div>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', color: 'var(--text-primary)' }}>{user}</div>
-              <div className="t-meta">PRO PLAN</div>
+              <div className="t-meta">{t('proPlan')}</div>
             </div>
           </div>
           {[
-            { label: 'Account',       sub: 'Profile' },
-            { label: 'Subscription',  sub: 'Pro · monthly' },
-            { label: 'Notifications', sub: 'Alerts' },
-            { label: 'Settings',      sub: 'Preferences' },
-            { label: 'Usage',         sub: 'API · limits' },
-            { label: 'Help',          sub: 'Docs · contact' },
+            { label: t('account'),       sub: t('accountSub') },
+            { label: t('subscription'),  sub: t('subscriptionSub') },
+            { label: t('notifications'), sub: t('notificationsSub') },
+            { label: t('settings'),      sub: t('settingsSub') },
+            { label: t('usage'),         sub: t('usageSub') },
+            { label: t('help'),          sub: t('helpSub') },
           ].map(it => <MenuRow key={it.label} label={it.label} sub={it.sub} onClick={() => setOpen(false)} />)}
           <MenuRow
-            label={darkMode ? 'Light Mode' : 'Dark Mode'}
-            sub="Switch appearance"
+            label={darkMode ? t('lightMode') : t('darkMode')}
+            sub={t('switchAppearance')}
             onClick={() => { toggleTheme(); setOpen(false); }}
           />
           <MenuRow
-            label="Sign out" sub="Log out of Noesis"
+            label={t('signOut')} sub={t('signOutSub')}
             danger
             onClick={() => { onLogout(); setOpen(false); }}
           />
@@ -226,6 +254,7 @@ export default function App() {
   const [user, setUser] = useState(() => localStorage.getItem('noesis-auth') || null);
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('vp-theme') !== 'light');
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const { t, isHe } = useLanguage();
 
   useEffect(() => {
     document.documentElement.className = darkMode ? 'dark' : 'light';
@@ -314,21 +343,21 @@ export default function App() {
 
   // ── Main tabs (simple) ──
   const mainTabs = [
-    { id:'overview',  label:'Overview' },
-    { id:'valuation', label:'Valuation' },
-    { id:'financials',label:'Financials' },
-    { id:'analysis',  label:'Analysis' },
-    { id:'docs',      label:'Documents' },
+    { id:'overview',  label: t('tabOverview') },
+    { id:'valuation', label: t('tabValuation') },
+    { id:'financials',label: t('tabFinancials') },
+    { id:'analysis',  label: t('tabAnalysis') },
+    { id:'docs',      label: t('tabDocs') },
   ];
 
   // ── Advanced tabs ──
   const advancedTabs = [
-    { id:'gordon',  label:'Gordon Model' },
-    { id:'ri',      label:'Value Models' },
-    { id:'capital', label:'Capital Alloc.' },
-    { id:'forward', label:'Forward View' },
-    { id:'market',  label:'Market Exp.' },
-    { id:'peers',   label:'Peers' },
+    { id:'gordon',  label: t('tabGordon') },
+    { id:'ri',      label: t('tabRI') },
+    { id:'capital', label: t('tabCapital') },
+    { id:'forward', label: t('tabForward') },
+    { id:'market',  label: t('tabMarket') },
+    { id:'peers',   label: t('tabPeers') },
   ];
 
   const allTabs = [...mainTabs, ...advancedTabs];
@@ -336,7 +365,7 @@ export default function App() {
   if (!user) return <Login onLogin={u => setUser(u)} />;
 
   return (
-    <div style={{minHeight:'100vh',background:'var(--bg-base)'}} dir="ltr">
+    <div style={{minHeight:'100vh',background:'var(--bg-base)'}} dir={isHe ? 'rtl' : 'ltr'}>
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
 
         {/* Header */}
@@ -345,10 +374,13 @@ export default function App() {
             <div className="logo-dot" />
             <div>
               <div className="wordmark" style={{ fontSize: 15 }}>NOESIS</div>
-              <div className="wordmark-tag" style={{ fontSize: 7 }}>Understand Value. Act Smarter.</div>
+              <div className="wordmark-tag" style={{ fontSize: 7 }}>{t('tagline')}</div>
             </div>
           </div>
-          <UserMenu user={user} onLogout={() => { localStorage.removeItem('noesis-auth'); setUser(null); }} darkMode={darkMode} toggleTheme={toggleTheme}/>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <LangToggle />
+            <UserMenu user={user} onLogout={() => { localStorage.removeItem('noesis-auth'); setUser(null); }} darkMode={darkMode} toggleTheme={toggleTheme}/>
+          </div>
         </div>
 
         {/* Ticker Tape */}
@@ -387,7 +419,7 @@ export default function App() {
             }}
           >
             <span style={{ color: ticker ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: ticker ? 500 : 400 }}>
-              {ticker || 'Search ticker…   AAPL · TSLA · MSFT · NVDA'}
+              {ticker || t('searchPlaceholder')}
             </span>
             <kbd style={{
               padding: '2px 8px', fontSize: 10,
@@ -399,7 +431,7 @@ export default function App() {
             }}>⌘K</kbd>
           </button>
           <button onClick={() => analyze()} disabled={loading} className="btn-brand" style={{ height: 42, padding: '0 24px', flexShrink: 0 }}>
-            {loading ? '⟳' : 'Analyze ▶'}
+            {loading ? '⟳' : t('analyzeCta')}
           </button>
         </div>
 
@@ -427,28 +459,28 @@ export default function App() {
               <div className="mb-4 fade-in" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
                 {[
                   {
-                    label: 'Fair Value',
+                    label: t('fairValue'),
                     value: dcf ? fmtPrice(dcf.fv) : 'N/A',
-                    sub: 'DCF · BASE CASE',
+                    sub: t('dcfBaseCase'),
                     subColor: 'var(--text-muted)',
                     spark: true,
                   },
                   {
-                    label: 'Implied Δ',
+                    label: t('impliedDelta'),
                     value: dcf?.fv ? ((dcf.fv / price - 1) >= 0 ? '+' : '') + fmt((dcf.fv / price - 1) * 100, 1) + '%' : 'N/A',
-                    sub: dcf?.fv && dcf.fv >= price ? 'UPSIDE' : 'DOWNSIDE',
+                    sub: dcf?.fv && dcf.fv >= price ? t('upside') : t('downside'),
                     subColor: dcf?.fv && dcf.fv >= price ? 'var(--green)' : 'var(--red)',
                   },
                   {
-                    label: 'FCF · TTM',
+                    label: t('fcfTTM'),
                     value: fmtB(data.financials.fcf),
-                    sub: `${fmt(data.financials.fcfMargin, 1)}% MARGIN`,
+                    sub: `${fmt(data.financials.fcfMargin, 1)}% ${t('margin')}`,
                     subColor: 'var(--text-muted)',
                   },
                   {
-                    label: 'Confidence',
+                    label: t('confidence'),
                     value: (scoreData.confidence || 'MEDIUM').toUpperCase(),
-                    sub: `${scoreData.dataQuality === 'high' ? 3 : 2} / 3 MODELS`,
+                    sub: `${scoreData.dataQuality === 'high' ? 3 : 2} / 3 ${t('models')}`,
                     subColor: scoreData.confidence === 'High' ? 'var(--green)' : 'var(--amber)',
                   },
                 ].map(c => (
@@ -467,7 +499,7 @@ export default function App() {
               {Math.abs(scoreData.expectationsGap) > 8 && (
                 <div className="mb-4 fade-in" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'var(--amber-bg)', border: '1px solid var(--amber-border)', color: 'var(--amber)', borderRadius: 'var(--radius-sm)', fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.04em' }}>
                   <span>⚠</span>
-                  Market implies <b style={{ marginLeft: 4 }}>{fmt(scoreData.impliedGrowth, 1)}%</b>&nbsp;FCF growth vs <b>{fmt(scoreData.revCAGR || 0, 1)}%</b>&nbsp;historical — significant gap
+                  {t('marketImplies')} <b style={{ margin: '0 4px' }}>{fmt(scoreData.impliedGrowth, 1)}%</b>{t('fcfGrowthVs')} <b>{fmt(scoreData.revCAGR || 0, 1)}%</b>{t('historical')}
                 </div>
               )}
             </>
@@ -484,7 +516,7 @@ export default function App() {
                 className={`tab ${showAdvanced ? 'active' : ''}`}
                 onClick={() => { setShowAdvanced(v => !v); if (!showAdvanced) setTab('gordon'); }}
                 style={{ marginLeft: 'auto', borderLeft: '1px solid var(--border)' }}>
-                {showAdvanced ? '▲ Less' : '⚙ Advanced'}
+                {showAdvanced ? t('less') : t('advanced')}
               </button>
             </div>
 
@@ -509,8 +541,8 @@ export default function App() {
                   <PriceChart ticker={data.profile.ticker} darkMode={darkMode}/>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
                     {[
-                      {title:'Profitability',rows:[['Revenue',fmtB(data.financials.revenue)],['EBITDA',fmtB(data.financials.ebitda)],['Net Income',fmtB(data.financials.netIncome)],['FCF',fmtB(data.financials.fcf)],['Gross Margin',fmtPct(data.financials.grossMargin)],['EBITDA Margin',fmtPct(data.financials.ebitdaMargin)],['Net Margin',fmtPct(data.financials.netMargin)],['FCF Margin',fmtPct(data.financials.fcfMargin)]]},
-                      {title:'Balance Sheet',rows:[['Total Assets',fmtB(data.financials.totalAssets)],['Equity',fmtB(data.financials.equity)],['Total Debt',fmtB(data.financials.totalDebt)],['Cash',fmtB(data.financials.cash)],['Net Debt',fmtB(data.financials.netDebt)],['ROE',fmtPct(data.financials.roe)],['ROIC',fmtPct(data.financials.roic)],['D/E',data.financials.debtToEquity?fmt(data.financials.debtToEquity,2)+'x':'N/A']]},
+                      {title:t('profitability'),rows:[[t('revenue'),fmtB(data.financials.revenue)],[t('ebitda'),fmtB(data.financials.ebitda)],[t('netIncome'),fmtB(data.financials.netIncome)],[t('fcf'),fmtB(data.financials.fcf)],[t('grossMargin'),fmtPct(data.financials.grossMargin)],[t('ebitdaMargin'),fmtPct(data.financials.ebitdaMargin)],[t('netMargin'),fmtPct(data.financials.netMargin)],[t('fcfMargin'),fmtPct(data.financials.fcfMargin)]]},
+                      {title:t('balanceSheet'),rows:[[t('totalAssets'),fmtB(data.financials.totalAssets)],[t('equity'),fmtB(data.financials.equity)],[t('totalDebt'),fmtB(data.financials.totalDebt)],[t('cash'),fmtB(data.financials.cash)],[t('netDebt'),fmtB(data.financials.netDebt)],[t('roe'),fmtPct(data.financials.roe)],[t('roic'),fmtPct(data.financials.roic)],[t('deRatio'),data.financials.debtToEquity?fmt(data.financials.debtToEquity,2)+'x':'N/A']]},
                     ].map(section=>(
                       <div key={section.title}>
                         <div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>{section.title}</div>
@@ -530,10 +562,10 @@ export default function App() {
                   
                   {/* Multiples — compact */}
                   <div style={C.card} className="p-4 mt-4">
-                    <div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>Key Multiples</div>
+                    <div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>{t('keyMultiples')}</div>
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm" style={{minWidth:300}}>
-                        <thead><tr className="text-xs" style={{...C.m,...C.bdr}}><th className="pb-2 text-left">Multiple</th><th className="pb-2 text-right">Current</th><th className="pb-2 text-right">Fair Value</th><th className="pb-2 text-right">vs Market</th></tr></thead>
+                        <thead><tr className="text-xs" style={{...C.m,...C.bdr}}><th className="pb-2 text-left">{t('multiple')}</th><th className="pb-2 text-right">{t('current')}</th><th className="pb-2 text-right">{t('fairValue')}</th><th className="pb-2 text-right">{t('vsMarket')}</th></tr></thead>
                         <tbody>{[
                           {name:'P/E',val:data.multiples.pe,base:data.multiples.eps,target:20},
                           {name:'P/E Fwd',val:data.multiples.forwardPE,base:data.multiples.eps,target:18},
@@ -551,12 +583,12 @@ export default function App() {
                     </div>
                     {data.multiples.targetPrice && (
                       <div className="mt-3 pt-3 flex items-center gap-4 text-xs" style={{borderTop:'1px solid var(--border)'}}>
-                        <span style={C.m}>Analyst Target:</span>
+                        <span style={C.m}>{t('analystTarget')}</span>
                         <span className="font-bold num" style={C.accent}>{fmtPrice(data.multiples.targetPrice)}</span>
                         <span style={{color:data.multiples.targetPrice>price?'var(--green)':'var(--red)',fontWeight:600}}>
                           {data.multiples.targetPrice>price?'+':''}{fmt((data.multiples.targetPrice/price-1)*100,1)}%
                         </span>
-                        <span style={C.m}>{data.multiples.analystRating} · {data.multiples.numberOfAnalysts} analysts</span>
+                        <span style={C.m}>{data.multiples.analystRating} · {data.multiples.numberOfAnalysts} {t('analysts')}</span>
                       </div>
                     )}
                   </div>
@@ -570,21 +602,21 @@ export default function App() {
                     const hist=(period==='quarterly'?quarterlyHistory:data.history)||[];
                     const revArr=hist.filter(r=>r.revenue&&r.revenue>0);
                     const revCAGR=revArr.length>=2?((revArr[revArr.length-1].revenue/revArr[0].revenue)**(1/(revArr.length-1))-1)*100:null;
-                    const tw=revCAGR!==null?revCAGR>10?`High-growth: ${fmt(revCAGR,1)}% revenue CAGR`:revCAGR>5?`Moderate: ${fmt(revCAGR,1)}% CAGR`:`Mature: ${fmt(revCAGR,1)}% CAGR`:'Stable business';
+                    const tw=revCAGR!==null?revCAGR>10?t('highGrowth',fmt(revCAGR,1)):revCAGR>5?t('moderateGrowth',fmt(revCAGR,1)):t('matureGrowth',fmt(revCAGR,1)):t('stableBusiness');
                     return(
                       <div>
                         <div className="rounded-xl p-3 mb-4 border-l-4" style={{background:'var(--green-bg)',borderLeftColor:'var(--green)'}}>
-                          <div className="text-xs font-bold uppercase tracking-widest mb-1" style={C.m}>Takeaway</div>
+                          <div className="text-xs font-bold uppercase tracking-widest mb-1" style={C.m}>{t('takeaway')}</div>
                           <div className="text-sm font-semibold" style={C.p}>{tw}</div>
                         </div>
                         <div className="flex gap-2 mb-4">
-                          <button onClick={()=>setPeriod('annual')} className="px-4 py-1.5 text-xs font-semibold rounded-lg" style={{background:period==='annual'?'var(--accent)':'var(--bg-subtle)',color:period==='annual'?'white':'var(--text-muted)',border:'1px solid var(--border)'}}>Annual</button>
-                          <button onClick={loadQuarterly} disabled={quarterlyLoading} className="px-4 py-1.5 text-xs font-semibold rounded-lg" style={{background:period==='quarterly'?'var(--accent)':'var(--bg-subtle)',color:period==='quarterly'?'white':'var(--text-muted)',border:'1px solid var(--border)'}}>{quarterlyLoading?'⟳ Loading...':'Quarterly'}</button>
+                          <button onClick={()=>setPeriod('annual')} className="px-4 py-1.5 text-xs font-semibold rounded-lg" style={{background:period==='annual'?'var(--accent)':'var(--bg-subtle)',color:period==='annual'?'white':'var(--text-muted)',border:'1px solid var(--border)'}}>{t('annual')}</button>
+                          <button onClick={loadQuarterly} disabled={quarterlyLoading} className="px-4 py-1.5 text-xs font-semibold rounded-lg" style={{background:period==='quarterly'?'var(--accent)':'var(--bg-subtle)',color:period==='quarterly'?'white':'var(--text-muted)',border:'1px solid var(--border)'}}>{quarterlyLoading?t('loadingQuarterly'):t('quarterly')}</button>
                         </div>
                         <div className="overflow-x-auto">
                           <table className="w-full text-sm mb-4" style={{minWidth:320}}>
-                            <thead><tr className="text-xs" style={{...C.m,...C.bdr}}><th className="pb-2 text-left">Metric</th>{hist.map(r=><th key={r.year} className="pb-2 text-right num">{r.year}</th>)}</tr></thead>
-                            <tbody>{[{label:'Revenue',key:'revenue'},{label:'EBITDA',key:'ebitda'},{label:'Net Income',key:'netIncome'},{label:'FCF',key:'fcf'},{label:'Gross Margin',key:'grossMargin',pct:true},{label:'Net Margin',key:'netMargin',pct:true}].map(row=>(
+                            <thead><tr className="text-xs" style={{...C.m,...C.bdr}}><th className="pb-2 text-left">{t('metric')}</th>{hist.map(r=><th key={r.year} className="pb-2 text-right num">{r.year}</th>)}</tr></thead>
+                            <tbody>{[{label:t('revenue'),key:'revenue'},{label:t('ebitda'),key:'ebitda'},{label:t('netIncome'),key:'netIncome'},{label:t('fcf'),key:'fcf'},{label:t('grossMargin'),key:'grossMargin',pct:true},{label:t('netMargin'),key:'netMargin',pct:true}].map(row=>(
                               <tr key={row.label} style={C.bdr}><td className="py-1.5 font-medium" style={C.s}>{row.label}</td>{hist.map(r=><td key={r.year} className="py-1.5 text-right num" style={C.p}>{row.pct?fmtPct(r[row.key]):fmtB(r[row.key])}</td>)}</tr>
                             ))}</tbody>
                           </table>
@@ -612,7 +644,7 @@ export default function App() {
               {/* ── DOCUMENTS ── */}
               {tab==='docs' && (
                 <div>
-                  <div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>Official Reports & Documents</div>
+                  <div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>{t('officialDocs')}</div>
                   <div className="flex flex-col gap-2">
                     {data.links?.map((l,i)=>(
                       <a key={i} href={l.url} target="_blank" rel="noopener noreferrer"
@@ -630,24 +662,24 @@ export default function App() {
               {tab==='gordon' && (()=>{
                 const spread=gordonP.r-gordonP.g,dps=data.multiples.dps||0;
                 const upside=gordonFV&&price?(gordonFV/price-1)*100:null;
-                const tw=!dps||dps===0?'No dividend — Gordon model not applicable':gordonFV&&price&&gordonFV<price?'Model suggests overvaluation':'Model suggests fair or undervaluation';
+                const tw=!dps||dps===0?t('gordonNoDiv'):gordonFV&&price&&gordonFV<price?t('gordonSuggestsOver'):t('gordonSuggests');
                 return(
                   <div>
-                    <div className="rounded-xl p-4 mb-4 border-l-4" style={{background:!dps?'var(--amber-bg)':gordonFV&&price&&gordonFV<price?'var(--red-bg)':'var(--green-bg)',borderLeftColor:!dps?'var(--amber)':gordonFV&&price&&gordonFV<price?'var(--red)':'var(--green)'}}><div className="text-xs font-bold uppercase tracking-widest mb-1" style={C.m}>Gordon Model</div><div className="text-sm font-semibold" style={C.p}>{tw}</div></div>
-                    <div className="grid grid-cols-2 gap-3 mb-4">{[{key:'r',label:'Required Return (%)'},{key:'g',label:'Dividend Growth (%)'}].map(p=>(<div key={p.key}><label className="text-xs block mb-1" style={C.m}>{p.label}</label><input type="number" step="0.5" value={gordonP[p.key]} onChange={e=>setGordonP(prev=>({...prev,[p.key]:parseFloat(e.target.value)||0}))} className="w-full h-9 px-3 text-sm text-right num" style={{background:'var(--bg-input)',border:'1px solid var(--border)',borderRadius:'var(--radius-sm)',color:'var(--text-primary)'}}/></div>))}</div>
-                    <div className="rounded-xl p-4" style={C.sub}>{gordonFV?(<><div className="text-sm mb-1" style={C.m}>Fair Value</div><div className="text-3xl font-black num" style={C.green}>{fmtPrice(gordonFV)}</div>{upside!=null&&<div className="text-sm font-bold mt-2 num" style={{color:upside>=0?'var(--green)':'var(--red)'}}>{upside>=0?'+':''}{fmt(upside,1)}% vs market</div>}</>):<div className="text-sm" style={C.amber}>No dividend — model not applicable.</div>}</div>
+                    <div className="rounded-xl p-4 mb-4 border-l-4" style={{background:!dps?'var(--amber-bg)':gordonFV&&price&&gordonFV<price?'var(--red-bg)':'var(--green-bg)',borderLeftColor:!dps?'var(--amber)':gordonFV&&price&&gordonFV<price?'var(--red)':'var(--green)'}}><div className="text-xs font-bold uppercase tracking-widest mb-1" style={C.m}>{t('gordonModel')}</div><div className="text-sm font-semibold" style={C.p}>{tw}</div></div>
+                    <div className="grid grid-cols-2 gap-3 mb-4">{[{key:'r',label:t('requiredReturn')},{key:'g',label:t('dividendGrowth')}].map(p=>(<div key={p.key}><label className="text-xs block mb-1" style={C.m}>{p.label}</label><input type="number" step="0.5" value={gordonP[p.key]} onChange={e=>setGordonP(prev=>({...prev,[p.key]:parseFloat(e.target.value)||0}))} className="w-full h-9 px-3 text-sm text-right num" style={{background:'var(--bg-input)',border:'1px solid var(--border)',borderRadius:'var(--radius-sm)',color:'var(--text-primary)'}}/></div>))}</div>
+                    <div className="rounded-xl p-4" style={C.sub}>{gordonFV?(<><div className="text-sm mb-1" style={C.m}>{t('fairValue')}</div><div className="text-3xl font-black num" style={C.green}>{fmtPrice(gordonFV)}</div>{upside!=null&&<div className="text-sm font-bold mt-2 num" style={{color:upside>=0?'var(--green)':'var(--red)'}}>{upside>=0?'+':''}{fmt(upside,1)}% {t('vsMarketLc')}</div>}</>):<div className="text-sm" style={C.amber}>{t('gordonNoApply')}</div>}</div>
                   </div>
                 );
               })()}
 
               {tab==='ri' && (
                 <div>
-                  <div className="grid grid-cols-2 gap-3 mb-5">{[{key:'ke',label:'Cost of Equity (%)'},{key:'g',label:'Growth Rate (%)'}].map(p=>(<div key={p.key}><label className="text-xs block mb-1" style={C.m}>{p.label}</label><input type="number" step="0.5" value={riP[p.key]} onChange={e=>setRiP(prev=>({...prev,[p.key]:parseFloat(e.target.value)||0}))} className="w-full h-9 px-3 text-sm text-right num" style={{background:'var(--bg-input)',border:'1px solid var(--border)',borderRadius:'var(--radius-sm)',color:'var(--text-primary)'}}/></div>))}</div>
+                  <div className="grid grid-cols-2 gap-3 mb-5">{[{key:'ke',label:t('costOfEquity')},{key:'g',label:t('growthRate')}].map(p=>(<div key={p.key}><label className="text-xs block mb-1" style={C.m}>{p.label}</label><input type="number" step="0.5" value={riP[p.key]} onChange={e=>setRiP(prev=>({...prev,[p.key]:parseFloat(e.target.value)||0}))} className="w-full h-9 px-3 text-sm text-right num" style={{background:'var(--bg-input)',border:'1px solid var(--border)',borderRadius:'var(--radius-sm)',color:'var(--text-primary)'}}/></div>))}</div>
                   <div className="rounded-xl p-4" style={C.sub}>
-                    <div className="grid grid-cols-3 gap-3 mb-4">{[['BV/Share',fmtPrice(data.multiples.bvps)],['ROE',fmtPct(data.financials.roe)],['Cost of Eq',riP.ke+'%']].map(([l,v])=>(<div key={l}><div className="text-xs mb-1" style={C.m}>{l}</div><div className="font-bold text-base num" style={C.p}>{v}</div></div>))}</div>
-                    {riFV?(<><div className="text-sm mb-1" style={C.m}>Residual Income Fair Value</div><div className="text-3xl font-black num" style={C.green}>{fmtPrice(riFV)}</div></>):<div className="text-sm" style={C.amber}>Insufficient data</div>}
+                    <div className="grid grid-cols-3 gap-3 mb-4">{[[t('bvShare'),fmtPrice(data.multiples.bvps)],[t('roe'),fmtPct(data.financials.roe)],[t('costOfEq'),riP.ke+'%']].map(([l,v])=>(<div key={l}><div className="text-xs mb-1" style={C.m}>{l}</div><div className="font-bold text-base num" style={C.p}>{v}</div></div>))}</div>
+                    {riFV?(<><div className="text-sm mb-1" style={C.m}>{t('riFairValue')}</div><div className="text-3xl font-black num" style={C.green}>{fmtPrice(riFV)}</div></>):<div className="text-sm" style={C.amber}>{t('insufficientData')}</div>}
                   </div>
-                  {data?.valuation?.grahamNumber&&(<div className="rounded-xl p-4 mt-4" style={{background:'var(--accent-subtle)',border:'1px solid var(--accent)'}}><div className="text-sm font-bold mb-1" style={C.accent}>Graham Number</div><div className="text-2xl font-black num" style={C.accent}>{fmtPrice(data.valuation.grahamNumber)}</div>{price&&<div className="text-sm font-bold mt-1 num" style={{color:data.valuation.grahamNumber>price?'var(--green)':'var(--red)'}}>{data.valuation.grahamNumber>price?'+':''}{fmt((data.valuation.grahamNumber/price-1)*100,1)}% vs market</div>}</div>)}
+                  {data?.valuation?.grahamNumber&&(<div className="rounded-xl p-4 mt-4" style={{background:'var(--accent-subtle)',border:'1px solid var(--accent)'}}><div className="text-sm font-bold mb-1" style={C.accent}>{t('grahamNumber')}</div><div className="text-2xl font-black num" style={C.accent}>{fmtPrice(data.valuation.grahamNumber)}</div>{price&&<div className="text-sm font-bold mt-1 num" style={{color:data.valuation.grahamNumber>price?'var(--green)':'var(--red)'}}>{data.valuation.grahamNumber>price?'+':''}{fmt((data.valuation.grahamNumber/price-1)*100,1)}% {t('vsMarketLc')}</div>}</div>)}
                 </div>
               )}
 
@@ -657,8 +689,8 @@ export default function App() {
                 const dp=ca.dividendsPaid||0,bb=ca.shareRepurchase||0;
                 return(
                   <div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">{[{label:'Dividend Yield',value:dy.toFixed(2)+'%',color:'var(--green)'},{label:'Buyback Yield',value:by.toFixed(2)+'%',color:'var(--accent)'},{label:'Total Yield',value:tr.toFixed(2)+'%',color:'var(--amber)',hi:true},{label:'Payout Ratio',value:ca.payoutRatio?(ca.payoutRatio*100).toFixed(1)+'%':'—',color:'var(--text-primary)'}].map(item=>(<div key={item.label} className="rounded-xl p-3" style={{background:item.hi?'var(--amber-bg)':'var(--bg-subtle)',border:`1px solid ${item.hi?'var(--amber)':'var(--border)'}`}}><div className="text-xs mb-1" style={C.m}>{item.label}</div><div className="text-xl font-black num" style={{color:item.color}}>{item.value}</div></div>))}</div>
-                    <div className="rounded-xl p-4" style={{background:'var(--accent-subtle)',border:'1px solid var(--accent)'}}><div className="text-xs font-bold uppercase tracking-widest mb-2" style={C.accent}>💡 Insight</div><div className="text-sm" style={C.s}>{tr>5?`${data.profile.ticker} returns ${tr.toFixed(1)}% annually — strong capital return story`:tr>2?`Moderate ${tr.toFixed(1)}% total yield`:`${data.profile.ticker} prioritizes reinvestment`}</div></div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">{[{label:t('dividendYield'),value:dy.toFixed(2)+'%',color:'var(--green)'},{label:t('buybackYield'),value:by.toFixed(2)+'%',color:'var(--accent)'},{label:t('totalYield'),value:tr.toFixed(2)+'%',color:'var(--amber)',hi:true},{label:t('payoutRatio'),value:ca.payoutRatio?(ca.payoutRatio*100).toFixed(1)+'%':'—',color:'var(--text-primary)'}].map(item=>(<div key={item.label} className="rounded-xl p-3" style={{background:item.hi?'var(--amber-bg)':'var(--bg-subtle)',border:`1px solid ${item.hi?'var(--amber)':'var(--border)'}`}}><div className="text-xs mb-1" style={C.m}>{item.label}</div><div className="text-xl font-black num" style={{color:item.color}}>{item.value}</div></div>))}</div>
+                    <div className="rounded-xl p-4" style={{background:'var(--accent-subtle)',border:'1px solid var(--accent)'}}><div className="text-xs font-bold uppercase tracking-widest mb-2" style={C.accent}>{t('insight')}</div><div className="text-sm" style={C.s}>{tr>5?t('capitalStrongReturn',data.profile.ticker,tr.toFixed(1)):tr>2?t('capitalModerate',tr.toFixed(1)):t('capitalReinvest',data.profile.ticker)}</div></div>
                   </div>
                 );
               })()}
@@ -673,7 +705,7 @@ export default function App() {
           </div>
 
           <div className="flex gap-3 pb-6">
-            <button onClick={exportExcel} className="btn-brand h-10 px-4 sm:px-6 text-sm">⬇ Export Excel</button>
+            <button onClick={exportExcel} className="btn-brand h-10 px-4 sm:px-6 text-sm">{t('exportExcel')}</button>
           </div>
         </>)}
       </div>

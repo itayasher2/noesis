@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useLanguage } from '../i18n.jsx';
 
 const API = 'https://web-production-bdb26.up.railway.app/api';
 
@@ -61,6 +62,7 @@ const median = arr => {
 export default function PeerComparison({ ticker, sector, currentPE, currentEVEbitda, currentPS, currentPB, currentLogo, currentName, currentNetMargin, currentRevGrowth }) {
   const [peers, setPeers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { t } = useLanguage();
 
   const peerTickers = (PEERS[sector] || PEERS.default).filter(t => t !== ticker).slice(0, 4);
 
@@ -156,12 +158,12 @@ export default function PeerComparison({ ticker, sector, currentPE, currentEVEbi
   ];
 
   const metrics = [
-    { key: 'pe', label: 'P/E', peerAvg: avgPE, peerMed: medPE, higherIsBad: true, primary: false },
-    { key: 'evEbitda', label: 'EV/EBITDA', peerAvg: avgEV, peerMed: medEV, higherIsBad: true, primary: true, star: true },
-    { key: 'ps', label: 'P/S', peerAvg: avgPS, peerMed: null, higherIsBad: true, primary: false },
-    { key: 'pb', label: 'P/B', peerAvg: avgPB, peerMed: null, higherIsBad: true, primary: false },
-    { key: 'netMargin', label: 'Net Margin', peerAvg: avgMargin, peerMed: null, higherIsBad: false, primary: false, suffix: '%' },
-    { key: 'revGrowth', label: 'Rev Growth', peerAvg: avgGrowth, peerMed: null, higherIsBad: false, primary: false, suffix: '%' },
+    { key: 'pe', label: t('pe'), peerAvg: avgPE, peerMed: medPE, higherIsBad: true, primary: false },
+    { key: 'evEbitda', label: t('evEbitda'), peerAvg: avgEV, peerMed: medEV, higherIsBad: true, primary: true, star: true },
+    { key: 'ps', label: t('ps'), peerAvg: avgPS, peerMed: null, higherIsBad: true, primary: false },
+    { key: 'pb', label: t('pb'), peerAvg: avgPB, peerMed: null, higherIsBad: true, primary: false },
+    { key: 'netMargin', label: t('netMarginCol'), peerAvg: avgMargin, peerMed: null, higherIsBad: false, primary: false, suffix: '%' },
+    { key: 'revGrowth', label: t('revGrowth'), peerAvg: avgGrowth, peerMed: null, higherIsBad: false, primary: false, suffix: '%' },
   ];
 
   const card = {
@@ -173,7 +175,7 @@ export default function PeerComparison({ ticker, sector, currentPE, currentEVEbi
 
   return (
     <div>
-      <div className="t-eyebrow" style={{ marginBottom: 16 }}>Peer Comparison — {sector}</div>
+      <div className="t-eyebrow" style={{ marginBottom: 16 }}>{t('peerComparison')} — {sector}</div>
 
       {/* Takeaway */}
       <div style={{
@@ -185,7 +187,7 @@ export default function PeerComparison({ ticker, sector, currentPE, currentEVEbi
         border: `1px solid ${isPremium ? 'rgba(239,68,68,0.20)' : isDiscount ? 'rgba(16,185,129,0.20)' : 'var(--border)'}`,
         borderLeftWidth: 4,
       }}>
-        <div className="t-eyebrow" style={{ marginBottom: 4 }}>Peer Takeaway</div>
+        <div className="t-eyebrow" style={{ marginBottom: 4 }}>{t('takeawayPeer')}</div>
         <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.5 }}>{takeaway}</div>
         {isPremium && belowAvgGrowth && (
           <div style={{ fontSize: 12, color: 'var(--red)', marginTop: 6, fontWeight: 500 }}>
@@ -241,7 +243,7 @@ export default function PeerComparison({ ticker, sector, currentPE, currentEVEbi
 
       {loading && (
         <div style={{ textAlign: 'center', padding: '16px 0', fontSize: 13, color: 'var(--text-muted)' }}>
-          Loading peer data…
+          {t('loadingPeers')}
         </div>
       )}
 
@@ -297,7 +299,7 @@ export default function PeerComparison({ ticker, sector, currentPE, currentEVEbi
                 <td style={{ padding: '8px 16px 8px 0' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <div style={{ width: 24, height: 24, borderRadius: 4, background: 'rgba(125,211,252,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: 'var(--accent)', fontWeight: 700 }}>≈</div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent)' }}>Peer Avg</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent)' }}>{t('peerAvg')}</div>
                   </div>
                 </td>
                 {metrics.map(m => (

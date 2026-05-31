@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLanguage } from '../i18n.jsx';
 
 const USERS = [
   { username: 'admin', password: 'noesis2025' },
@@ -25,6 +26,7 @@ export default function Login({ onLogin }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { t, isHe } = useLanguage();
 
   const submit = () => {
     setLoading(true);
@@ -35,7 +37,7 @@ export default function Login({ onLogin }) {
         localStorage.setItem('noesis-auth', user.username);
         onLogin(user.username);
       } else {
-        setError('Invalid username or password');
+        setError(t('invalidCredentials'));
       }
       setLoading(false);
     }, 500);
@@ -46,7 +48,7 @@ export default function Login({ onLogin }) {
       minHeight: '100vh',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: 20,
-    }}>
+    }} dir={isHe ? 'rtl' : 'ltr'}>
       <div className="card glow" style={{ width: 380, padding: '32px 32px 28px' }}>
 
         {/* Brand */}
@@ -54,20 +56,20 @@ export default function Login({ onLogin }) {
           <div className="logo-dot" style={{ width: 10, height: 10 }} />
           <div>
             <div className="wordmark" style={{ fontSize: 16 }}>NOESIS</div>
-            <div className="wordmark-tag" style={{ fontSize: 7.5 }}>Understand Value. Act Smarter.</div>
+            <div className="wordmark-tag" style={{ fontSize: 7.5 }}>{t('tagline')}</div>
           </div>
         </div>
 
         {/* Title */}
         <div style={{ marginBottom: 22 }}>
-          <div className="t-eyebrow" style={{ marginBottom: 8, fontSize: 12 }}>Sign in</div>
-          <div className="t-body-sm">Enter credentials to access Noesis</div>
+          <div className="t-eyebrow" style={{ marginBottom: 8, fontSize: 12 }}>{t('signIn')}</div>
+          <div className="t-body-sm">{t('enterCredentials')}</div>
         </div>
 
         {/* Fields */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 18 }}>
-          <Field label="Username" value={username} onChange={setUsername} onEnter={submit} />
-          <Field label="Password" type="password" value={password} onChange={setPassword} onEnter={submit} />
+          <Field label={t('username')} value={username} onChange={setUsername} onEnter={submit} />
+          <Field label={t('password')} type="password" value={password} onChange={setPassword} onEnter={submit} />
         </div>
 
         {/* Error strip */}
@@ -93,11 +95,11 @@ export default function Login({ onLogin }) {
           className="btn-brand"
           style={{ height: 42, width: '100%', justifyContent: 'center' }}
         >
-          {loading ? '⟳ Signing in…' : 'Sign in →'}
+          {loading ? t('signingIn') : t('signInCta')}
         </button>
 
         <div className="t-meta" style={{ textAlign: 'center', marginTop: 20 }}>
-          NOESIS · EQUITY VALUATION PLATFORM
+          {t('equityPlatform')}
         </div>
 
         <div style={{

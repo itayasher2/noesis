@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { fmt, fmtPrice } from '../utils/format';
+import { useLanguage } from '../i18n.jsx';
 
 const API = 'https://web-production-bdb26.up.railway.app/api';
 
@@ -44,6 +45,7 @@ export default function HeroSection({ data, scoreData, dcf }) {
   const [livePrice, setLivePrice]     = useState(null);
   const [livePct, setLivePct]         = useState(null);
   const [marketOpen, setMarketOpen]   = useState(isMarketOpen());
+  const { t } = useLanguage();
 
   // AI insight
   useEffect(() => {
@@ -76,7 +78,6 @@ export default function HeroSection({ data, scoreData, dcf }) {
         if (res.data?.price) {
           setLivePrice(res.data.price);
           setLivePct(res.data.changePct);
-          // Use server-side marketState if available
           if (res.data.marketState) {
             setMarketOpen(res.data.marketState === 'REGULAR');
           }
@@ -125,7 +126,7 @@ export default function HeroSection({ data, scoreData, dcf }) {
             </div>
             <div className="t-meta" style={{ marginTop: 4 }}>
               {data.profile.exchange}
-              {data.profile.employees ? ` · ${(data.profile.employees / 1000).toFixed(0)}K employees` : ''}
+              {data.profile.employees ? ` · ${(data.profile.employees / 1000).toFixed(0)}${t('employees')}` : ''}
               {data.profile.country ? ` · ${data.profile.country}` : ''}
             </div>
           </div>
@@ -141,9 +142,9 @@ export default function HeroSection({ data, scoreData, dcf }) {
                   background: 'var(--green)', boxShadow: '0 0 6px var(--green)',
                   animation: 'pulse 2s infinite',
                 }} />
-                LIVE
+                {t('live')}
               </>
-            ) : 'PREV CLOSE'}
+            ) : t('prevClose')}
           </div>
 
           {/* Price */}
@@ -152,13 +153,13 @@ export default function HeroSection({ data, scoreData, dcf }) {
           {/* Change + market closed */}
           <div style={{ marginTop: 4, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
             <span className="t-meta" style={{ color: changePct >= 0 ? 'var(--green)' : 'var(--red)' }}>
-              {changePct >= 0 ? '+' : ''}{fmt(changePct, 2)}% TODAY
+              {changePct >= 0 ? '+' : ''}{fmt(changePct, 2)}% {t('today')}
             </span>
             {mktCap && (
-              <span className="t-meta" style={{ color: 'var(--text-muted)' }}>· MKT CAP {mktCap}</span>
+              <span className="t-meta" style={{ color: 'var(--text-muted)' }}>· {t('mktCap')} {mktCap}</span>
             )}
             {!marketOpen && (
-              <span className="t-meta" style={{ color: 'var(--text-muted)', opacity: 0.7 }}>· Market Closed</span>
+              <span className="t-meta" style={{ color: 'var(--text-muted)', opacity: 0.7 }}>· {t('marketClosed')}</span>
             )}
           </div>
         </div>
@@ -167,13 +168,13 @@ export default function HeroSection({ data, scoreData, dcf }) {
       {/* Badges */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
         <div className={`badge ${klass}`}>{verdict} · {action}</div>
-        <div className="badge ghost">Confidence · {scoreData.confidence || 'Medium'}</div>
+        <div className="badge ghost">{t('confidenceBadge')} · {scoreData.confidence || 'Medium'}</div>
         {upside !== null && (
           <div className={`badge ${upside >= 0 ? 'up' : 'down'}`}>
-            {upside >= 0 ? '+' : ''}{fmt(upside, 1)}% vs Fair Value
+            {upside >= 0 ? '+' : ''}{fmt(upside, 1)}% {t('vsFairValue')}
           </div>
         )}
-        <div className="badge ghost">Style · {scoreData.companyStyle || 'Blend'}</div>
+        <div className="badge ghost">{t('style')} · {scoreData.companyStyle || 'Blend'}</div>
       </div>
 
       {/* AI Insight strip */}
@@ -186,10 +187,10 @@ export default function HeroSection({ data, scoreData, dcf }) {
       }}>
         <div style={{ width: 3, background: 'var(--accent)', boxShadow: '0 0 8px var(--accent)', flexShrink: 0 }} />
         <div style={{ padding: '10px 14px', flex: 1 }}>
-          <div className="t-eyebrow" style={{ color: 'var(--accent)', marginBottom: 4 }}>Key insight · AI</div>
+          <div className="t-eyebrow" style={{ color: 'var(--accent)', marginBottom: 4 }}>{t('keyInsightAI')}</div>
           <div className="t-body-sm" style={{ fontStyle: 'italic' }}>
             {insightLoading
-              ? `Analyzing ${data.profile.ticker}…`
+              ? `${t('analyzeCta').replace(' ▶','')} ${data.profile.ticker}…`
               : `"${insight?.keyInsight || `Trades at ${upside !== null && upside > 0 ? 'a discount' : 'a premium'} to fair value with ${Math.abs(scoreData.expectationsGap || 0) < 6 ? 'reasonable' : 'aggressive'} growth assumptions.`}"`
             }
           </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useLanguage } from '../i18n.jsx';
 
 const API = 'https://web-production-bdb26.up.railway.app/api';
 
@@ -47,6 +48,7 @@ export default function BusinessDrivers({ data }) {
   const [drivers, setDrivers]   = useState(null);
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState('');
+  const { t } = useLanguage();
 
   const fetchDrivers = async () => {
     setLoading(true);
@@ -60,7 +62,7 @@ export default function BusinessDrivers({ data }) {
       });
       setDrivers(res.data.drivers);
     } catch (e) {
-      setError(e.response?.data?.error || 'Failed to load. Please try again.');
+      setError(e.response?.data?.error || t('failedLoad'));
     } finally {
       setLoading(false);
     }
@@ -79,13 +81,13 @@ export default function BusinessDrivers({ data }) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div>
-          <div className="t-eyebrow" style={{ marginBottom: 4 }}>Business Drivers</div>
+          <div className="t-eyebrow" style={{ marginBottom: 4 }}>{t('businessDrivers')}</div>
           <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-            Key value drivers for <strong style={{ color: 'var(--text-primary)' }}>{data.profile.name}</strong>
+            {t('keyValueDriversFor')} <strong style={{ color: 'var(--text-primary)' }}>{data.profile.name}</strong>
           </div>
         </div>
         <button onClick={fetchDrivers} disabled={loading} className="btn-brand" style={{ height: 34, padding: '0 14px', fontSize: 12 }}>
-          {loading ? '⟳' : '↺ Refresh'}
+          {loading ? '⟳' : t('refresh')}
         </button>
       </div>
 
@@ -93,7 +95,7 @@ export default function BusinessDrivers({ data }) {
       {error && !loading && (
         <div style={{ padding: '12px 16px', background: 'var(--red-bg)', border: '1px solid var(--red)', borderRadius: 10, color: 'var(--red)', fontSize: 13, marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span>⚠ {error}</span>
-          <button onClick={fetchDrivers} style={{ background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', fontSize: 12, textDecoration: 'underline' }}>Retry</button>
+          <button onClick={fetchDrivers} style={{ background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', fontSize: 12, textDecoration: 'underline' }}>{t('retry')}</button>
         </div>
       )}
 
@@ -163,7 +165,7 @@ export default function BusinessDrivers({ data }) {
 
                   {/* Magnitude bars */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Magnitude:</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t('magnitude')}</span>
                     <div style={{ display: 'flex', gap: 3 }}>
                       {[1,2,3].map(bar => (
                         <div key={bar} style={{
@@ -189,22 +191,22 @@ export default function BusinessDrivers({ data }) {
           }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--green)' }}>{primary.length}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Growth Drivers</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t('growthDrivers')}</div>
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--red)' }}>{risks.length}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Risks / Headwinds</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t('risksHeadwinds')}</div>
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--accent)' }}>
                 {drivers.filter(d => d.magnitude === 'high').length}
               </div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>High Magnitude</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t('highMagnitude')}</div>
             </div>
           </div>
 
           <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text-muted)', textAlign: 'right' }}>
-            ⚡ AI-powered · based on {data.history?.length || 0}Y financial data
+            {t('aiPoweredBased')} {data.history?.length || 0}{t('financialDataYears')}
           </div>
         </>
       )}
