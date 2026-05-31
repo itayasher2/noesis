@@ -12,7 +12,8 @@ function n(v) { return (v != null && !isNaN(v)) ? Number(v) : null; }
 
 router.post('/business-drivers', async (req, res) => {
   try {
-    const { profile, financials, history, multiples } = req.body;
+    const { profile, financials, history, multiples, lang } = req.body;
+    const isHe = lang === 'he';
 
     const revCAGR = history && history.length >= 2
       ? (((history[history.length-1].revenue / history[0].revenue) ** (1/(history.length-1))) - 1) * 100
@@ -56,7 +57,9 @@ Rules:
     "Supporting driver — margin or risk factor"
     "Risk factor — potential value headwind"
 - financialLink must include a number or percentage
-- Be specific to ${profile.ticker}, not generic sector commentary`;
+- Be specific to ${profile.ticker}, not generic sector commentary${isHe ? `
+
+IMPORTANT: Write the text fields "driver", "description", "metric", "financialLink" in natural, professional Hebrew (עברית) using correct Israeli financial terminology. Keep these exact English enum values unchanged — do NOT translate them: impact (positive/negative/neutral), magnitude (high/medium/low), trend (growing/stable/declining), valuationImpact (use exact strings from the Rules section above).` : ''}`;
 
     const response = await axios({
       method: 'post',
@@ -87,7 +90,8 @@ Rules:
 
 router.post('/hero-insight', async (req, res) => {
   try {
-    const { profile, financials, multiples, scoreData, history } = req.body;
+    const { profile, financials, multiples, scoreData, history, lang } = req.body;
+    const isHe = lang === 'he';
 
     const revCAGR = history && history.length >= 2
       ? (((history[history.length-1].revenue / history[0].revenue) ** (1/(history.length-1))) - 1) * 100
@@ -126,7 +130,9 @@ Return this exact JSON structure:
   "mainRisk": "The single most important risk to the investment thesis. Be specific.",
   "opportunity": "The single most important potential upside catalyst. Be specific.",
   "verdict": "one of: Strong Opportunity | Attractive | Fairly Valued | High Expectations | Caution | Speculative"
-}`;
+}${isHe ? `
+
+IMPORTANT: Write the text fields "keyInsight", "whyMarket", "mainRisk", "opportunity" in natural, professional Hebrew (עברית) using correct Israeli financial terminology. Keep "companyType" and "verdict" as exact English enum values.` : ''}`;
 
     const response = await axios({
       method: 'post',
@@ -155,7 +161,8 @@ Return this exact JSON structure:
 
 router.post('/thesis', async (req, res) => {
   try {
-    const { profile, financials, multiples, scoreData, history, dcf } = req.body;
+    const { profile, financials, multiples, scoreData, history, dcf, lang } = req.body;
+    const isHe = lang === 'he';
 
     const revCAGR = history && history.length >= 2
       ? (((history[history.length-1].revenue / history[0].revenue) ** (1/(history.length-1))) - 1) * 100
@@ -189,7 +196,9 @@ Return ONLY a JSON object, no markdown, no backticks:
   "catalysts": ["catalyst 1 with timeframe", "catalyst 2"],
   "whatChangesView": "Specific metrics that would change the recommendation.",
   "bottomLine": "One powerful concluding sentence."
-}`;
+}${isHe ? `
+
+IMPORTANT: Write ALL text fields (thesis, businessQuality, bullPoints items, bearPoints items, valuationAssessment, keyRisks items, catalysts items, whatChangesView, bottomLine) in natural, professional Hebrew (עברית) using correct Israeli financial terminology. Keep "recommendation" as one of the exact English values (Strong Buy/Buy/Hold/Reduce/Sell). "targetPrice" stays as a number.` : ''}`;
 
     const response = await axios({
       method: 'post',

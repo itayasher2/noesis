@@ -45,7 +45,7 @@ export default function HeroSection({ data, scoreData, dcf }) {
   const [livePrice, setLivePrice]     = useState(null);
   const [livePct, setLivePct]         = useState(null);
   const [marketOpen, setMarketOpen]   = useState(isMarketOpen());
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   // AI insight
   useEffect(() => {
@@ -58,10 +58,11 @@ export default function HeroSection({ data, scoreData, dcf }) {
       multiples: data.multiples,
       scoreData,
       history: data.history,
+      lang,
     }).then(res => setInsight(res.data))
       .catch(() => setInsight(null))
       .finally(() => setInsightLoading(false));
-  }, [data?.profile?.ticker]);
+  }, [data?.profile?.ticker, lang]);
 
   // Live price polling
   useEffect(() => {

@@ -5,7 +5,8 @@ export default function AIAnalysis({ data, dcfParams }) {
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const isHe = lang === 'he';
 
   const generateAnalysis = async () => {
     setLoading(true);
@@ -58,7 +59,9 @@ Respond ONLY with a valid JSON object (no markdown, no backticks):
   "fcfConsistency": "HIGH or MEDIUM or LOW",
   "smartInsight": "One genuinely insightful sentence about this company",
   "sectorContext": "Is the valuation cheap/fair/expensive vs sector peers?"
-}`;
+}${isHe ? `
+
+IMPORTANT: Write ALL text fields (investmentThesis, valueDrivers, growthNote, redFlags items, capitalAllocationNote, sectorContext, smartInsight) in natural, professional Hebrew (עברית) using correct Israeli financial terminology. Keep "verdict" as one of BUY/HOLD/SELL/UNDERWEIGHT, "verdictColor" as green/amber/red, "growthClassification" as GROWTH/GROWTH-TO-VALUE/VALUE/MATURE, "profitability"/"growthProfile"/"fcfConsistency" as HIGH/MEDIUM/LOW, "riskLevel" as LOW/MEDIUM/HIGH, and "qualityScore" as a number. Do NOT translate these enum values.` : ''}`;
 
       const response = await fetch('https://web-production-bdb26.up.railway.app/api/valuation/ai-analysis', {
         method: 'POST',

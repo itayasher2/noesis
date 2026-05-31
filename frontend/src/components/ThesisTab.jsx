@@ -28,7 +28,7 @@ export default function ThesisTab({ data, scoreData, dcf, dcfParams }) {
   const [thesis, setThesis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [generated, setGenerated] = useState(false);
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   const generate = async () => {
     setLoading(true);
@@ -40,6 +40,7 @@ export default function ThesisTab({ data, scoreData, dcf, dcfParams }) {
         scoreData,
         history: data.history,
         dcf,
+        lang,
       });
       setThesis(res.data);
       setGenerated(true);

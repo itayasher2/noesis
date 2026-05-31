@@ -48,7 +48,7 @@ export default function BusinessDrivers({ data }) {
   const [drivers, setDrivers]   = useState(null);
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState('');
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   const fetchDrivers = async () => {
     setLoading(true);
@@ -59,6 +59,7 @@ export default function BusinessDrivers({ data }) {
         financials: data.financials,
         history:    data.history,
         multiples:  data.multiples,
+        lang,
       });
       setDrivers(res.data.drivers);
     } catch (e) {
@@ -70,7 +71,7 @@ export default function BusinessDrivers({ data }) {
 
   useEffect(() => {
     if (data) fetchDrivers();
-  }, [data.profile.ticker]);
+  }, [data.profile.ticker, lang]);
 
   const primary   = drivers?.filter(d => d.impact === 'positive') || [];
   const risks     = drivers?.filter(d => d.impact !== 'positive') || [];
