@@ -14,66 +14,70 @@ router.post('/business-drivers', async (req, res) => {
   try {
     const { profile, financials, history, multiples } = req.body;
 
-    const prompt = `You are a senior equity analyst. Based on the following company data, identify the 4-6 key business drivers.
+    const revCAGR = history && history.length >= 2
+      ? (((history[history.length-1].revenue / history[0].revenue) ** (1/(history.length-1))) - 1) * 100
+      : null;
+
+    const prompt = `You are a senior equity analyst. Based on the following data, identify the 5-6 most important business drivers for ${profile.name} (${profile.ticker}).
 
 Company: ${profile.name} (${profile.ticker})
-Sector: ${profile.sector}
-Industry: ${profile.industry}
+Sector: ${profile.sector} | Industry: ${profile.industry}
 
-Financials:
-- Revenue: $${(financials.revenue/1e9).toFixed(1)}B
-- Net Margin: ${financials.netMargin?.toFixed(1)}%
-- FCF Margin: ${financials.fcfMargin?.toFixed(1)}%
-- ROIC: ${financials.roic?.toFixed(1)}%
-- Revenue CAGR (5Y): ${history.length >= 2 ? (((history[history.length-1].revenue/history[0].revenue)**(1/(history.length-1))-1)*100).toFixed(1) : 'N/A'}%
+Key Financials:
+- Revenue: $${(financials.revenue/1e9).toFixed(1)}B | Revenue CAGR (5Y): ${revCAGR != null ? revCAGR.toFixed(1)+'%' : 'N/A'}
+- Gross Margin: ${financials.grossMargin?.toFixed(1)}% | EBITDA Margin: ${financials.ebitdaMargin?.toFixed(1)}%
+- Net Margin: ${financials.netMargin?.toFixed(1)}% | FCF Margin: ${financials.fcfMargin?.toFixed(1)}%
+- ROIC: ${financials.roic?.toFixed(1)}% | Net Debt/EBITDA: ${financials.netDebtEbitda?.toFixed(1)}x
+- P/E: ${multiples.pe?.toFixed(1)}x | EV/EBITDA: ${multiples.evEbitda?.toFixed(1)}x
 
-Multiples: P/E ${multiples.pe?.toFixed(1)}x, EV/EBITDA ${multiples.evEbitda?.toFixed(1)}x
+Return ONLY a valid JSON array — no markdown, no backticks, no explanation. Start with [ and end with ].
 
-IMPORTANT: Return ONLY a raw JSON array. No markdown. No backticks. No explanation. Just the JSON array starting with [ and ending with ].
-
-Each object MUST have ALL 8 of these fields:
+Each item must have exactly these 8 fields:
 [
   {
-    "driver": "Short driver name (max 4 words)",
-    "description": "One sentence explanation of why this matters for the company",
+    "driver": "Short name, max 5 words",
+    "description": "One precise sentence on why this matters for ${profile.ticker} specifically",
     "impact": "positive",
     "magnitude": "high",
     "trend": "growing",
-    "metric": "The main financial metric affected e.g. Revenue Growth or Gross Margin or FCF",
-    "financialLink": "Specific quantitative impact e.g. ~30% of total revenue or +2-3% margin contribution or 200bps headwind",
+    "metric": "Primary metric this affects e.g. Revenue Growth, Gross Margin, FCF Margin",
+    "financialLink": "Quantitative link e.g. ~40% of revenue or +150bps margin or $2B annual FCF contribution",
     "valuationImpact": "Primary value driver — core to DCF thesis"
   }
 ]
 
-impact must be exactly one of: positive, negative, neutral
-magnitude must be exactly one of: high, medium, low
-trend must be exactly one of: growing, stable, declining
-financialLink must include specific numbers or percentages.
-valuationImpact must be EXACTLY one of these 4 options — do not change the wording:
-  "Primary value driver — core to DCF thesis"
-  "Secondary value driver — meaningful multiple support"
-  "Supporting driver — margin or risk factor"
-  "Risk factor — potential value headwind"
-ALL 8 fields are REQUIRED. If any field is missing the response is invalid.`;
+Rules:
+- impact: exactly one of positive | negative | neutral
+- magnitude: exactly one of high | medium | low
+- trend: exactly one of growing | stable | declining
+- valuationImpact: exactly one of:
+    "Primary value driver — core to DCF thesis"
+    "Secondary value driver — meaningful multiple support"
+    "Supporting driver — margin or risk factor"
+    "Risk factor — potential value headwind"
+- financialLink must include a number or percentage
+- Be specific to ${profile.ticker}, not generic sector commentary`;
 
     const response = await axios({
       method: 'post',
-      url: 'https://api.groq.com/openai/v1/chat/completions',
+      url: 'https://api.anthropic.com/v1/messages',
       headers: {
-        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
-        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
       },
       data: {
-        model: 'llama-3.3-70b-versatile',
-        max_tokens: 1500,
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 2000,
         messages: [{ role: 'user', content: prompt }],
-        temperature: 0.3,
       }
     });
 
-    const text = response.data.choices[0].message.content;
-    const clean = text.replace(/```json|```/g, '').trim();
-    const drivers = JSON.parse(clean);
+    const text = response.data.content[0].text;
+    // Strip any markdown fences and find the JSON array
+    const match = text.match(/\[[\s\S]*\]/);
+    if (!match) throw new Error('No JSON array found in response');
+    const drivers = JSON.parse(match[0]);
     res.json({ drivers });
   } catch (err) {
     console.error('Business drivers error:', err.response?.data || err.message);

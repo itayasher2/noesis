@@ -6,54 +6,61 @@ const API = 'https://web-production-bdb26.up.railway.app/api';
 const IMPACT_COLOR = {
   positive: 'var(--green)',
   negative: 'var(--red)',
-  neutral: 'var(--amber)',
+  neutral:  'var(--amber)',
+};
+const IMPACT_BG = {
+  positive: 'rgba(16,185,129,0.08)',
+  negative: 'rgba(239,68,68,0.08)',
+  neutral:  'rgba(245,158,11,0.08)',
+};
+const IMPACT_BORDER = {
+  positive: 'rgba(16,185,129,0.22)',
+  negative: 'rgba(239,68,68,0.22)',
+  neutral:  'rgba(245,158,11,0.22)',
+};
+const MAGNITUDE_BARS = { high: 3, medium: 2, low: 1 };
+const TREND_ICON  = { growing: '↑', stable: '→', declining: '↓' };
+const TREND_COLOR = { growing: 'var(--green)', stable: 'var(--text-muted)', declining: 'var(--red)' };
+
+const VALUATION_LABEL = {
+  'Primary value driver — core to DCF thesis':        { label: 'Primary Driver',   color: 'var(--green)',  bg: 'rgba(16,185,129,0.10)' },
+  'Secondary value driver — meaningful multiple support': { label: 'Secondary Driver', color: 'var(--accent)', bg: 'rgba(125,211,252,0.10)' },
+  'Supporting driver — margin or risk factor':         { label: 'Support / Margin', color: 'var(--amber)',  bg: 'rgba(245,158,11,0.10)' },
+  'Risk factor — potential value headwind':            { label: 'Risk Factor',      color: 'var(--red)',    bg: 'rgba(239,68,68,0.10)' },
 };
 
-const MAGNITUDE_BAR = {
-  high: 3,
-  medium: 2,
-  low: 1,
-};
-
-const TREND_ICON = {
-  growing: '↑',
-  stable: '→',
-  declining: '↓',
-};
-
-const TREND_COLOR = {
-  growing: 'var(--green)',
-  stable: 'var(--text-muted)',
-  declining: 'var(--red)',
-};
+function Skeleton() {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+      {[0,1,2,3,4,5].map(i => (
+        <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 16 }}>
+          <div style={{ height: 14, width: '55%', background: 'var(--bg-elevated)', borderRadius: 4, marginBottom: 10, animation: 'pulse 1.5s infinite' }} />
+          <div style={{ height: 10, width: '90%', background: 'var(--bg-elevated)', borderRadius: 4, marginBottom: 6, animation: 'pulse 1.5s infinite' }} />
+          <div style={{ height: 10, width: '70%', background: 'var(--bg-elevated)', borderRadius: 4, animation: 'pulse 1.5s infinite' }} />
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function BusinessDrivers({ data }) {
-  const [drivers, setDrivers] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const C = {
-    p: { color:'var(--text-primary)' },
-    s: { color:'var(--text-secondary)' },
-    m: { color:'var(--text-muted)' },
-    card: { background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:'var(--radius)', boxShadow:'var(--shadow)' },
-    sub: { background:'var(--bg-subtle)', border:'1px solid var(--border)', borderRadius:'var(--radius-sm)' },
-    bdr: { borderBottom:'1px solid var(--border)' },
-  };
+  const [drivers, setDrivers]   = useState(null);
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState('');
 
   const fetchDrivers = async () => {
     setLoading(true);
     setError('');
     try {
       const res = await axios.post(`${API}/valuation/business-drivers`, {
-        profile: data.profile,
+        profile:    data.profile,
         financials: data.financials,
-        history: data.history,
-        multiples: data.multiples,
+        history:    data.history,
+        multiples:  data.multiples,
       });
       setDrivers(res.data.drivers);
     } catch (e) {
-      setError('Failed to load business drivers. Please try again.');
+      setError(e.response?.data?.error || 'Failed to load. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -63,155 +70,141 @@ export default function BusinessDrivers({ data }) {
     if (data) fetchDrivers();
   }, [data.profile.ticker]);
 
+  const primary   = drivers?.filter(d => d.impact === 'positive') || [];
+  const risks     = drivers?.filter(d => d.impact !== 'positive') || [];
+
   return (
     <div className="fade-in">
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-5">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div>
-          <div className="text-xs font-bold uppercase tracking-widest mb-1" style={C.m}>Business Drivers</div>
-          <div className="text-sm" style={C.s}>
-            Key value drivers for <strong style={C.p}>{data.profile.name}</strong> — AI-powered analysis
+          <div className="t-eyebrow" style={{ marginBottom: 4 }}>Business Drivers</div>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+            Key value drivers for <strong style={{ color: 'var(--text-primary)' }}>{data.profile.name}</strong>
           </div>
         </div>
-        <button
-          onClick={fetchDrivers}
-          disabled={loading}
-          className="btn-brand px-4 h-9 text-xs"
-        >
-          {loading ? '⟳ Analyzing...' : '↺ Refresh'}
+        <button onClick={fetchDrivers} disabled={loading} className="btn-brand" style={{ height: 34, padding: '0 14px', fontSize: 12 }}>
+          {loading ? '⟳' : '↺ Refresh'}
         </button>
       </div>
 
-      {error && (
-        <div className="px-4 py-3 rounded-xl text-sm mb-4" style={{background:'var(--red-bg)',color:'var(--red)',border:'1px solid var(--red)'}}>
-          {error}
+      {/* Error */}
+      {error && !loading && (
+        <div style={{ padding: '12px 16px', background: 'var(--red-bg)', border: '1px solid var(--red)', borderRadius: 10, color: 'var(--red)', fontSize: 13, marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span>⚠ {error}</span>
+          <button onClick={fetchDrivers} style={{ background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', fontSize: 12, textDecoration: 'underline' }}>Retry</button>
         </div>
       )}
 
-      {loading && !drivers && (
-        <div className="grid grid-cols-2 gap-4">
-          {[1,2,3,4].map(i => (
-            <div key={i} style={C.card} className="p-5">
-              <div className="h-4 w-32 rounded mb-3" style={{background:'var(--bg-subtle)',animation:'pulse 1.5s infinite'}}></div>
-              <div className="h-3 w-full rounded mb-2" style={{background:'var(--bg-subtle)',animation:'pulse 1.5s infinite'}}></div>
-              <div className="h-3 w-3/4 rounded" style={{background:'var(--bg-subtle)',animation:'pulse 1.5s infinite'}}></div>
-            </div>
-          ))}
-        </div>
-      )}
+      {/* Loading skeleton */}
+      {loading && !drivers && <Skeleton />}
 
-      {drivers && (
+      {/* Driver cards */}
+      {drivers && !loading && (
         <>
-          {/* Driver Cards */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            {drivers.map((d, i) => (
-              <div key={i} style={{...C.card, borderLeft:`3px solid ${IMPACT_COLOR[d.impact]}`}} className="p-5">
-                <div className="flex items-start justify-between mb-2">
-                  <div className="font-bold text-sm" style={C.p}>{d.driver}</div>
-                  <div className="flex items-center gap-2">
-                    {/* Trend */}
-                    <span className="text-lg font-bold" style={{color:TREND_COLOR[d.trend]}}>
-                      {TREND_ICON[d.trend]}
-                    </span>
-                    {/* Impact badge */}
-                    <span className="text-xs px-2 py-0.5 rounded font-semibold capitalize" style={{
-                      background: IMPACT_COLOR[d.impact]+'18',
-                      color: IMPACT_COLOR[d.impact]
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+            {drivers.map((d, i) => {
+              const valLabel = VALUATION_LABEL[d.valuationImpact];
+              return (
+                <div key={i} style={{
+                  background: 'var(--bg-card)',
+                  border: `1px solid var(--border)`,
+                  borderLeft: `3px solid ${IMPACT_COLOR[d.impact] || 'var(--border)'}`,
+                  borderRadius: 12,
+                  padding: 16,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 10,
+                }}>
+                  {/* Title row */}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+                    <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.3 }}>{d.driver}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                      <span style={{ fontSize: 16, fontWeight: 700, color: TREND_COLOR[d.trend] || 'var(--text-muted)' }}>
+                        {TREND_ICON[d.trend] || '→'}
+                      </span>
+                      <span style={{
+                        fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20,
+                        background: IMPACT_BG[d.impact] || 'var(--bg-subtle)',
+                        color: IMPACT_COLOR[d.impact] || 'var(--text-muted)',
+                        border: `1px solid ${IMPACT_BORDER[d.impact] || 'var(--border)'}`,
+                        textTransform: 'capitalize',
+                      }}>
+                        {d.impact}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{d.description}</div>
+
+                  {/* Financial link */}
+                  {d.financialLink && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', background: 'var(--bg-subtle)', borderRadius: 8 }}>
+                      <span style={{ color: 'var(--accent)', fontSize: 12 }}>$</span>
+                      <div>
+                        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent)' }}>{d.metric}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{d.financialLink}</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Valuation impact tag */}
+                  {valLabel && (
+                    <div style={{
+                      fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 6,
+                      background: valLabel.bg, color: valLabel.color,
+                      alignSelf: 'flex-start',
                     }}>
-                      {d.impact}
-                    </span>
+                      {valLabel.label}
+                    </div>
+                  )}
+
+                  {/* Magnitude bars */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Magnitude:</span>
+                    <div style={{ display: 'flex', gap: 3 }}>
+                      {[1,2,3].map(bar => (
+                        <div key={bar} style={{
+                          width: 18, height: 5, borderRadius: 2,
+                          background: bar <= (MAGNITUDE_BARS[d.magnitude] || 1)
+                            ? (IMPACT_COLOR[d.impact] || 'var(--accent)')
+                            : 'var(--border)',
+                        }} />
+                      ))}
+                    </div>
+                    <span style={{ fontSize: 11, color: IMPACT_COLOR[d.impact], textTransform: 'capitalize' }}>{d.magnitude}</span>
                   </div>
                 </div>
-
-                {/* Description */}
-                <p className="text-xs leading-relaxed mb-2" style={C.s}>{d.description}</p>
-
-                {/* Financial link */}
-                {d.financialLink && (
-                  <div className="flex items-center gap-2 mb-2 px-3 py-2 rounded-lg" style={{background:'var(--bg-subtle)'}}>
-                    <span className="text-xs font-bold" style={{color:'var(--accent)'}}>💰</span>
-                    <div>
-                      <div className="text-xs font-bold" style={{color:'var(--accent)'}}>{d.metric}</div>
-                      <div className="text-xs" style={C.s}>{d.financialLink}</div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Valuation impact */}
-                {d.valuationImpact && (
-                  <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-lg" style={{background:'var(--green-bg)',border:'1px solid var(--green)'}}>
-                    <span className="text-xs font-bold" style={{color:'var(--green)'}}>📈</span>
-                    <div>
-                      <div className="text-xs font-bold" style={{color:'var(--green)'}}>Valuation Impact</div>
-                      <div className="text-xs" style={C.s}>{d.valuationImpact}</div>
-                    </div>
-                  </div>
-                )}
-                {/* Magnitude bars */}
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs" style={C.m}>Magnitude:</span>
-                  <div className="flex gap-1">
-                    {[1,2,3].map(bar => (
-                      <div key={bar} style={{
-                        width:16, height:6, borderRadius:2,
-                        background: bar <= MAGNITUDE_BAR[d.magnitude]
-                          ? IMPACT_COLOR[d.impact]
-                          : 'var(--border)',
-                        transition:'background 0.2s'
-                      }}/>
-                    ))}
-                  </div>
-                  <span className="text-xs capitalize" style={{color:IMPACT_COLOR[d.impact]}}>{d.magnitude}</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
-          {/* Summary Table */}
-          <div style={C.card} className="p-4">
-            <div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>Driver Summary</div>
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-xs" style={{...C.m,...C.bdr}}>
-                  <th className="pb-2 text-left">Driver</th>
-                  <th className="pb-2 text-center">Impact</th>
-                  <th className="pb-2 text-center">Magnitude</th>
-                  <th className="pb-2 text-center">Trend</th>
-                </tr>
-              </thead>
-              <tbody>
-                {drivers.map((d, i) => (
-                  <tr key={i} style={C.bdr}>
-                    <td className="py-2 font-medium" style={C.p}>{d.driver}</td>
-                    <td className="py-2 text-center">
-                      <span className="text-xs px-2 py-0.5 rounded font-semibold capitalize" style={{
-                        background: IMPACT_COLOR[d.impact]+'18',
-                        color: IMPACT_COLOR[d.impact]
-                      }}>{d.impact}</span>
-                    </td>
-                    <td className="py-2 text-center">
-                      <div className="flex justify-center gap-1">
-                        {[1,2,3].map(bar => (
-                          <div key={bar} style={{
-                            width:12, height:5, borderRadius:1,
-                            background: bar <= MAGNITUDE_BAR[d.magnitude]
-                              ? IMPACT_COLOR[d.impact]
-                              : 'var(--border)',
-                          }}/>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="py-2 text-center font-bold" style={{color:TREND_COLOR[d.trend]}}>
-                      {TREND_ICON[d.trend]} <span className="text-xs capitalize font-normal" style={C.m}>{d.trend}</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <div className="mt-3 pt-3 text-xs" style={{borderTop:'1px solid var(--border)',color:'var(--text-muted)'}}>
-              ⚡ Powered by Claude AI — based on financial data and sector context
+          {/* Summary strip */}
+          <div style={{
+            display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10,
+            padding: '12px 14px',
+            background: 'var(--bg-subtle)', border: '1px solid var(--border)', borderRadius: 10,
+          }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--green)' }}>{primary.length}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Growth Drivers</div>
             </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--red)' }}>{risks.length}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Risks / Headwinds</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--accent)' }}>
+                {drivers.filter(d => d.magnitude === 'high').length}
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>High Magnitude</div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text-muted)', textAlign: 'right' }}>
+            ⚡ AI-powered · based on {data.history?.length || 0}Y financial data
           </div>
         </>
       )}
