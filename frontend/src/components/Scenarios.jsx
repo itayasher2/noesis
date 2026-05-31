@@ -1,4 +1,7 @@
+import { useLanguage } from '../i18n.jsx';
+
 export default function Scenarios({ fcf, shares, totalDebt, cash, price }) {
+  const { t } = useLanguage();
   if (!fcf || !shares) return null;
 
   function calcFV(g1, g2, wacc, tgr) {
@@ -15,19 +18,19 @@ export default function Scenarios({ fcf, shares, totalDebt, cash, price }) {
 
   const scenarios = [
     {
-      name: 'Bull Case', emoji: '🟢',
+      name: t('bullCase'), emoji: '🟢',
       narrative: 'Margin expansion + AI-driven services growth',
       g1: 0.18, g2: 0.12, wacc: 0.08, tgr: 0.04,
       color: '#dcfce7', textColor: '#166534', borderColor: '#86efac'
     },
     {
-      name: 'Base Case', emoji: '🟡',
+      name: t('baseCase'), emoji: '🟡',
       narrative: 'Steady hardware + services, modest growth',
       g1: 0.10, g2: 0.06, wacc: 0.10, tgr: 0.03,
       color: '#fef9c3', textColor: '#854d0e', borderColor: '#fde047'
     },
     {
-      name: 'Bear Case', emoji: '🔴',
+      name: t('bearCase'), emoji: '🔴',
       narrative: 'Margin compression + China headwinds + stagnation',
       g1: 0.04, g2: 0.02, wacc: 0.12, tgr: 0.02,
       color: '#fee2e2', textColor: '#991b1b', borderColor: '#fca5a5'
@@ -37,7 +40,7 @@ export default function Scenarios({ fcf, shares, totalDebt, cash, price }) {
   return (
     <div style={{ marginTop: '24px' }}>
       <div style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', marginBottom: '12px' }}>
-        Bull / Base / Bear Scenarios
+        {t('scenariosTitle')}
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
         {scenarios.map(s => {
@@ -52,7 +55,7 @@ export default function Scenarios({ fcf, shares, totalDebt, cash, price }) {
               </div>
               {up != null && (
                 <div style={{ fontSize: '13px', fontWeight: 600, color: s.textColor }}>
-                  {up >= 0 ? '+' : ''}{up.toFixed(1)}% vs market
+                  {up >= 0 ? '+' : ''}{up.toFixed(1)}% {t('vsMarketLc')}
                 </div>
               )}
               <div style={{ marginTop: '10px', borderTop: `1px solid ${s.borderColor}`, paddingTop: '8px', fontSize: '11px', color: s.textColor, opacity: 0.8 }}>

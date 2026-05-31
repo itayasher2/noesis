@@ -1,6 +1,7 @@
 import { fmt, fmtPrice } from '../utils/format';
+import { useLanguage } from '../i18n.jsx';
 
-function calcDecision({ scoreData, dcf, price, data, dcfParams }) {
+function calcDecision({ scoreData, dcf, price, data, dcfParams, t }) {
   const upside = dcf?.fv && price ? (dcf.fv / price - 1) * 100 : null;
   const composite = scoreData?.composite || 50;
   const fcfBase = data.financials.fcf;
@@ -33,53 +34,53 @@ function calcDecision({ scoreData, dcf, price, data, dcfParams }) {
     action = 'BUY'; conviction = upside > 40 ? 'High' : 'Medium';
     primaryColor = 'var(--green)'; bgColor = 'var(--green-bg)'; borderColor = 'var(--green-border)';
     reasons = [
-      upside ? `Undervalued ~${fmt(Math.abs(upside),0)}% vs intrinsic value` : 'Trading below fair value',
-      fcfGap < 3 ? 'Market pricing reasonable growth' : 'Growth expectations manageable',
-      scoreData?.qualityScore > 60 ? 'High-quality business fundamentals' : 'Solid fundamentals',
+      upside ? t('reasonUndervalued', fmt(Math.abs(upside),0)) : t('reasonBelowFairValue'),
+      fcfGap < 3 ? t('reasonPricingReasonable') : t('reasonGrowthManageable'),
+      scoreData?.qualityScore > 60 ? t('reasonHighQuality') : t('reasonSolidFundamentals'),
     ];
     actionSteps = [
-      'Consider initiating or adding position',
-      `Entry: ${fmtPrice(dcf?.fv * 0.85)}–${fmtPrice(dcf?.fv * 0.95)}`,
-      `Target: ${fmtPrice(dcf?.fv)}`,
+      t('actionInitiate'),
+      t('actionEntry', fmtPrice(dcf?.fv * 0.85), fmtPrice(dcf?.fv * 0.95)),
+      t('actionTarget', fmtPrice(dcf?.fv)),
     ];
   } else if (composite >= 45 && upside > -10) {
     action = 'HOLD'; conviction = 'Medium';
     primaryColor = 'var(--amber)'; bgColor = 'var(--amber-bg)'; borderColor = 'var(--amber-border)';
     reasons = [
-      upside ? `Near fair value (${upside >= 0 ? '+' : ''}${fmt(upside,0)}% vs DCF)` : 'Near fair value',
-      fcfGap > 5 ? 'Market pricing above-average growth' : 'Growth expectations reasonable',
-      'Monitor execution vs expectations',
+      upside ? t('reasonNearFairValue', (upside >= 0 ? '+' : '') + fmt(upside,0)) : t('reasonNearFairValue', '0'),
+      fcfGap > 5 ? t('reasonAboveAvgGrowth') : t('reasonGrowthReasonable'),
+      t('reasonMonitorExecution'),
     ];
     actionSteps = [
-      'Hold existing position',
-      `Better entry: ${dcf?.fv ? fmtPrice(dcf.fv * 0.85) : 'N/A'}`,
-      'Watch next earnings',
+      t('actionHold'),
+      t('actionBetterEntry', dcf?.fv ? fmtPrice(dcf.fv * 0.85) : 'N/A'),
+      t('actionWatchEarnings'),
     ];
   } else if (composite >= 25) {
     action = 'REDUCE'; conviction = 'Medium';
     primaryColor = 'var(--orange)'; bgColor = 'var(--amber-bg)'; borderColor = 'var(--orange-border)';
     reasons = [
-      upside ? `Overvalued ~${fmt(Math.abs(upside),0)}% vs intrinsic value` : 'Trading above fair value',
-      fcfGap > 8 ? 'Market pricing unrealistic growth' : 'Execution risk elevated',
-      'Limited margin of safety at current levels',
+      upside ? t('reasonOvervalued', fmt(Math.abs(upside),0)) : t('reasonAboveFairValue'),
+      fcfGap > 8 ? t('reasonUnrealisticGrowth') : t('reasonExecutionRisk'),
+      t('reasonLimitedMargin'),
     ];
     actionSteps = [
-      'Consider trimming position',
-      `Fair value: ${dcf?.fv ? fmtPrice(dcf.fv) : 'N/A'}`,
-      `Better entry: ${dcf?.fv ? fmtPrice(dcf.fv * 0.80) : 'N/A'}`,
+      t('actionTrim'),
+      t('actionFairValue', dcf?.fv ? fmtPrice(dcf.fv) : 'N/A'),
+      t('actionBetterEntry', dcf?.fv ? fmtPrice(dcf.fv * 0.80) : 'N/A'),
     ];
   } else {
     action = 'AVOID'; conviction = 'High';
     primaryColor = 'var(--red)'; bgColor = 'var(--red-bg)'; borderColor = 'var(--red-border)';
     reasons = [
-      upside ? `Significantly overvalued ~${fmt(Math.abs(upside),0)}%` : 'Trading well above fair value',
-      fcfGap > 10 ? 'Aggressive growth priced in — high risk' : 'Valuation risk extreme',
-      'Risk/reward highly unfavorable',
+      upside ? t('reasonSigOvervalued', fmt(Math.abs(upside),0)) : t('reasonWellAboveFV'),
+      fcfGap > 10 ? t('reasonAggressiveGrowth') : t('reasonValuationRisk'),
+      t('reasonRiskReward'),
     ];
     actionSteps = [
-      'Avoid initiating position',
-      'Wait for meaningful correction',
-      `Potential entry: ${dcf?.fv ? fmtPrice(dcf.fv * 0.75) : 'N/A'}`,
+      t('actionAvoid'),
+      t('actionWaitCorrection'),
+      t('actionPotentialEntry', dcf?.fv ? fmtPrice(dcf.fv * 0.75) : 'N/A'),
     ];
   }
 
@@ -93,8 +94,9 @@ function calcDecision({ scoreData, dcf, price, data, dcfParams }) {
 }
 
 export default function DecisionBox({ scoreData, dcf, price, data, dcfParams }) {
+  const { t } = useLanguage();
   if (!data || !price) return null;
-  const d = calcDecision({ scoreData, dcf, price, data, dcfParams });
+  const d = calcDecision({ scoreData, dcf, price, data, dcfParams, t });
 
   const C = {
     p: { color:'var(--text-primary)' },
@@ -112,33 +114,33 @@ export default function DecisionBox({ scoreData, dcf, price, data, dcfParams }) 
       <div className="flex items-start justify-between mb-4 gap-2">
         <div>
           <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{color:d.primaryColor,opacity:0.7}}>
-            Investment View
+            {t('investmentView')}
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <div style={{fontSize:24,fontWeight:600,color:d.primaryColor,letterSpacing:2,lineHeight:1}}>
               {d.action}
             </div>
             <div className="px-2 py-1 rounded-lg text-xs font-bold" style={{background:d.primaryColor+'18',color:d.primaryColor,border:`1px solid ${d.primaryColor}30`}}>
-              {d.conviction} Conviction
+              {t('conviction', d.conviction)}
             </div>
           </div>
         </div>
         <div className="text-right flex-shrink-0">
-          <div className="text-xs font-bold mb-1" style={{color:d.primaryColor,opacity:0.7}}>vs Fair Value</div>
+          <div className="text-xs font-bold mb-1" style={{color:d.primaryColor,opacity:0.7}}>{t('vsFairValue')}</div>
           <div className="text-2xl font-black num" style={{color:d.upside>=0?'var(--green)':d.upside>-20?'var(--amber)':'var(--red)'}}>
             {d.upside!==null?(d.upside>=0?'+':'')+fmt(d.upside,1)+'%':'N/A'}
           </div>
-          <div className="text-xs mt-0.5" style={C.m}>{fmtPrice(d.fairValue)} fair value</div>
+          <div className="text-xs mt-0.5" style={C.m}>{fmtPrice(d.fairValue)} {t('fairValueLc')}</div>
         </div>
       </div>
 
       {/* Divider */}
       <div style={{height:1,background:d.primaryColor+'15',marginBottom:14}}/>
 
-      {/* ── Why + Action — stack on mobile ── */}
+      {/* ── Why + Action ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         <div>
-          <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{color:d.primaryColor,opacity:0.6}}>Why:</div>
+          <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{color:d.primaryColor,opacity:0.6}}>{t('whyLabel')}</div>
           <div className="flex flex-col gap-1.5">
             {d.reasons.map((r,i)=>(
               <div key={i} className="flex items-start gap-2 text-xs" style={C.s}>
@@ -149,7 +151,7 @@ export default function DecisionBox({ scoreData, dcf, price, data, dcfParams }) 
           </div>
         </div>
         <div>
-          <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{color:d.primaryColor,opacity:0.6}}>Action:</div>
+          <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{color:d.primaryColor,opacity:0.6}}>{t('actionLabel')}</div>
           <div className="flex flex-col gap-1.5">
             {d.actionSteps.map((a,i)=>(
               <div key={i} className="flex items-start gap-2 text-xs" style={C.s}>
@@ -163,17 +165,17 @@ export default function DecisionBox({ scoreData, dcf, price, data, dcfParams }) 
 
       {/* ── Price Level Bar ── */}
       <div style={{background:'var(--bg-subtle)',borderRadius:10,padding:'12px 14px',marginBottom:14,border:`1px solid ${d.primaryColor}20`}}>
-        <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{color:d.primaryColor,opacity:0.6}}>Price Levels</div>
+        <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{color:d.primaryColor,opacity:0.6}}>{t('priceLevels')}</div>
         <div className="relative h-7 rounded-lg overflow-hidden" style={{background:'rgba(255,255,255,0.03)'}}>
           <div className="absolute inset-y-0 left-0" style={{width:'30%',background:'rgba(61,220,132,0.08)'}}/>
           <div className="absolute inset-y-0" style={{left:'30%',width:'25%',background:'rgba(255,181,71,0.06)'}}/>
           <div className="absolute inset-y-0" style={{left:'55%',width:'25%',background:'rgba(255,149,64,0.06)'}}/>
           <div className="absolute inset-y-0 right-0" style={{left:'80%',background:'rgba(255,84,112,0.08)'}}/>
           <div className="absolute inset-0 flex items-center">
-            <span className="text-xs font-medium px-1" style={{color:'var(--green)',opacity:0.8,width:'30%',fontSize:10}}>Buy</span>
-            <span className="text-xs font-medium px-1" style={{color:'var(--amber)',opacity:0.8,width:'25%',fontSize:10}}>Fair</span>
-            <span className="text-xs font-medium px-1" style={{color:'var(--orange)',opacity:0.8,width:'25%',fontSize:10}}>Pricey</span>
-            <span className="text-xs font-medium px-1" style={{color:'var(--red)',opacity:0.8,fontSize:10}}>Ext.</span>
+            <span className="text-xs font-medium px-1" style={{color:'var(--green)',opacity:0.8,width:'30%',fontSize:10}}>{t('buyZone')}</span>
+            <span className="text-xs font-medium px-1" style={{color:'var(--amber)',opacity:0.8,width:'25%',fontSize:10}}>{t('fairZone')}</span>
+            <span className="text-xs font-medium px-1" style={{color:'var(--orange)',opacity:0.8,width:'25%',fontSize:10}}>{t('priceyZone')}</span>
+            <span className="text-xs font-medium px-1" style={{color:'var(--red)',opacity:0.8,fontSize:10}}>{t('extZone')}</span>
           </div>
           <div className="absolute top-1 bottom-1 w-0.5 rounded" style={{left:d.pricePct+'%',background:d.primaryColor,opacity:0.8}}/>
           <div className="absolute text-xs font-bold num" style={{
@@ -195,16 +197,16 @@ export default function DecisionBox({ scoreData, dcf, price, data, dcfParams }) 
         </div>
       </div>
 
-      {/* ── Confidence strip — wrap on mobile ── */}
+      {/* ── Confidence strip ── */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs" style={{color:d.primaryColor,opacity:0.7}}>
-        <span className="font-bold uppercase tracking-widest">Confidence:</span>
-        {[['Data',scoreData?.dataQuality],['Models',scoreData?.modelConsistency],['Stability',scoreData?.assumptionStability]].map(([l,v])=>(
+        <span className="font-bold uppercase tracking-widest">{t('confidenceLabel')}</span>
+        {[[t('dataLabel'),scoreData?.dataQuality],[t('modelsLabel'),scoreData?.modelConsistency],[t('stabilityLabel'),scoreData?.assumptionStability]].map(([l,v])=>(
           <span key={l} style={{opacity:1}}>
             {l}: <strong style={{color:v==='high'?'var(--green)':v==='medium'?'var(--amber)':'var(--red)'}}>{v||'N/A'}</strong>
           </span>
         ))}
         <span className="w-full sm:w-auto sm:ml-auto text-xs" style={{opacity:1}}>
-          Implied: <strong>{fmt(d.impliedGrowth,1)}%</strong> vs <strong>{d.histFCFCAGR!==null?fmt(d.histFCFCAGR,1)+'% hist.':'N/A'}</strong>
+          {t('impliedLabel')} <strong>{fmt(d.impliedGrowth,1)}%</strong> vs <strong>{d.histFCFCAGR!==null?fmt(d.histFCFCAGR,1)+'% '+t('histLabel'):'N/A'}</strong>
         </span>
       </div>
 

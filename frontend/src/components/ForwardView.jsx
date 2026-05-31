@@ -1,9 +1,12 @@
 import { fmt, fmtB, fmtPrice } from '../utils/format';
+import { useLanguage } from '../i18n.jsx';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from 'recharts';
 
 export default function ForwardView({ estimates, history, price, shares, netDebt }) {
+  const { t } = useLanguage();
+
   if (!estimates || estimates.length === 0) return (
-    <div className="text-sm text-center py-8" style={{color:'var(--text-muted)'}}>No analyst estimates available</div>
+    <div className="text-sm text-center py-8" style={{color:'var(--text-muted)'}}>{t('noAnalystEstimates')}</div>
   );
 
   const lastHist = history?.[history.length - 1];
@@ -59,20 +62,20 @@ export default function ForwardView({ estimates, history, price, shares, netDebt
 
       {/* Headline */}
       <div className="rounded-xl p-4 mb-5 border-l-4" style={{background:'var(--accent-subtle)',borderLeftColor:'var(--accent)'}}>
-        <div className="text-xs font-bold uppercase tracking-widest mb-1" style={C.m}>Forward Consensus</div>
+        <div className="text-xs font-bold uppercase tracking-widest mb-1" style={C.m}>{t('forwardConsensus')}</div>
         <div className="text-sm font-semibold" style={C.p}>
-          Analysts project <span style={C.accent}>{fwdRevCAGR !== null ? fmt(fwdRevCAGR,1)+'% revenue growth' : 'moderate growth'}</span> over the next year
-          {fwdPE && <span style={C.s}> — stock trades at <span style={{color: fwdPE > 30 ? 'var(--red)' : fwdPE > 20 ? 'var(--amber)' : 'var(--green)', fontWeight:600}}>{fmt(fwdPE,1)}x forward P/E</span></span>}
+          {t('analystsProjectLabel', fwdRevCAGR !== null ? t('revenueGrowthFwd', fmt(fwdRevCAGR,1)) : t('moderateGrowthFwd'))}
+          {fwdPE && <span style={C.s}> — {t('stockTradesAt', fmt(fwdPE,1))}</span>}
         </div>
       </div>
 
       {/* Forward Multiples */}
       <div className="grid grid-cols-4 gap-3 mb-6">
         {[
-          { label:'Fwd P/E', value: fwdPE ? fmt(fwdPE,1)+'x' : '—', color: fwdPE ? (fwdPE>30?'var(--red)':fwdPE>20?'var(--amber)':'var(--green)') : 'var(--text-muted)', sub:'Based on est. EPS' },
-          { label:'Fwd EV/EBITDA', value: fwdEVEbitda ? fmt(fwdEVEbitda,1)+'x' : '—', color: fwdEVEbitda ? (fwdEVEbitda>15?'var(--red)':fwdEVEbitda>10?'var(--amber)':'var(--green)') : 'var(--text-muted)', sub:'Based on est. EBITDA' },
-          { label:'Est. EPS (NTM)', value: estimates[0]?.epsAvg ? fmtPrice(estimates[0].epsAvg) : '—', color:'var(--accent)', sub: estimates[0]?.epsLow && estimates[0]?.epsHigh ? `${fmtPrice(estimates[0].epsLow)} – ${fmtPrice(estimates[0].epsHigh)}` : 'Range N/A' },
-          { label:'Est. Revenue (NTM)', value: estimates[0]?.revenueAvg ? fmtB(estimates[0].revenueAvg) : '—', color:'var(--accent)', sub: estimates[0]?.revenueLow && estimates[0]?.revenueHigh ? `${fmtB(estimates[0].revenueLow)} – ${fmtB(estimates[0].revenueHigh)}` : 'Range N/A' },
+          { label:t('fwdPELabel'), value: fwdPE ? fmt(fwdPE,1)+'x' : '—', color: fwdPE ? (fwdPE>30?'var(--red)':fwdPE>20?'var(--amber)':'var(--green)') : 'var(--text-muted)', sub:t('basedOnEstEPS') },
+          { label:t('fwdEVEBITDALabel'), value: fwdEVEbitda ? fmt(fwdEVEbitda,1)+'x' : '—', color: fwdEVEbitda ? (fwdEVEbitda>15?'var(--red)':fwdEVEbitda>10?'var(--amber)':'var(--green)') : 'var(--text-muted)', sub:t('basedOnEstEBITDA') },
+          { label:t('estEPSNTM'), value: estimates[0]?.epsAvg ? fmtPrice(estimates[0].epsAvg) : '—', color:'var(--accent)', sub: estimates[0]?.epsLow && estimates[0]?.epsHigh ? `${fmtPrice(estimates[0].epsLow)} – ${fmtPrice(estimates[0].epsHigh)}` : t('rangeNA') },
+          { label:t('estRevenueNTM'), value: estimates[0]?.revenueAvg ? fmtB(estimates[0].revenueAvg) : '—', color:'var(--accent)', sub: estimates[0]?.revenueLow && estimates[0]?.revenueHigh ? `${fmtB(estimates[0].revenueLow)} – ${fmtB(estimates[0].revenueHigh)}` : t('rangeNA') },
         ].map(item => (
           <div key={item.label} style={C.sub} className="p-3">
             <div className="text-xs mb-1" style={C.m}>{item.label}</div>
@@ -84,7 +87,7 @@ export default function ForwardView({ estimates, history, price, shares, netDebt
 
       {/* Revenue Chart */}
       <div style={C.card} className="p-4 mb-4">
-        <div className="text-xs font-bold uppercase tracking-widest mb-4" style={C.m}>Revenue — Actual vs Forecast ($B)</div>
+        <div className="text-xs font-bold uppercase tracking-widest mb-4" style={C.m}>{t('revenueActualForecast')}</div>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={revenueData} barSize={28}>
             <XAxis dataKey="year" tick={{fontSize:11,fill:'var(--text-muted)'}}/>
@@ -102,15 +105,15 @@ export default function ForwardView({ estimates, history, price, shares, netDebt
           </BarChart>
         </ResponsiveContainer>
         <div className="flex gap-4 mt-2 text-xs" style={C.m}>
-          <span>■ <span style={C.accent}>Actual</span></span>
-          <span>■ <span style={{color:'var(--accent-2)',opacity:0.8}}>Estimate</span></span>
-          <span style={{marginLeft:'auto'}}>Dashed line = last reported year</span>
+          <span>■ <span style={C.accent}>{t('actualLabel')}</span></span>
+          <span>■ <span style={{color:'var(--accent-2)',opacity:0.8}}>{t('estimateLabel')}</span></span>
+          <span style={{marginLeft:'auto'}}>{t('dashedLine')}</span>
         </div>
       </div>
 
       {/* EPS Chart */}
       <div style={C.card} className="p-4 mb-4">
-        <div className="text-xs font-bold uppercase tracking-widest mb-4" style={C.m}>EPS — Actual vs Forecast ($)</div>
+        <div className="text-xs font-bold uppercase tracking-widest mb-4" style={C.m}>{t('epsActualForecast')}</div>
         <ResponsiveContainer width="100%" height={180}>
           <BarChart data={epsData} barSize={28}>
             <XAxis dataKey="year" tick={{fontSize:11,fill:'var(--text-muted)'}}/>
@@ -131,17 +134,17 @@ export default function ForwardView({ estimates, history, price, shares, netDebt
 
       {/* Estimates Table */}
       <div style={C.card} className="p-4">
-        <div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>Analyst Estimates — Detail</div>
+        <div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>{t('analystEstimatesDetail')}</div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-xs" style={{...C.m,...C.bdr}}>
-                <th className="pb-2 text-left">Year</th>
-                <th className="pb-2 text-right">Revenue (avg)</th>
-                <th className="pb-2 text-right">Revenue range</th>
-                <th className="pb-2 text-right">EBITDA</th>
-                <th className="pb-2 text-right">Net Income</th>
-                <th className="pb-2 text-right">EPS</th>
+                <th className="pb-2 text-left">{t('yearCol')}</th>
+                <th className="pb-2 text-right">{t('revenueAvgCol')}</th>
+                <th className="pb-2 text-right">{t('revenueRangeCol')}</th>
+                <th className="pb-2 text-right">{t('ebitda')}</th>
+                <th className="pb-2 text-right">{t('netIncome')}</th>
+                <th className="pb-2 text-right">{t('epsCol')}</th>
               </tr>
             </thead>
             <tbody>
@@ -151,7 +154,7 @@ export default function ForwardView({ estimates, history, price, shares, netDebt
                 return (
                   <tr key={yr} style={{...C.bdr, background: isFirst ? 'var(--accent-subtle)' : 'transparent'}}>
                     <td className="py-2 font-bold num" style={{color: isFirst ? 'var(--accent)' : 'var(--text-primary)'}}>
-                      {yr} {isFirst && <span className="text-xs font-normal ml-1" style={C.m}>(NTM)</span>}
+                      {yr} {isFirst && <span className="text-xs font-normal ml-1" style={C.m}>{t('ntmLabel')}</span>}
                     </td>
                     <td className="py-2 text-right num" style={C.p}>{e.revenueAvg ? fmtB(e.revenueAvg) : '—'}</td>
                     <td className="py-2 text-right num text-xs" style={C.m}>{e.revenueLow && e.revenueHigh ? `${fmtB(e.revenueLow)} – ${fmtB(e.revenueHigh)}` : '—'}</td>

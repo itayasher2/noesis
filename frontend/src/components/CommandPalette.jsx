@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useLanguage } from '../i18n.jsx';
 
 const TICKER_INDEX = [
   { sym: 'AAPL',  name: 'Apple Inc.',            sector: 'Consumer Tech'   },
@@ -28,6 +29,7 @@ function Hint({ k, label }) {
 }
 
 export default function CommandPalette({ open, onClose, onPick }) {
+  const { t } = useLanguage();
   const [query, setQuery] = useState('');
   const [cursor, setCursor] = useState(0);
   const inputRef = useRef(null);
@@ -77,7 +79,7 @@ export default function CommandPalette({ open, onClose, onPick }) {
             value={query}
             onChange={e => { setQuery(e.target.value); setCursor(0); }}
             onKeyDown={onKeyDown}
-            placeholder="Search ticker · symbol, name, or sector…"
+            placeholder={t('searchTickerPlaceholder')}
             style={{ flex: 1, height: 32, padding: 0, border: 'none', background: 'transparent', outline: 'none', boxShadow: 'none', color: 'var(--text-primary)', fontSize: 14 }}
           />
           <kbd style={{ padding: '2px 7px', fontSize: 10, fontFamily: 'var(--font-mono)', background: 'var(--bg-subtle)', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: 3, letterSpacing: '0.04em' }}>ESC</kbd>
@@ -86,7 +88,7 @@ export default function CommandPalette({ open, onClose, onPick }) {
         {/* Results */}
         <div style={{ maxHeight: '52vh', overflowY: 'auto' }}>
           {filtered.length === 0 ? (
-            <div style={{ padding: 24, textAlign: 'center' }}><div className="t-eyebrow">No matches</div></div>
+            <div style={{ padding: 24, textAlign: 'center' }}><div className="t-eyebrow">{t('noMatches')}</div></div>
           ) : (
             filtered.map((t, i) => (
               <button key={t.sym} onClick={() => pick(t)} onMouseEnter={() => setCursor(i)}
@@ -111,10 +113,10 @@ export default function CommandPalette({ open, onClose, onPick }) {
 
         {/* Footer */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '8px 14px', borderTop: '1px solid var(--border)', background: 'var(--bg-subtle)', fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.06em' }}>
-          <Hint k="↑↓" label="navigate" />
-          <Hint k="↵" label="select" />
-          <Hint k="ESC" label="close" />
-          <span style={{ marginLeft: 'auto' }}>{filtered.length} / {TICKER_INDEX.length} results</span>
+          <Hint k="↑↓" label={t('navigate')} />
+          <Hint k="↵" label={t('selectCmd')} />
+          <Hint k="ESC" label={t('closeCmd')} />
+          <span style={{ marginLeft: 'auto' }}>{t('cmdResults', filtered.length, TICKER_INDEX.length)}</span>
         </div>
       </div>
     </div>

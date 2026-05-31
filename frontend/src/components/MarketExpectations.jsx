@@ -1,6 +1,8 @@
 import { fmt, fmtB, fmtPrice } from '../utils/format';
+import { useLanguage } from '../i18n.jsx';
 
 export default function MarketExpectations({ data, dcfParams }) {
+  const { t } = useLanguage();
   const price = data.profile.price;
   const shares = data.profile.shares;
   const netDebt = data.financials.netDebt;
@@ -66,11 +68,9 @@ export default function MarketExpectations({ data, dcfParams }) {
   const overallRisk = [growthRisk, marginRisk, multipleRisk].filter(r => r === 'high').length >= 2 ? 'high'
     : [growthRisk, marginRisk, multipleRisk].filter(r => r === 'medium').length >= 2 ? 'medium' : 'low';
 
-  const headline = overallRisk === 'high'
-    ? 'Market requires aggressive growth far above history — execution risk elevated'
-    : overallRisk === 'medium'
-    ? 'Market pricing moderate growth acceleration — achievable but requires execution'
-    : 'Market expectations broadly aligned with fundamentals';
+  const headline = overallRisk === 'high' ? t('marketHeadlineHigh')
+    : overallRisk === 'medium' ? t('marketHeadlineMedium')
+    : t('marketHeadlineLow');
 
   const gapColor = (gap) => gap === null ? 'var(--text-muted)' : gap > 8 ? 'var(--red)' : gap > 3 ? 'var(--amber)' : 'var(--green)';
 
@@ -88,7 +88,7 @@ export default function MarketExpectations({ data, dcfParams }) {
 
       {/* Headline */}
       <div className="rounded-xl p-4 mb-4 border-l-4" style={{background:riskBg(overallRisk),borderLeftColor:riskColor(overallRisk)}}>
-        <div className="text-xs font-bold uppercase tracking-widest mb-1" style={C.m}>Market Implied Expectations</div>
+        <div className="text-xs font-bold uppercase tracking-widest mb-1" style={C.m}>{t('marketImpliedExpectations')}</div>
         <div className="text-sm font-semibold" style={{color:riskColor(overallRisk)}}>
           {overallRisk==='high'?'⚠️':overallRisk==='medium'?'⚡':'✅'} {headline}
         </div>
@@ -97,13 +97,13 @@ export default function MarketExpectations({ data, dcfParams }) {
         </div>
       </div>
 
-      {/* Key metrics — 2x2 on mobile */}
+      {/* Key metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         {[
-          {label:'Implied FCF Growth', value:fmt(impliedFCFGrowth,1)+'%', color:impliedFCFGrowth>15?'var(--red)':impliedFCFGrowth>8?'var(--amber)':'var(--green)'},
-          {label:'Implied Rev Growth', value:fmt(impliedRevGrowth,1)+'%', color:'var(--accent)'},
-          {label:'Terminal Growth', value:fmt(tgr*100,1)+'%', color:'var(--text-secondary)'},
-          {label:'FCF Gap vs History', value:(fcfGap>=0?'+':'')+fmt(fcfGap,1)+'pp', color:gapColor(fcfGap)},
+          {label:t('impliedFCFGrowthLabel'), value:fmt(impliedFCFGrowth,1)+'%', color:impliedFCFGrowth>15?'var(--red)':impliedFCFGrowth>8?'var(--amber)':'var(--green)'},
+          {label:t('impliedRevGrowthLabel'), value:fmt(impliedRevGrowth,1)+'%', color:'var(--accent)'},
+          {label:t('terminalGrowthLabel'), value:fmt(tgr*100,1)+'%', color:'var(--text-secondary)'},
+          {label:t('fcfGapVsHistory'), value:(fcfGap>=0?'+':'')+fmt(fcfGap,1)+'pp', color:gapColor(fcfGap)},
         ].map(item=>(
           <div key={item.label} style={C.sub} className="p-3">
             <div className="text-xs mb-1" style={C.m}>{item.label}</div>
@@ -115,23 +115,23 @@ export default function MarketExpectations({ data, dcfParams }) {
       {/* Comparison table */}
       <div style={C.card} className="p-4 mb-4">
         <div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>
-          Growth Expectations — Market vs Reality
+          {t('growthExpectations')}
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm" style={{minWidth:320}}>
             <thead>
               <tr className="text-xs" style={{...C.m,...C.bdr}}>
-                <th className="pb-2 text-left">Metric</th>
-                <th className="pb-2 text-right">Market</th>
-                <th className="pb-2 text-right">Historical</th>
-                <th className="pb-2 text-right">Gap</th>
+                <th className="pb-2 text-left">{t('metric')}</th>
+                <th className="pb-2 text-right">{t('marketCol')}</th>
+                <th className="pb-2 text-right">{t('historicalCol')}</th>
+                <th className="pb-2 text-right">{t('gapCol')}</th>
               </tr>
             </thead>
             <tbody>
               {[
-                {metric:'FCF Growth', market:impliedFCFGrowth, historical:histFCFCAGR, isKey:true},
-                {metric:'Revenue Growth', market:impliedRevGrowth, historical:histRevCAGR, isKey:false},
-                {metric:'Net Income', market:null, historical:histNICAGR, isKey:false},
+                {metric:t('fcfGrowthMetric'), market:impliedFCFGrowth, historical:histFCFCAGR, isKey:true},
+                {metric:t('revenueGrowthMetric'), market:impliedRevGrowth, historical:histRevCAGR, isKey:false},
+                {metric:t('netIncomeMetric'), market:null, historical:histNICAGR, isKey:false},
               ].map((r,i)=>{
                 const gap = r.market!==null&&r.historical!==null ? r.market-r.historical : null;
                 return(
@@ -152,14 +152,14 @@ export default function MarketExpectations({ data, dcfParams }) {
         </div>
       </div>
 
-      {/* Risk breakdown — 1 col mobile, 3 col desktop */}
+      {/* Risk breakdown */}
       <div style={C.card} className="p-4 mb-4">
-        <div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>Execution Risk Breakdown</div>
+        <div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>{t('executionRiskBreakdown')}</div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
-            {label:'Growth Gap Risk', risk:growthRisk, detail:`Implies ${fmt(impliedFCFGrowth,1)}% FCF vs ${histFCFCAGR!==null?fmt(histFCFCAGR,1)+'% hist.':'N/A'}`},
-            {label:'Margin Expansion Risk', risk:marginRisk, detail:`+${fmt(impliedMarginExp,1)}pp FCF margin needed from ${fmt(currentFCFMargin,1)}% current`},
-            {label:'Multiple Risk', risk:multipleRisk, detail:`${data.multiples.pe?fmt(data.multiples.pe,1)+'x P/E':' N/A'} — ${multipleRisk==='high'?'elevated valuation':multipleRisk==='medium'?'moderate premium':'reasonable multiple'}`},
+            {label:t('growthGapRisk'), risk:growthRisk, detail:`${t('impliedFCFGrowthLabel')}: ${fmt(impliedFCFGrowth,1)}% vs ${histFCFCAGR!==null?fmt(histFCFCAGR,1)+'% '+t('histLabel'):'N/A'}`},
+            {label:t('marginExpansionRisk'), risk:marginRisk, detail:`+${fmt(impliedMarginExp,1)}pp FCF ${t('fcfMarginRequired').toLowerCase()}`},
+            {label:t('multipleRiskLabel'), risk:multipleRisk, detail:`${data.multiples.pe?fmt(data.multiples.pe,1)+'x P/E':' N/A'} — ${multipleRisk==='high'?t('elevatedValuation'):multipleRisk==='medium'?t('moderatePremium'):t('reasonableMultiple')}`},
           ].map((item,i)=>(
             <div key={i} className="rounded-xl p-3" style={{background:riskBg(item.risk),border:`1px solid ${riskBdr(item.risk)}`}}>
               <div className="flex items-center justify-between mb-1">
@@ -172,17 +172,17 @@ export default function MarketExpectations({ data, dcfParams }) {
         </div>
       </div>
 
-      {/* Scenario — 1 col mobile, 2 col desktop */}
+      {/* Scenario */}
       <div style={C.card} className="p-4 mb-4">
-        <div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>What If Growth Disappoints?</div>
+        <div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>{t('whatIfGrowth')}</div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
           <div className="rounded-xl p-3" style={{background:'var(--accent-subtle)',border:'1px solid var(--accent)'}}>
-            <div className="text-xs mb-1" style={C.m}>Market Scenario</div>
+            <div className="text-xs mb-1" style={C.m}>{t('marketScenarioLabel')}</div>
             <div className="text-xl font-black num" style={{color:'var(--accent)'}}>{fmt(impliedFCFGrowth,1)}% FCF growth</div>
-            <div className="text-xs mt-1" style={C.s}>Justifies {fmtPrice(price)}</div>
+            <div className="text-xs mt-1" style={C.s}>{fmtPrice(price)}</div>
           </div>
           <div className="rounded-xl p-3" style={{background:scenDownside&&scenDownside<-15?'var(--red-bg)':'var(--amber-bg)',border:`1px solid ${scenDownside&&scenDownside<-15?'var(--red)':'var(--amber)'}`}}>
-            <div className="text-xs mb-1" style={C.m}>Realistic Scenario ({fmt(scenarioGrowth,1)}%)</div>
+            <div className="text-xs mb-1" style={C.m}>{t('realisticScenario', fmt(scenarioGrowth,1))}</div>
             <div className="text-xl font-black num" style={{color:scenDownside&&scenDownside<-15?'var(--red)':'var(--amber)'}}>
               {scenFV>0?fmtPrice(scenFV):'N/A'}
             </div>
@@ -193,15 +193,15 @@ export default function MarketExpectations({ data, dcfParams }) {
         </div>
       </div>
 
-      {/* What needs to happen — 2 col always */}
+      {/* What needs to happen */}
       <div style={C.card} className="p-4">
-        <div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>What Needs To Happen To Justify Today's Price</div>
+        <div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>{t('whatNeedsToHappen')}</div>
         <div className="grid grid-cols-2 gap-3">
           {[
-            {label:'FCF Growth Required', value:fmt(impliedFCFGrowth,1)+'%/yr', context:`${history.length}Y sustained`, risk:growthRisk},
-            {label:'Revenue Growth', value:fmt(impliedRevGrowth,1)+'%/yr', context:`vs ${histRevCAGR!==null?fmt(histRevCAGR,1)+'% hist.':'N/A'}`, risk:revGap>8?'high':revGap>3?'medium':'low'},
-            {label:'FCF Margin Required', value:fmt(impliedFCFMargin,1)+'%', context:`+${fmt(impliedMarginExp,1)}pp expansion`, risk:marginRisk},
-            {label:'Terminal Growth', value:fmt(tgr*100,1)+'%', context:'After year 10', risk:tgr*100>3.5?'medium':'low'},
+            {label:t('fcfGrowthRequired'), value:fmt(impliedFCFGrowth,1)+'%/yr', context:t('ySustained', history.length), risk:growthRisk},
+            {label:t('revenueGrowthRequired'), value:fmt(impliedRevGrowth,1)+'%/yr', context:`vs ${histRevCAGR!==null?fmt(histRevCAGR,1)+'% '+t('histLabel'):'N/A'}`, risk:revGap>8?'high':revGap>3?'medium':'low'},
+            {label:t('fcfMarginRequired'), value:fmt(impliedFCFMargin,1)+'%', context:`+${fmt(impliedMarginExp,1)}pp`, risk:marginRisk},
+            {label:t('terminalGrowthLabel'), value:fmt(tgr*100,1)+'%', context:t('afterYear10'), risk:tgr*100>3.5?'medium':'low'},
           ].map((item,i)=>(
             <div key={i} className="rounded-lg p-3" style={{background:riskBg(item.risk),border:`1px solid ${riskBdr(item.risk)}`}}>
               <div className="text-xs mb-1 font-medium" style={C.m}>{item.label}</div>

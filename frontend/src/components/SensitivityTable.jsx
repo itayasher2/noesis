@@ -1,4 +1,7 @@
+import { useLanguage } from '../i18n.jsx';
+
 export default function SensitivityTable({ fcf, shares, totalDebt, cash, baseWacc, baseTgr }) {
+  const { t } = useLanguage();
   if (!fcf || !shares) return null;
 
   const waccs = [0.07, 0.08, 0.09, 0.10, 0.11, 0.12, 0.13];
@@ -30,16 +33,16 @@ export default function SensitivityTable({ fcf, shares, totalDebt, cash, baseWac
   return (
     <div style={{ marginTop: '24px' }}>
       <div style={{ fontSize: '11px', color: '#9ca3af', marginBottom: '8px', textTransform: 'uppercase' }}>
-        DCF Sensitivity Table — WACC × Growth Rate
+        {t('sensitivityTitle')}
       </div>
       <div style={{ fontSize: '11px', color: '#9ca3af', marginBottom: '12px' }}>
-        Each cell = fair value per share ($) — green = undervalued, red = overvalued
+        {t('sensitivityDesc')}
       </div>
       <div style={{ overflowX: 'auto' }}>
         <table style={{ borderCollapse: 'collapse', fontSize: '12px', width: '100%' }}>
           <thead>
             <tr>
-              <th style={{ padding: '6px 10px', textAlign: 'right', color: '#6b7280', fontWeight: 500 }}>WACC \ Growth</th>
+              <th style={{ padding: '6px 10px', textAlign: 'right', color: '#6b7280', fontWeight: 500 }}>{t('waccGrowthHeader')}</th>
               {growths.map(g => (
                 <th key={g} style={{ padding: '6px 10px', textAlign: 'center', color: '#6b7280', fontWeight: 500 }}>
                   {(g * 100).toFixed(0)}%

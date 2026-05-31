@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { fmt, fmtB, fmtPct, fmtPrice } from '../utils/format';
+import { useLanguage } from '../i18n.jsx';
 import SensitivityTable from './SensitivityTable';
 import Scenarios from './Scenarios';
 
@@ -58,6 +59,7 @@ function calcRequiredPrice({ totalValue, targetReturn, years }) {
 }
 
 export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEValue, activeModel, setActiveModel }) {
+  const { t } = useLanguage();
   const [decayRate, setDecayRate] = useState(0);
   const [divGrowth, setDivGrowth] = useState(4);
   const [shareChange, setShareChange] = useState(-2);
@@ -160,12 +162,12 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
         <button onClick={() => setActiveModel('dcf')}
           className="px-4 py-1.5 text-xs font-semibold rounded-lg"
           style={{ background: activeModel==='dcf'?'var(--accent)':'var(--bg-subtle)', color: activeModel==='dcf'?'white':'var(--text-muted)', border:'1px solid var(--border)' }}>
-          📊 DCF Model
+          {t('dcfModelBtn')}
         </button>
         <button onClick={() => setActiveModel('pe')}
           className="px-4 py-1.5 text-xs font-semibold rounded-lg"
           style={{ background: activeModel==='pe'?'var(--accent)':'var(--bg-subtle)', color: activeModel==='pe'?'white':'var(--text-muted)', border:'1px solid var(--border)' }}>
-          💹 P/E Model
+          {t('peModelBtn')}
         </button>
         {activeModel === 'dcf' && ['fcf','ebitda'].map(m => (
           <button key={m} onClick={() => setDcfMode(m)}
@@ -179,28 +181,28 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
       {/* Warnings */}
       {activeModel === 'pe' && (
         <div className="rounded-xl p-3 mb-4 text-xs" style={{ background:'var(--accent-subtle)', border:'1px solid var(--accent)', color:'var(--text-secondary)' }}>
-          💹 <strong style={{color:'var(--accent)'}}>P/E Valuation</strong> — Best for high-CapEx companies (TSMC, Intel). Projects EPS forward and multiplies by P/E multiple. Not dependent on FCF.
+          {t('peValuationDesc')}
         </div>
       )}
       {activeModel === 'dcf' && data.financials.fcf > 0 && data.financials.netIncome > 0 && data.financials.fcf < data.financials.netIncome * 0.3 && (
         <div className="rounded-xl p-3 mb-4 text-xs" style={{ background:'var(--amber-bg)', border:'1px solid var(--amber)', color:'var(--amber)' }}>
-          ⚠️ FCF is very low vs earnings — high-CapEx company. Consider using
-          <button onClick={() => setActiveModel('pe')} className="ml-1 underline font-bold">P/E Model</button>
+          {t('fcfLowWarning')}
+          <button onClick={() => setActiveModel('pe')} className="ml-1 underline font-bold">{t('peModelBtn')}</button>
         </div>
       )}
 
       {/* Parameters */}
       <div style={C.card} className="p-4 mb-4">
         <div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>
-          {activeModel === 'dcf' ? 'DCF Parameters' : 'P/E Parameters'}
+          {activeModel === 'dcf' ? t('dcfParameters') : t('peParameters')}
         </div>
 
         {activeModel === 'dcf' ? (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
             {[
-              { key:'g1', label:'FCF Growth Rate (%)', hint: historicalFCFCAGR ? `5Y hist: ${fmt(historicalFCFCAGR,1)}%` : null },
-              { key:'wacc', label:'WACC (%)' },
-              { key:'tgr', label:'Terminal Growth (%)' },
+              { key:'g1', label:t('fcfGrowthRateLabel'), hint: historicalFCFCAGR ? t('fiveYHist', fmt(historicalFCFCAGR,1)) : null },
+              { key:'wacc', label:t('waccPct') },
+              { key:'tgr', label:t('terminalGrowthPct') },
             ].map(p => (
               <div key={p.key}>
                 <label className="text-xs block mb-1" style={C.m}>{p.label}</label>
@@ -219,31 +221,31 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
             <div style={{gridColumn:'1/-1'}}>
               <div className="flex items-center justify-between mb-1">
                 <label className="text-xs" style={C.m}>
-                  EPS ($) <span style={{color: epsLooksSuspicious ? 'var(--red)' : 'var(--text-muted)'}}>
-                    {epsLooksSuspicious ? '⚠️ Looks incorrect — edit manually' : '— edit if incorrect'}
+                  {t('epsField')} <span style={{color: epsLooksSuspicious ? 'var(--red)' : 'var(--text-muted)'}}>
+                    {epsLooksSuspicious ? t('epsIncorrect') : t('epsEditIfIncorrect')}
                   </span>
                 </label>
                 <button
                   onClick={() => setShowEPSHelp(!showEPSHelp)}
                   className="text-xs px-2 py-0.5 rounded"
                   style={{background:'var(--accent-subtle)',color:'var(--accent)',border:'1px solid var(--accent)'}}>
-                  {showEPSHelp ? '▲ Hide' : '❓ How to find EPS?'}
+                  {showEPSHelp ? t('hideHelp') : t('howToFindEPS')}
                 </button>
               </div>
 
               {/* EPS Help Panel */}
               {showEPSHelp && (
                 <div className="rounded-xl p-4 mb-3" style={{background:'var(--bg-subtle)',border:'1px solid var(--border)'}}>
-                  <div className="text-xs font-bold mb-2" style={C.p}>📖 How to find the correct EPS in USD</div>
+                  <div className="text-xs font-bold mb-2" style={C.p}>{t('epsHelpTitle')}</div>
 
                   {/* Step by step */}
                   <div className="flex flex-col gap-1.5 mb-3">
                     {[
-                      '1. Go to Yahoo Finance',
-                      `2. Search for ticker: ${ticker}`,
-                      '3. Click "Statistics" in the menu',
-                      '4. Find "EPS (TTM)" under Valuation Measures',
-                      '5. Copy the number (in USD) and enter below',
+                      t('epsStep1'),
+                      t('epsStep2', ticker),
+                      t('epsStep3'),
+                      t('epsStep4'),
+                      t('epsStep5'),
                     ].map((step, i) => (
                       <div key={i} className="text-xs" style={C.s}>{step}</div>
                     ))}
@@ -256,15 +258,15 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold mb-3"
                     style={{background:'var(--accent)',color:'white',textDecoration:'none',display:'inline-flex'}}>
-                    🔗 Open Yahoo Finance — {ticker} Statistics
+                    {t('openYahooFinance', ticker)}
                   </a>
 
                   {/* Historical EPS from data */}
                   {historicalEPS.length > 0 && (
                     <div>
-                      <div className="text-xs font-bold mb-2" style={C.m}>📊 Historical EPS from our data</div>
+                      <div className="text-xs font-bold mb-2" style={C.m}>{t('historicalEPSData')}</div>
                       <div className="text-xs mb-1" style={{color:'var(--amber)'}}>
-                        ⚠️ These may not be in USD — use for reference only
+                        {t('epsRefOnly')}
                       </div>
                       <div className="flex gap-2 flex-wrap">
                         {historicalEPS.map(r => (
@@ -280,23 +282,23 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
               )}
 
               <input type="number" step="0.1" value={manualEPS > 0 ? manualEPS : ''}
-                placeholder={epsLooksSuspicious ? 'Enter EPS manually in USD' : fmt(autoEPS, 2)}
+                placeholder={epsLooksSuspicious ? t('epsManualPlaceholder') : fmt(autoEPS, 2)}
                 onChange={e => setManualEPS(parseFloat(e.target.value) || 0)}
                 className="w-full h-9 px-3 text-sm text-right num"
                 style={{ background:'var(--bg-input)', border:`1px solid ${epsLooksSuspicious?'var(--red)':'var(--border)'}`, borderRadius:'var(--radius-sm)', color:'var(--text-primary)' }} />
               {epsLooksSuspicious ? (
                 <div className="text-xs mt-0.5" style={{color:'var(--red)'}}>
-                  Auto EPS = ${fmt(autoEPS,2)} — may be in foreign currency. Click "How to find EPS?" above.
+                  {t('autoEPSWarning', fmt(autoEPS,2))}
                 </div>
               ) : (
                 <div className="text-xs mt-0.5" style={{color:'var(--accent)'}}>
-                  Auto EPS: ${fmt(autoEPS,2)} — leave blank for auto
+                  {t('autoEPSHint', fmt(autoEPS,2))}
                 </div>
               )}
             </div>
 
             <div>
-              <label className="text-xs block mb-1" style={C.m}>Net Income Growth (%)</label>
+              <label className="text-xs block mb-1" style={C.m}>{t('netIncomeGrowthPct')}</label>
               <input type="number" step="0.5" value={niGrowth}
                 onChange={e => setNiGrowth(parseFloat(e.target.value)||0)}
                 className="w-full h-9 px-3 text-sm text-right num"
@@ -304,22 +306,22 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
               {historicalNICAGR && <div className="text-xs mt-0.5" style={{color:'var(--accent)'}}>5Y hist: {fmt(historicalNICAGR,1)}%</div>}
             </div>
             <div>
-              <label className="text-xs block mb-1" style={C.m}>P/E Multiple (exit)</label>
+              <label className="text-xs block mb-1" style={C.m}>{t('peMultipleExit')}</label>
               <input type="number" step="0.5" value={peMultiple}
                 onChange={e => setPeMultiple(parseFloat(e.target.value)||0)}
                 className="w-full h-9 px-3 text-sm text-right num"
                 style={{ background:'var(--bg-input)', border:'1px solid var(--border)', borderRadius:'var(--radius-sm)', color:'var(--text-primary)' }} />
-              {data.multiples?.pe && <div className="text-xs mt-0.5" style={{color:'var(--accent)'}}>Current P/E: {fmt(data.multiples.pe,1)}x</div>}
+              {data.multiples?.pe && <div className="text-xs mt-0.5" style={{color:'var(--accent)'}}>{t('currentPELabel', fmt(data.multiples.pe,1))}</div>}
             </div>
             <div>
-              <label className="text-xs block mb-1" style={C.m}>Projection Years</label>
+              <label className="text-xs block mb-1" style={C.m}>{t('projectionYears')}</label>
               <input type="number" step="1" min="1" max="20" value={projYears}
                 onChange={e => setProjYears(parseInt(e.target.value)||5)}
                 className="w-full h-9 px-3 text-sm text-right num"
                 style={{ background:'var(--bg-input)', border:'1px solid var(--border)', borderRadius:'var(--radius-sm)', color:'var(--text-primary)' }} />
             </div>
             <div>
-              <label className="text-xs block mb-1" style={C.m}>Target Return (%)</label>
+              <label className="text-xs block mb-1" style={C.m}>{t('targetReturnPct')}</label>
               <input type="number" step="0.5" value={targetReturn}
                 onChange={e => setTargetReturn(parseFloat(e.target.value)||10)}
                 className="w-full h-9 px-3 text-sm text-right num"
@@ -332,8 +334,8 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
         <div className="rounded-xl p-3" style={{ background:'var(--accent-subtle)', border:'1px solid var(--accent)' }}>
           <div className="flex items-center justify-between mb-1">
             <div>
-              <div className="text-xs font-bold" style={C.accent}>Growth Decay Rate (%/year)</div>
-              <div className="text-xs mt-0.5" style={C.m}>Growth slows gradually each year</div>
+              <div className="text-xs font-bold" style={C.accent}>{t('growthDecayRate')}</div>
+              <div className="text-xs mt-0.5" style={C.m}>{t('growthSlows')}</div>
             </div>
             <input type="number" step="1" min="0" max="50" value={decayRate}
               onChange={e => setDecayRate(parseFloat(e.target.value)||0)}
@@ -357,39 +359,39 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
             <div className="rounded-xl p-4 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
               style={{ background: isOvervalued?'var(--red-bg)':'var(--green-bg)', border:`1px solid ${isOvervalued?'var(--red)':'var(--green)'}` }}>
               <div>
-                <div className="text-xs font-bold uppercase tracking-widest mb-1" style={C.m}>DCF Fair Value</div>
+                <div className="text-xs font-bold uppercase tracking-widest mb-1" style={C.m}>{t('dcfFairValue')}</div>
                 <div className="text-3xl font-black num" style={{color: isOvervalued?'var(--red)':'var(--green)'}}>{fmtPrice(dcf.fv)}</div>
                 <div className="text-sm font-semibold mt-1" style={{color: isOvervalued?'var(--red)':'var(--green)'}}>
                   {upside>=0?'+':''}{fmt(upside,1)}% vs market ({fmtPrice(price)})
                 </div>
               </div>
               <div className="sm:text-right">
-                <div className="text-xs font-bold uppercase tracking-widest mb-1" style={C.m}>Verdict</div>
+                <div className="text-xs font-bold uppercase tracking-widest mb-1" style={C.m}>{t('verdictLabel')}</div>
                 <div className="text-lg font-black" style={{color: isOvervalued?'var(--red)':'var(--green)'}}>
-                  {upside<-30?'Significantly Overvalued':upside<-10?'Overvalued':upside<10?'Fairly Valued':upside<30?'Undervalued':'Significantly Undervalued'}
+                  {upside<-30?t('sigOvervalued'):upside<-10?t('overvaluedLabel'):upside<10?t('fairlyValued'):upside<30?t('undervaluedLabel'):t('sigUndervalued')}
                 </div>
               </div>
             </div>
 
             <div style={C.card} className="p-4 mb-4">
               <div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>
-                {dcfMode==='ebitda'?'EBITDA':'FCF'} Projections
+                {t('projectionsLabel', dcfMode==='ebitda'?'EBITDA':'FCF')}
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm" style={{minWidth:320}}>
                   <thead>
                     <tr className="text-xs" style={{...C.m,...C.bdr}}>
-                      <th className="pb-2 text-left">Year</th>
-                      <th className="pb-2 text-right">Growth</th>
-                      <th className="pb-2 text-right">{dcfMode==='ebitda'?'EBITDA':'FCF'} ($M)</th>
-                      <th className="pb-2 text-right">PV ($M)</th>
-                      <th className="pb-2 text-right">Cum. PV</th>
+                      <th className="pb-2 text-left">{t('yearCol')}</th>
+                      <th className="pb-2 text-right">{t('growthCol')}</th>
+                      <th className="pb-2 text-right">{t('fcfColM', dcfMode==='ebitda'?'EBITDA':'FCF')}</th>
+                      <th className="pb-2 text-right">{t('pvColM')}</th>
+                      <th className="pb-2 text-right">{t('cumPVCol')}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {dcf.rows.map(r => (
                       <tr key={r.y} style={C.bdr}>
-                        <td className="py-1.5" style={C.s}>Yr {r.y}</td>
+                        <td className="py-1.5" style={C.s}>{t('yrN', r.y)}</td>
                         <td className="py-1.5 text-right num text-xs" style={{color: r.growthRate>0.08?'var(--green)':r.growthRate>0.03?'var(--amber)':'var(--red)'}}>
                           {fmt(r.growthRate*100,1)}%
                         </td>
@@ -399,7 +401,7 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
                       </tr>
                     ))}
                     <tr style={{background:'var(--bg-subtle)'}}>
-                      <td className="py-2 font-medium" style={C.p} colSpan={2}>Terminal Value</td>
+                      <td className="py-2 font-medium" style={C.p} colSpan={2}>{t('terminalValue')}</td>
                       <td className="py-2 text-right num" style={C.p}>{fmtB(dcf.tv)}</td>
                       <td className="py-2 text-right num" style={C.p}>{fmtB(dcf.pvTV)}</td>
                       <td></td>
@@ -410,30 +412,30 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
             </div>
 
             <div className="rounded-xl p-4 mb-4" style={C.sub}>
-              <div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>Valuation Bridge</div>
+              <div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>{t('valuationBridge')}</div>
               <table className="w-full text-sm">
                 <tbody>
-                  {[['Enterprise Value',fmtB(dcf.ev),C.p],['Less: Net Debt',`(${fmtB(data.financials.netDebt)})`,C.red],['Equity Value',fmtB(dcf.ev-data.financials.netDebt),C.p],['Shares',(data.profile.shares/1e9).toFixed(2)+'B',C.s]].map(([k,v,s])=>(
+                  {[[t('enterpriseValue'),fmtB(dcf.ev),C.p],[t('lessNetDebt'),`(${fmtB(data.financials.netDebt)})`,C.red],[t('equityValue'),fmtB(dcf.ev-data.financials.netDebt),C.p],[t('sharesCol'),(data.profile.shares/1e9).toFixed(2)+'B',C.s]].map(([k,v,s])=>(
                     <tr key={k} style={C.bdr}><td className="py-1.5" style={C.s}>{k}</td><td className="py-1.5 text-right font-medium num" style={s}>{v}</td></tr>
                   ))}
-                  <tr><td className="py-2 font-bold" style={C.green}>Fair Value / Share</td><td className="py-2 text-right text-lg font-black num" style={C.green}>{fmtPrice(dcf.fv)}</td></tr>
+                  <tr><td className="py-2 font-bold" style={C.green}>{t('fairValueShare')}</td><td className="py-2 text-right text-lg font-black num" style={C.green}>{fmtPrice(dcf.fv)}</td></tr>
                 </tbody>
               </table>
               <div className="mt-3 pt-3 text-xs" style={{borderTop:'1px solid var(--border)',color:dcf.pvTV/dcf.ev>0.6?'var(--amber)':'var(--text-secondary)'}}>
-                {dcf.pvTV/dcf.ev>0.6?'⚠':'ℹ'} {fmt(dcf.pvTV/dcf.ev*100,1)}% from Terminal Value
+                {dcf.pvTV/dcf.ev>0.6?'⚠':'ℹ'} {t('fromTerminalValue', fmt(dcf.pvTV/dcf.ev*100,1))}
               </div>
             </div>
 
             <div style={C.card} className="p-4 mb-4">
-              <div className="text-xs font-bold uppercase tracking-widest mb-1" style={C.m}>CAGR & Return Calculator</div>
-              <div className="text-xs mb-4" style={C.s}>What return if you buy today? What price for your target return?</div>
+              <div className="text-xs font-bold uppercase tracking-widest mb-1" style={C.m}>{t('cagrCalculator')}</div>
+              <div className="text-xs mb-4" style={C.s}>{t('cagrDesc')}</div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    {label:'Projection Years',value:projYears,setter:v=>setProjYears(parseInt(v)||5),step:1},
-                    {label:'Target Return (%)',value:targetReturn,setter:v=>setTargetReturn(parseFloat(v)||10),step:0.5},
-                    {label:'Dividend Growth (%)',value:divGrowth,setter:v=>setDivGrowth(parseFloat(v)||0),step:0.5},
-                    {label:'Share Change (%)',value:shareChange,setter:v=>setShareChange(parseFloat(v)||0),step:0.5},
+                    {label:t('projectionYears'),value:projYears,setter:v=>setProjYears(parseInt(v)||5),step:1},
+                    {label:t('targetReturnPct'),value:targetReturn,setter:v=>setTargetReturn(parseFloat(v)||10),step:0.5},
+                    {label:t('dividendGrowthPct'),value:divGrowth,setter:v=>setDivGrowth(parseFloat(v)||0),step:0.5},
+                    {label:t('shareChangePct'),value:shareChange,setter:v=>setShareChange(parseFloat(v)||0),step:0.5},
                   ].map(p=>(
                     <div key={p.label}>
                       <label className="text-xs block mb-1" style={C.m}>{p.label}</label>
@@ -446,19 +448,19 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
                 <div className="rounded-xl p-4" style={{background:'var(--bg-subtle)',border:'1px solid var(--border)'}}>
                   {cagrResult ? (
                     <div className="flex flex-col gap-3">
-                      <div><div className="text-xs mb-1" style={C.m}>Today's Price</div><div className="text-xl font-black num" style={C.p}>{fmtPrice(price)}</div></div>
-                      <div><div className="text-xs mb-1" style={C.m}>Future Price (Yr {projYears})</div>
+                      <div><div className="text-xs mb-1" style={C.m}>{t('todaysPrice')}</div><div className="text-xl font-black num" style={C.p}>{fmtPrice(price)}</div></div>
+                      <div><div className="text-xs mb-1" style={C.m}>{t('futurePriceYr', projYears)}</div>
                         <div className="text-xl font-black num" style={{color:cagrResult.futurePrice>price?'var(--green)':'var(--red)'}}>
                           {fmtPrice(cagrResult.futurePrice)}<span className="text-sm font-normal ml-1" style={C.m}>{cagrResult.futurePrice>price?'+':''}{fmt((cagrResult.futurePrice/price-1)*100,1)}%</span>
                         </div>
                       </div>
-                      <div><div className="text-xs mb-1" style={C.m}>Total Dividends</div><div className="text-base font-bold num" style={C.green}>{fmtPrice(cagrResult.totalDivs)}</div></div>
+                      <div><div className="text-xs mb-1" style={C.m}>{t('totalDividendsLabel')}</div><div className="text-base font-bold num" style={C.green}>{fmtPrice(cagrResult.totalDivs)}</div></div>
                       <div style={{borderTop:'1px solid var(--border)',paddingTop:10}}>
-                        <div className="text-xs mb-1 font-bold" style={C.m}>Projected CAGR</div>
+                        <div className="text-xs mb-1 font-bold" style={C.m}>{t('projectedCAGRLabel')}</div>
                         <div className="text-2xl font-black num" style={{color:cagrResult.cagr>=targetReturn?'var(--green)':cagrResult.cagr>=targetReturn*0.7?'var(--amber)':'var(--red)'}}>
                           {fmt(cagrResult.cagr,2)}%
                         </div>
-                        <div className="text-xs mt-0.5" style={C.m}>{cagrResult.cagr>=targetReturn?`✅ Exceeds ${targetReturn}% target`:`⚠ Below ${targetReturn}% target`}</div>
+                        <div className="text-xs mt-0.5" style={C.m}>{cagrResult.cagr>=targetReturn?t('exceedsTarget',targetReturn):t('belowTargetLabel',targetReturn)}</div>
                       </div>
                     </div>
                   ) : <div className="text-sm" style={C.m}>Insufficient data</div>}
@@ -468,10 +470,10 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
                 <div className="rounded-xl p-4" style={{background:requiredBuyPrice<price?'var(--red-bg)':'var(--green-bg)',border:`1px solid ${requiredBuyPrice<price?'var(--red)':'var(--green)'}`}}>
                   <div className="flex items-center justify-between gap-2">
                     <div>
-                      <div className="text-xs font-bold uppercase tracking-widest mb-1" style={C.m}>Required Buy Price for {targetReturn}% CAGR</div>
+                      <div className="text-xs font-bold uppercase tracking-widest mb-1" style={C.m}>{t('requiredBuyPriceFor', targetReturn)}</div>
                       <div className="text-2xl font-black num" style={{color:requiredBuyPrice<price?'var(--red)':'var(--green)'}}>{fmtPrice(requiredBuyPrice)}</div>
                       <div className="text-sm font-semibold mt-1" style={{color:requiredBuyPrice<price?'var(--red)':'var(--green)'}}>
-                        {requiredBuyPrice<price?`${fmt((1-requiredBuyPrice/price)*100,1)}% above entry target`:`${fmt((requiredBuyPrice/price-1)*100,1)}% below — can buy now`}
+                        {requiredBuyPrice<price?t('aboveEntryTarget',fmt((1-requiredBuyPrice/price)*100,1)):t('belowCanBuy',fmt((requiredBuyPrice/price-1)*100,1))}
                       </div>
                     </div>
                     <div className="text-3xl">{requiredBuyPrice<price?'⚠️':'✅'}</div>
@@ -485,7 +487,7 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
           </div>
         ) : (
           <div className="rounded-xl p-6 text-center" style={C.sub}>
-            <div className="text-sm" style={C.m}>Insufficient FCF data — try EBITDA mode or P/E Model</div>
+            <div className="text-sm" style={C.m}>{t('insufficientFCF')}</div>
           </div>
         )
       )}
@@ -498,38 +500,38 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
               <div className="rounded-xl p-4 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
                 style={{background:peIsOvervalued?'var(--red-bg)':'var(--green-bg)',border:`1px solid ${peIsOvervalued?'var(--red)':'var(--green)'}`}}>
                 <div>
-                  <div className="text-xs font-bold uppercase tracking-widest mb-1" style={C.m}>P/E Fair Value</div>
+                  <div className="text-xs font-bold uppercase tracking-widest mb-1" style={C.m}>{t('peFairValueLabel')}</div>
                   <div className="text-3xl font-black num" style={{color:peIsOvervalued?'var(--red)':'var(--green)'}}>{peFV?fmtPrice(peFV):'N/A'}</div>
                   <div className="text-sm font-semibold mt-1" style={{color:peIsOvervalued?'var(--red)':'var(--green)'}}>
                     {peUpside!==null?`${peUpside>=0?'+':''}${fmt(peUpside,1)}% vs market (${fmtPrice(price)})`:''}
                   </div>
                 </div>
                 <div className="sm:text-right">
-                  <div className="text-xs font-bold uppercase tracking-widest mb-1" style={C.m}>Verdict</div>
+                  <div className="text-xs font-bold uppercase tracking-widest mb-1" style={C.m}>{t('verdictLabel')}</div>
                   <div className="text-lg font-black" style={{color:peIsOvervalued?'var(--red)':'var(--green)'}}>
-                    {peUpside!==null?(peUpside<-30?'Significantly Overvalued':peUpside<-10?'Overvalued':peUpside<10?'Fairly Valued':peUpside<30?'Undervalued':'Significantly Undervalued'):'—'}
+                    {peUpside!==null?(peUpside<-30?t('sigOvervalued'):peUpside<-10?t('overvaluedLabel'):peUpside<10?t('fairlyValued'):peUpside<30?t('undervaluedLabel'):t('sigUndervalued')):'—'}
                   </div>
                 </div>
               </div>
 
               <div style={C.card} className="p-4 mb-4">
-                <div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>P/E Projection ({projYears} Years)</div>
+                <div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>{t('peProjection', projYears)}</div>
                 <table className="w-full text-sm">
                   <tbody>
                     {[
-                      ['Current EPS',fmtPrice(eps),C.p],
-                      [`Projected EPS (Yr ${projYears})`,peResult?fmtPrice(peResult.futureEPS):'—',C.accent],
-                      ['Exit P/E Multiple',`${peMultiple}x`,C.s],
-                      ['Future Stock Price',peResult?fmtPrice(peResult.futurePrice):'—',C.green],
-                      ['+ Total Dividends',peResult?fmtPrice(peResult.totalDivs):'—',C.green],
-                      ['= Total Value',peResult?fmtPrice(peResult.totalValue):'—',{...C.green,fontWeight:700}],
+                      [t('currentEPSLabel'),fmtPrice(eps),C.p],
+                      [t('projectedEPS', projYears),peResult?fmtPrice(peResult.futureEPS):'—',C.accent],
+                      [t('exitPEMultiple'),`${peMultiple}x`,C.s],
+                      [t('futureStockPrice'),peResult?fmtPrice(peResult.futurePrice):'—',C.green],
+                      [t('plusTotalDivs'),peResult?fmtPrice(peResult.totalDivs):'—',C.green],
+                      [t('totalValueLabel'),peResult?fmtPrice(peResult.totalValue):'—',{...C.green,fontWeight:700}],
                     ].map(([k,v,s])=>(
                       <tr key={k} style={C.bdr}><td className="py-1.5" style={C.s}>{k}</td><td className="py-1.5 text-right font-medium num" style={s}>{v}</td></tr>
                     ))}
                   </tbody>
                 </table>
                 <div className="mt-3 pt-3 text-xs" style={{borderTop:'1px solid var(--border)',...C.m}}>
-                  💡 PV discounted at {dcfP.wacc}% over {projYears} years
+                  {t('pvDiscounted', dcfP.wacc, projYears)}
                 </div>
               </div>
 
@@ -537,10 +539,10 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
                 <div className="rounded-xl p-4 mb-4" style={{background:peRequiredBuyPrice<price?'var(--red-bg)':'var(--green-bg)',border:`1px solid ${peRequiredBuyPrice<price?'var(--red)':'var(--green)'}`}}>
                   <div className="flex items-center justify-between gap-2">
                     <div>
-                      <div className="text-xs font-bold uppercase tracking-widest mb-1" style={C.m}>Required Buy Price for {targetReturn}% CAGR</div>
+                      <div className="text-xs font-bold uppercase tracking-widest mb-1" style={C.m}>{t('requiredBuyPriceFor', targetReturn)}</div>
                       <div className="text-2xl font-black num" style={{color:peRequiredBuyPrice<price?'var(--red)':'var(--green)'}}>{fmtPrice(peRequiredBuyPrice)}</div>
                       <div className="text-sm font-semibold mt-1" style={{color:peRequiredBuyPrice<price?'var(--red)':'var(--green)'}}>
-                        {peRequiredBuyPrice<price?`${fmt((1-peRequiredBuyPrice/price)*100,1)}% above entry target`:`${fmt((peRequiredBuyPrice/price-1)*100,1)}% below — can buy now`}
+                        {peRequiredBuyPrice<price?t('aboveEntryTarget',fmt((1-peRequiredBuyPrice/price)*100,1)):t('belowCanBuy',fmt((peRequiredBuyPrice/price-1)*100,1))}
                       </div>
                     </div>
                     <div className="text-4xl">{peRequiredBuyPrice<price?'⚠️':'✅'}</div>
@@ -549,12 +551,12 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
               )}
 
               <div style={C.card} className="p-4">
-                <div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>Return Settings</div>
+                <div className="text-xs font-bold uppercase tracking-widest mb-3" style={C.m}>{t('returnSettings')}</div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {[
-                    {label:'Dividend Growth (%)',value:divGrowth,setter:v=>setDivGrowth(parseFloat(v)||0)},
-                    {label:'Share Change (%)',value:shareChange,setter:v=>setShareChange(parseFloat(v)||0)},
-                    {label:'Discount Rate (%)',value:dcfP.wacc,setter:v=>setDcfP(prev=>({...prev,wacc:parseFloat(v)||0}))},
+                    {label:t('dividendGrowthPct'),value:divGrowth,setter:v=>setDivGrowth(parseFloat(v)||0)},
+                    {label:t('shareChangePct'),value:shareChange,setter:v=>setShareChange(parseFloat(v)||0)},
+                    {label:t('discountRate'),value:dcfP.wacc,setter:v=>setDcfP(prev=>({...prev,wacc:parseFloat(v)||0}))},
                   ].map(p=>(
                     <div key={p.label}>
                       <label className="text-xs block mb-1" style={C.m}>{p.label}</label>
@@ -568,12 +570,12 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
             </>
           ) : (
             <div className="rounded-xl p-6 text-center" style={{...C.sub,border:'1px solid var(--red)'}}>
-              <div className="text-sm font-bold mb-2" style={C.red}>⚠️ EPS unavailable or unreliable</div>
-              <div className="text-xs mb-3" style={C.s}>Enter EPS manually in the field above (in USD)</div>
+              <div className="text-sm font-bold mb-2" style={C.red}>{t('epsUnavailable')}</div>
+              <div className="text-xs mb-3" style={C.s}>{t('enterEPSManually')}</div>
               <a href={`https://finance.yahoo.com/quote/${ticker}/key-statistics`} target="_blank" rel="noopener noreferrer"
                 className="text-xs font-semibold px-3 py-1.5 rounded-lg"
                 style={{background:'var(--accent)',color:'white',textDecoration:'none',display:'inline-block'}}>
-                🔗 Find EPS on Yahoo Finance
+                {t('findEPSYahoo')}
               </a>
             </div>
           )}
