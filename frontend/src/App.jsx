@@ -388,48 +388,42 @@ export default function App() {
 
         {/* Search */}
         <div style={{ display: 'flex', gap: 10, marginBottom: 18, alignItems: 'center' }}>
-          <button
-            onClick={() => setPaletteOpen(true)}
-            style={{
-              flex: 1, height: 44,
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '0 18px',
-              background: darkMode ? 'rgba(255,255,255,0.06)' : '#ffffff',
-              backdropFilter: darkMode ? 'blur(20px)' : 'none',
-              WebkitBackdropFilter: darkMode ? 'blur(20px)' : 'none',
-              border: darkMode ? '1px solid rgba(255,255,255,0.14)' : '1.5px solid rgba(0,0,0,0.18)',
-              borderRadius: 'var(--radius-pill)',
-              color: 'var(--text-muted)',
-              fontSize: 13,
-              fontFamily: 'var(--font-sans)',
-              cursor: 'pointer',
-              textAlign: 'left',
-              transition: 'border-color 0.15s, background 0.15s, box-shadow 0.15s',
-              boxShadow: darkMode ? 'none' : '0 1px 4px rgba(0,0,0,0.08)',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = darkMode ? 'rgba(255,255,255,0.10)' : '#f8f8ff';
-              e.currentTarget.style.borderColor = darkMode ? 'rgba(255,255,255,0.22)' : 'rgba(0,102,255,0.45)';
-              if (!darkMode) e.currentTarget.style.boxShadow = '0 0 0 3px rgba(0,102,255,0.10)';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = darkMode ? 'rgba(255,255,255,0.06)' : '#ffffff';
-              e.currentTarget.style.borderColor = darkMode ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.18)';
-              e.currentTarget.style.boxShadow = darkMode ? 'none' : '0 1px 4px rgba(0,0,0,0.08)';
-            }}
-          >
-            <span style={{ color: ticker ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: ticker ? 500 : 400 }}>
-              {ticker || t('searchPlaceholder')}
-            </span>
-            <kbd style={{
-              padding: '2px 8px', fontSize: 10,
-              fontFamily: 'var(--font-mono)',
-              background: darkMode ? 'rgba(255,255,255,0.10)' : 'rgba(0,102,255,0.08)',
-              color: darkMode ? 'rgba(240,240,250,0.8)' : 'var(--accent)',
-              border: darkMode ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,102,255,0.20)',
-              borderRadius: 4, letterSpacing: '0.04em', flexShrink: 0,
-            }}>⌘K</kbd>
-          </button>
+          <div style={{
+            flex: 1, height: 44,
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: '0 14px 0 18px',
+            background: darkMode ? 'rgba(255,255,255,0.06)' : '#ffffff',
+            backdropFilter: darkMode ? 'blur(20px)' : 'none',
+            WebkitBackdropFilter: darkMode ? 'blur(20px)' : 'none',
+            border: darkMode ? '1px solid rgba(255,255,255,0.14)' : '1.5px solid rgba(0,0,0,0.18)',
+            borderRadius: 'var(--radius-pill)',
+            boxShadow: darkMode ? 'none' : '0 1px 4px rgba(0,0,0,0.08)',
+            transition: 'border-color 0.15s, box-shadow 0.15s',
+          }}>
+            <input
+              value={ticker}
+              onChange={e => setTicker(e.target.value.toUpperCase())}
+              onKeyDown={e => e.key === 'Enter' && analyze()}
+              placeholder={t('searchPlaceholder')}
+              style={{
+                flex: 1, height: '100%', border: 'none', outline: 'none',
+                background: 'transparent', color: 'var(--text-primary)',
+                fontSize: 13, fontFamily: 'var(--font-sans)', fontWeight: ticker ? 600 : 400,
+                letterSpacing: ticker ? '0.05em' : 0,
+              }}
+            />
+            <kbd
+              onClick={() => setPaletteOpen(true)}
+              title="Open search palette"
+              style={{
+                padding: '2px 8px', fontSize: 10,
+                fontFamily: 'var(--font-mono)',
+                background: darkMode ? 'rgba(255,255,255,0.10)' : 'rgba(0,102,255,0.08)',
+                color: darkMode ? 'rgba(240,240,250,0.8)' : 'var(--accent)',
+                border: darkMode ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,102,255,0.20)',
+                borderRadius: 4, letterSpacing: '0.04em', flexShrink: 0, cursor: 'pointer',
+              }}>⌘K</kbd>
+          </div>
           <button onClick={() => analyze()} disabled={loading} className="btn-brand" style={{ height: 42, padding: '0 24px', flexShrink: 0 }}>
             {loading ? '⟳' : t('analyzeCta')}
           </button>

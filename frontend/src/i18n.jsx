@@ -282,6 +282,8 @@ const en = {
   selectCmd: 'select',
   closeCmd: 'close',
   cmdResults: '{0} / {1} results',
+  analyzeDirectly: 'Analyze {0} directly',
+  anyUSTicker: 'Any US ticker · press Enter',
 
   // DCFTab
   dcfModelBtn: '📊 DCF Model',
@@ -746,6 +748,8 @@ const he = {
   selectCmd: 'בחר',
   closeCmd: 'סגור',
   cmdResults: '{0} / {1} תוצאות',
+  analyzeDirectly: 'ניתח {0} ישירות',
+  anyUSTicker: 'כל טיקר אמריקאי · הקש Enter',
 
   // DCFTab
   dcfModelBtn: '📊 מודל DCF',

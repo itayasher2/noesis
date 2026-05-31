@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../i18n.jsx';
 
+const API = 'https://web-production-bdb26.up.railway.app/api';
+
 const TICKER_INDEX = [
   { sym: 'AAPL',  name: 'Apple Inc.',            sector: 'Consumer Tech'   },
   { sym: 'NVDA',  name: 'NVIDIA Corporation',    sector: 'Semiconductors'  },
@@ -17,7 +19,14 @@ const TICKER_INDEX = [
   { sym: 'COST',  name: 'Costco Wholesale',      sector: 'Retail'          },
   { sym: 'ORCL',  name: 'Oracle Corporation',    sector: 'Software'        },
   { sym: 'INTC',  name: 'Intel Corporation',     sector: 'Semiconductors'  },
+  { sym: 'UBER',  name: 'Uber Technologies',     sector: 'Tech'            },
+  { sym: 'SPOT',  name: 'Spotify Technology',    sector: 'Streaming'       },
+  { sym: 'PLTR',  name: 'Palantir Technologies', sector: 'AI/Data'         },
+  { sym: 'SNOW',  name: 'Snowflake Inc.',        sector: 'Cloud'           },
+  { sym: 'COIN',  name: 'Coinbase Global',       sector: 'Crypto'          },
 ];
+
+const US_EXCHANGES = new Set(['NASDAQ', 'NYSE', 'NYSE ARCA', 'NYSE MKT', 'AMEX', 'NYSEArca']);
 
 function Hint({ k, label }) {
   return (
@@ -32,11 +41,14 @@ export default function CommandPalette({ open, onClose, onPick }) {
   const { t } = useLanguage();
   const [query, setQuery] = useState('');
   const [cursor, setCursor] = useState(0);
+  const [fmpResults, setFmpResults] = useState([]);
+  const [searching, setSearching] = useState(false);
   const inputRef = useRef(null);
+  const timerRef = useRef(null);
 
   useEffect(() => {
     if (open) {
-      setQuery(''); setCursor(0);
+      setQuery(''); setCursor(0); setFmpResults([]);
       setTimeout(() => inputRef.current?.focus(), 30);
     }
   }, [open]);
@@ -48,20 +60,59 @@ export default function CommandPalette({ open, onClose, onPick }) {
     return () => window.removeEventListener('keydown', handler);
   }, [open, onClose]);
 
+  // Debounced FMP search
+  useEffect(() => {
+    const q = query.trim();
+    if (!q || q.length < 1) { setFmpResults([]); setSearching(false); return; }
+    setSearching(true);
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`${API}/stock/search/${encodeURIComponent(q.toUpperCase())}`);
+        const data = await res.json();
+        const filtered = (Array.isArray(data) ? data : [])
+          .filter(r => US_EXCHANGES.has(r.exchangeShortName))
+          .slice(0, 8);
+        setFmpResults(filtered);
+      } catch {
+        setFmpResults([]);
+      } finally {
+        setSearching(false);
+      }
+    }, 280);
+    return () => clearTimeout(timerRef.current);
+  }, [query]);
+
   if (!open) return null;
 
   const q = query.trim().toUpperCase();
-  const filtered = !q
-    ? TICKER_INDEX
-    : TICKER_INDEX.filter(t =>
-        t.sym.includes(q) || t.name.toUpperCase().includes(q) || t.sector.toUpperCase().includes(q));
 
-  const pick = (t) => { if (!t) return; onPick(t.sym); onClose(); };
+  // Local predefined matches
+  const localMatched = !q
+    ? TICKER_INDEX
+    : TICKER_INDEX.filter(item =>
+        item.sym.includes(q) || item.name.toUpperCase().includes(q) || item.sector.toUpperCase().includes(q));
+
+  // FMP results not already in local
+  const localSymSet = new Set(localMatched.map(i => i.sym));
+  const fmpUnique = fmpResults
+    .filter(r => !localSymSet.has(r.symbol))
+    .map(r => ({ sym: r.symbol, name: r.name, sector: r.exchangeShortName }));
+
+  const merged = [...localMatched, ...fmpUnique];
+
+  // Direct "Analyze [TICKER]" option at top when query is non-empty and not an exact local match
+  const hasExactLocal = localMatched.some(i => i.sym === q);
+  const directItem = q && !hasExactLocal ? { sym: q, name: t('analyzeDirectly', q), sector: t('anyUSTicker'), isDirect: true } : null;
+
+  const displayList = directItem ? [directItem, ...merged] : merged;
+
+  const pick = (item) => { if (!item) return; onPick(item.sym); onClose(); };
 
   const onKeyDown = (e) => {
-    if (e.key === 'ArrowDown')      { e.preventDefault(); setCursor(c => Math.min(filtered.length - 1, c + 1)); }
-    else if (e.key === 'ArrowUp')   { e.preventDefault(); setCursor(c => Math.max(0, c - 1)); }
-    else if (e.key === 'Enter')     { e.preventDefault(); pick(filtered[cursor]); }
+    if (e.key === 'ArrowDown')    { e.preventDefault(); setCursor(c => Math.min(displayList.length - 1, c + 1)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setCursor(c => Math.max(0, c - 1)); }
+    else if (e.key === 'Enter')   { e.preventDefault(); pick(displayList[cursor]); }
   };
 
   return (
@@ -82,30 +133,43 @@ export default function CommandPalette({ open, onClose, onPick }) {
             placeholder={t('searchTickerPlaceholder')}
             style={{ flex: 1, height: 32, padding: 0, border: 'none', background: 'transparent', outline: 'none', boxShadow: 'none', color: 'var(--text-primary)', fontSize: 14 }}
           />
+          {searching && <span style={{ color: 'var(--text-muted)', fontSize: 12, animation: 'pulse 1s infinite' }}>⟳</span>}
           <kbd style={{ padding: '2px 7px', fontSize: 10, fontFamily: 'var(--font-mono)', background: 'var(--bg-subtle)', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: 3, letterSpacing: '0.04em' }}>ESC</kbd>
         </div>
 
         {/* Results */}
         <div style={{ maxHeight: '52vh', overflowY: 'auto' }}>
-          {filtered.length === 0 ? (
+          {displayList.length === 0 && !searching ? (
             <div style={{ padding: 24, textAlign: 'center' }}><div className="t-eyebrow">{t('noMatches')}</div></div>
           ) : (
-            filtered.map((t, i) => (
-              <button key={t.sym} onClick={() => pick(t)} onMouseEnter={() => setCursor(i)}
+            displayList.map((item, i) => (
+              <button key={item.sym + i} onClick={() => pick(item)} onMouseEnter={() => setCursor(i)}
                 style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: 14,
                   padding: '10px 18px',
                   background: cursor === i ? 'var(--bg-subtle)' : 'transparent',
                   border: 'none', cursor: 'pointer',
-                  borderLeft: `2px solid ${cursor === i ? 'var(--accent)' : 'transparent'}`,
+                  borderLeft: `2px solid ${cursor === i ? (item.isDirect ? 'var(--green)' : 'var(--accent)') : 'transparent'}`,
                   textAlign: 'left',
                 }}>
-                <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 13, letterSpacing: 1.5, color: cursor === i ? 'var(--accent)' : 'var(--text-primary)', minWidth: 60 }}>{t.sym}</div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.name}</div>
-                  <div className="t-meta" style={{ marginTop: 2 }}>{t.sector}</div>
-                </div>
-                {cursor === i && <span style={{ color: 'var(--accent)', fontSize: 14 }}>↵</span>}
+                {item.isDirect ? (
+                  <>
+                    <span style={{ fontSize: 15, flexShrink: 0 }}>🔍</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 13, letterSpacing: 1.5, color: cursor === i ? 'var(--green)' : 'var(--text-primary)' }}>{item.sym}</div>
+                      <div className="t-meta" style={{ marginTop: 2 }}>{item.sector}</div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 13, letterSpacing: 1.5, color: cursor === i ? 'var(--accent)' : 'var(--text-primary)', minWidth: 60 }}>{item.sym}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</div>
+                      <div className="t-meta" style={{ marginTop: 2 }}>{item.sector}</div>
+                    </div>
+                  </>
+                )}
+                {cursor === i && <span style={{ color: item.isDirect ? 'var(--green)' : 'var(--accent)', fontSize: 14, flexShrink: 0 }}>↵</span>}
               </button>
             ))
           )}
@@ -116,7 +180,7 @@ export default function CommandPalette({ open, onClose, onPick }) {
           <Hint k="↑↓" label={t('navigate')} />
           <Hint k="↵" label={t('selectCmd')} />
           <Hint k="ESC" label={t('closeCmd')} />
-          <span style={{ marginLeft: 'auto' }}>{t('cmdResults', filtered.length, TICKER_INDEX.length)}</span>
+          <span style={{ marginLeft: 'auto' }}>{t('cmdResults', displayList.length, TICKER_INDEX.length)}</span>
         </div>
       </div>
     </div>
