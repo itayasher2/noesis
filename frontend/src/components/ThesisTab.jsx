@@ -6,11 +6,11 @@ const API = 'https://web-production-bdb26.up.railway.app/api';
 
 function RecBadge({ rec }) {
   const colors = {
-    'Strong Buy': { bg: '#f0fdf4', color: '#065f46', border: '#a7f3d0' },
-    'Buy': { bg: '#f0fdf4', color: '#065f46', border: '#a7f3d0' },
-    'Hold': { bg: '#fdfaf5', color: '#78350f', border: '#e5d5b0' },
-    'Reduce': { bg: '#fff8f0', color: '#92400e', border: '#e5d0b0' },
-    'Sell': { bg: '#fff8f8', color: '#991b1b', border: '#e5b0b0' },
+    'Strong Buy': { bg: 'rgba(16,185,129,0.12)', color: 'var(--green)', border: 'rgba(16,185,129,0.30)' },
+    'Buy':        { bg: 'rgba(16,185,129,0.12)', color: 'var(--green)', border: 'rgba(16,185,129,0.30)' },
+    'Hold':       { bg: 'rgba(245,158,11,0.12)', color: 'var(--amber)', border: 'rgba(245,158,11,0.30)' },
+    'Reduce':     { bg: 'rgba(249,115,22,0.12)', color: 'var(--orange)', border: 'rgba(249,115,22,0.30)' },
+    'Sell':       { bg: 'rgba(239,68,68,0.12)',  color: 'var(--red)',   border: 'rgba(239,68,68,0.30)' },
   };
   const s = colors[rec] || colors['Hold'];
   return (
@@ -48,10 +48,10 @@ export default function ThesisTab({ data, scoreData, dcf, dcfParams }) {
   };
 
   const C = {
-    card: { background: '#fff', border: '1px solid #ebe9e3', borderRadius: 10, padding: '14px 18px', marginBottom: 12 },
-    label: { fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8, paddingBottom: 6, borderBottom: '1px solid #ebe9e3' },
-    text: { fontSize: 14, color: '#222', lineHeight: 1.7 },
-    point: { fontSize: 13.5, color: '#222', lineHeight: 1.6, padding: '6px 0', borderBottom: '1px solid #f0ede8' },
+    card: { background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, padding: '14px 18px', marginBottom: 12 },
+    label: { fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8, paddingBottom: 6, borderBottom: '1px solid var(--border)' },
+    text: { fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.7 },
+    point: { fontSize: 13.5, color: 'var(--text-primary)', lineHeight: 1.6, padding: '6px 0', borderBottom: '1px solid var(--border)' },
   };
 
   if (!generated) {
@@ -106,7 +106,7 @@ export default function ThesisTab({ data, scoreData, dcf, dcfParams }) {
           {thesis.targetPrice && (
             <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
               Target: <strong>{fmtPrice(thesis.targetPrice)}</strong>
-              <span style={{ marginLeft: 6, color: thesis.targetPrice > data.profile.price ? '#065f46' : '#991b1b', fontWeight: 600 }}>
+              <span style={{ marginLeft: 6, color: thesis.targetPrice > data.profile.price ? 'var(--green)' : 'var(--red)', fontWeight: 600 }}>
                 ({thesis.targetPrice > data.profile.price ? '+' : ''}{fmt((thesis.targetPrice/data.profile.price-1)*100, 1)}%)
               </span>
             </span>
@@ -129,20 +129,20 @@ export default function ThesisTab({ data, scoreData, dcf, dcfParams }) {
 
       {/* Bull & Bear */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
-        <div style={{ ...C.card, marginBottom: 0, borderLeft: '3px solid #065f46' }}>
-          <div style={{ ...C.label, color: '#065f46' }}>🟢 Bull Case</div>
+        <div style={{ ...C.card, marginBottom: 0, borderLeft: '3px solid var(--green)' }}>
+          <div style={{ ...C.label, color: 'var(--green)' }}>🟢 Bull Case</div>
           {thesis.bullPoints?.map((p, i) => (
             <div key={i} style={{ ...C.point, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-              <span style={{ color: '#065f46', fontWeight: 700, flexShrink: 0 }}>↑</span>
+              <span style={{ color: 'var(--green)', fontWeight: 700, flexShrink: 0 }}>↑</span>
               <span>{p}</span>
             </div>
           ))}
         </div>
-        <div style={{ ...C.card, marginBottom: 0, borderLeft: '3px solid #991b1b' }}>
-          <div style={{ ...C.label, color: '#991b1b' }}>🔴 Bear Case</div>
+        <div style={{ ...C.card, marginBottom: 0, borderLeft: '3px solid var(--red)' }}>
+          <div style={{ ...C.label, color: 'var(--red)' }}>🔴 Bear Case</div>
           {thesis.bearPoints?.map((p, i) => (
             <div key={i} style={{ ...C.point, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-              <span style={{ color: '#991b1b', fontWeight: 700, flexShrink: 0 }}>↓</span>
+              <span style={{ color: 'var(--red)', fontWeight: 700, flexShrink: 0 }}>↓</span>
               <span>{p}</span>
             </div>
           ))}
@@ -161,7 +161,7 @@ export default function ThesisTab({ data, scoreData, dcf, dcfParams }) {
           <div style={C.label}>⚠ Key Risks</div>
           {thesis.keyRisks?.map((r, i) => (
             <div key={i} style={{ ...C.point, display: 'flex', gap: 8 }}>
-              <span style={{ color: '#991b1b', flexShrink: 0 }}>•</span>
+              <span style={{ color: 'var(--red)', flexShrink: 0 }}>•</span>
               <span>{r}</span>
             </div>
           ))}
@@ -170,7 +170,7 @@ export default function ThesisTab({ data, scoreData, dcf, dcfParams }) {
           <div style={C.label}>⚡ Catalysts</div>
           {thesis.catalysts?.map((c, i) => (
             <div key={i} style={{ ...C.point, display: 'flex', gap: 8 }}>
-              <span style={{ color: '#065f46', flexShrink: 0 }}>•</span>
+              <span style={{ color: 'var(--green)', flexShrink: 0 }}>•</span>
               <span>{c}</span>
             </div>
           ))}
@@ -178,8 +178,8 @@ export default function ThesisTab({ data, scoreData, dcf, dcfParams }) {
       </div>
 
       {/* What Changes View */}
-      <div style={{ ...C.card, background: '#fdfaf5', border: '1px solid #e5d5b0' }}>
-        <div style={{ ...C.label, color: '#78350f' }}>🔄 What Changes Our View</div>
+      <div style={{ ...C.card, background: 'var(--amber-bg)', border: '1px solid var(--amber-border)' }}>
+        <div style={{ ...C.label, color: 'var(--amber)' }}>🔄 What Changes Our View</div>
         <p style={C.text}>{thesis.whatChangesView}</p>
       </div>
 

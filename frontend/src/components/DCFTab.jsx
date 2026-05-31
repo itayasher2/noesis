@@ -99,7 +99,7 @@ export default function DCFTab({ data, dcfP, setDcfP, dcfMode, setDcfMode, onPEV
   const apiEPS = data.multiples?.eps;
   const autoEPS = apiEPS && apiEPS > 0 && apiEPS < 200
     ? apiEPS
-    : (data.financials.netIncome && data.profile.shares ? data.financials.netIncome / data.profile.shares / 1e9 * 1000 : 0);
+    : (data.financials.netIncome && data.profile.shares ? data.financials.netIncome / data.profile.shares : 0);
   const eps = manualEPS > 0 ? manualEPS : autoEPS;
   const epsLooksSuspicious = autoEPS > 50 || autoEPS <= 0;
 

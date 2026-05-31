@@ -398,7 +398,7 @@ export default function App() {
               borderRadius: 4, letterSpacing: '0.04em', flexShrink: 0,
             }}>⌘K</kbd>
           </button>
-          <button onClick={analyze} disabled={loading} className="btn-brand" style={{ height: 42, padding: '0 24px', flexShrink: 0 }}>
+          <button onClick={() => analyze()} disabled={loading} className="btn-brand" style={{ height: 42, padding: '0 24px', flexShrink: 0 }}>
             {loading ? '⟳' : 'Analyze ▶'}
           </button>
         </div>

@@ -75,129 +75,138 @@ Respond ONLY with a valid JSON object (no markdown, no backticks):
     }
   };
 
-  const verdictColors = {
-    green: { bg: '#dcfce7', border: '#86efac', text: '#166534' },
-    amber: { bg: '#fef9c3', border: '#fde047', text: '#854d0e' },
-    red:   { bg: '#fee2e2', border: '#fca5a5', text: '#991b1b' },
-  };
-  const levelColors = { HIGH: '#10b981', MEDIUM: '#f59e0b', LOW: '#ef4444' };
-  const riskColors  = { LOW: '#10b981', MEDIUM: '#f59e0b', HIGH: '#ef4444' };
-  const qualityColor = (s) => s >= 8 ? '#10b981' : s >= 6 ? '#f59e0b' : '#ef4444';
+  const verdictBg    = { green: 'rgba(16,185,129,0.08)', amber: 'rgba(245,158,11,0.08)', red: 'rgba(239,68,68,0.08)' };
+  const verdictBdr   = { green: 'rgba(16,185,129,0.25)', amber: 'rgba(245,158,11,0.25)', red: 'rgba(239,68,68,0.25)' };
+  const verdictColor = { green: 'var(--green)', amber: 'var(--amber)', red: 'var(--red)' };
+  const levelColor   = { HIGH: 'var(--green)', MEDIUM: 'var(--amber)', LOW: 'var(--red)' };
+  const riskColor    = { LOW: 'var(--green)', MEDIUM: 'var(--amber)', HIGH: 'var(--red)' };
+  const qualityColor = (s) => s >= 8 ? 'var(--green)' : s >= 6 ? 'var(--amber)' : 'var(--red)';
+
+  const card = { background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 16 };
+  const sub  = { background: 'var(--bg-subtle)', border: '1px solid var(--border)', borderRadius: 12, padding: 16 };
 
   return (
     <div>
       {!analysis && !loading && (
         <div style={{ textAlign: 'center', padding: '32px' }}>
-          <div style={{ fontSize: '32px', marginBottom: '12px' }}>🤖</div>
-          <div style={{ fontSize: '16px', fontWeight: 600, color: '#111827', marginBottom: '8px' }}>AI Equity Analysis</div>
-          <div style={{ fontSize: '13px', color: '#6b7280', marginBottom: '24px', maxWidth: '400px', margin: '0 auto 24px' }}>
+          <div style={{ fontSize: 32, marginBottom: 12 }}>🤖</div>
+          <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>AI Equity Analysis</div>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24, maxWidth: 400, margin: '0 auto 24px' }}>
             Generate a professional analyst report including Investment Thesis, Quality Score, Red Flags, and Smart Insights.
           </div>
           <button onClick={generateAnalysis}
-            style={{ padding: '12px 32px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>
+            style={{ padding: '12px 32px', background: 'var(--gradient-brand)', color: '#fff', border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
             Generate Analysis ▶
           </button>
         </div>
       )}
 
       {loading && (
-        <div style={{ textAlign: 'center', padding: '48px' }}>
-          <div style={{ width: '32px', height: '32px', border: '3px solid #e5e7eb', borderTopColor: '#10b981', borderRadius: '50%', animation: 'spin 0.7s linear infinite', margin: '0 auto 16px' }}></div>
-          <div style={{ fontSize: '13px', color: '#6b7280' }}>Analyzing {data.profile.name}...</div>
+        <div style={{ textAlign: 'center', padding: 48 }}>
+          <div style={{ width: 32, height: 32, border: '3px solid var(--border)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 0.7s linear infinite', margin: '0 auto 16px' }} />
+          <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Analyzing {data.profile.name}…</div>
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
       )}
 
       {error && (
-        <div style={{ padding: '16px', background: '#fee2e2', borderRadius: '12px', color: '#991b1b', fontSize: '13px', marginBottom: '12px' }}>
+        <div style={{ padding: 16, background: 'var(--red-bg)', border: '1px solid var(--red)', borderRadius: 12, color: 'var(--red)', fontSize: 13, marginBottom: 12 }}>
           {error}
-          <button onClick={generateAnalysis} style={{ marginLeft: '12px', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', color: '#991b1b' }}>Try again</button>
+          <button onClick={generateAnalysis} style={{ marginLeft: 12, textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--red)' }}>Try again</button>
         </div>
       )}
 
       {analysis && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-          <div style={{ background: verdictColors[analysis.verdictColor]?.bg || '#f9fafb', border: `1px solid ${verdictColors[analysis.verdictColor]?.border || '#e5e7eb'}`, borderRadius: '12px', padding: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Investment Thesis</div>
-              <span style={{ padding: '4px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, background: verdictColors[analysis.verdictColor]?.text || '#374151', color: '#fff' }}>
+          {/* Verdict + Thesis */}
+          <div style={{ ...card, background: verdictBg[analysis.verdictColor] || 'var(--bg-subtle)', border: `1px solid ${verdictBdr[analysis.verdictColor] || 'var(--border)'}` }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+              <div className="t-eyebrow">Investment Thesis</div>
+              <span style={{ padding: '4px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700, background: verdictColor[analysis.verdictColor] || 'var(--accent)', color: '#fff' }}>
                 {analysis.verdict}
               </span>
             </div>
-            <p style={{ fontSize: '14px', color: '#1f2937', lineHeight: 1.7, margin: 0 }}>{analysis.investmentThesis}</p>
+            <p style={{ fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.7, margin: 0 }}>{analysis.investmentThesis}</p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '16px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', marginBottom: '8px' }}>Value Drivers</div>
-              <p style={{ fontSize: '13px', color: '#374151', lineHeight: 1.6, margin: 0 }}>{analysis.valueDrivers}</p>
+          {/* Value Drivers + Growth Stage */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div style={sub}>
+              <div className="t-eyebrow" style={{ marginBottom: 8 }}>Value Drivers</div>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>{analysis.valueDrivers}</p>
             </div>
-            <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '16px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <div style={{ fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase' }}>Growth Stage</div>
-                <span style={{ padding: '2px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, background: '#e0f2fe', color: '#0369a1' }}>{analysis.growthClassification}</span>
+            <div style={sub}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <div className="t-eyebrow">Growth Stage</div>
+                <span style={{ padding: '2px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: 'rgba(125,211,252,0.12)', color: 'var(--accent)', border: '1px solid rgba(125,211,252,0.25)' }}>
+                  {analysis.growthClassification}
+                </span>
               </div>
-              <p style={{ fontSize: '13px', color: '#374151', lineHeight: 1.6, margin: 0 }}>{analysis.growthNote}</p>
-            </div>
-          </div>
-
-          <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '16px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', marginBottom: '12px' }}>Business Quality</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '28px', fontWeight: 700, color: qualityColor(analysis.qualityScore) }}>{analysis.qualityScore}/10</div>
-                <div style={{ fontSize: '11px', color: '#6b7280' }}>Quality Score</div>
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '18px', fontWeight: 600, color: levelColors[analysis.profitability] }}>{analysis.profitability}</div>
-                <div style={{ fontSize: '11px', color: '#6b7280' }}>Profitability</div>
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '18px', fontWeight: 600, color: levelColors[analysis.growthProfile] }}>{analysis.growthProfile}</div>
-                <div style={{ fontSize: '11px', color: '#6b7280' }}>Growth</div>
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '18px', fontWeight: 600, color: riskColors[analysis.riskLevel] }}>{analysis.riskLevel}</div>
-                <div style={{ fontSize: '11px', color: '#6b7280' }}>Risk</div>
-              </div>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>{analysis.growthNote}</p>
             </div>
           </div>
 
-          <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '12px', padding: '16px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 600, color: '#9a3412', textTransform: 'uppercase', marginBottom: '10px' }}>⚠ Red Flags & Risks</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {/* Business Quality */}
+          <div style={sub}>
+            <div className="t-eyebrow" style={{ marginBottom: 12 }}>Business Quality</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 28, fontWeight: 700, color: qualityColor(analysis.qualityScore) }}>{analysis.qualityScore}/10</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Quality Score</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 18, fontWeight: 600, color: levelColor[analysis.profitability] }}>{analysis.profitability}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Profitability</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 18, fontWeight: 600, color: levelColor[analysis.growthProfile] }}>{analysis.growthProfile}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Growth</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 18, fontWeight: 600, color: riskColor[analysis.riskLevel] }}>{analysis.riskLevel}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Risk</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Red Flags */}
+          <div style={{ ...sub, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.20)' }}>
+            <div className="t-eyebrow" style={{ color: 'var(--red)', marginBottom: 10 }}>⚠ Red Flags & Risks</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {analysis.redFlags?.map((flag, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '13px', color: '#374151' }}>
-                  <span style={{ color: '#ef4444', fontWeight: 600 }}>•</span>{flag}
+                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 13, color: 'var(--text-secondary)' }}>
+                  <span style={{ color: 'var(--red)', fontWeight: 600 }}>•</span>{flag}
                 </div>
               ))}
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
-            <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '16px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', marginBottom: '8px' }}>Capital Allocation</div>
-              <p style={{ fontSize: '13px', color: '#374151', lineHeight: 1.6, margin: 0 }}>{analysis.capitalAllocationNote}</p>
+          {/* Capital Allocation + FCF + Sector */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+            <div style={sub}>
+              <div className="t-eyebrow" style={{ marginBottom: 8 }}>Capital Allocation</div>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>{analysis.capitalAllocationNote}</p>
             </div>
-            <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '16px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', marginBottom: '8px' }}>FCF Consistency</div>
-              <div style={{ fontSize: '20px', fontWeight: 700, color: levelColors[analysis.fcfConsistency], marginBottom: '4px' }}>{analysis.fcfConsistency}</div>
-              <p style={{ fontSize: '11px', color: '#6b7280', margin: 0 }}>Free Cash Flow Stability</p>
+            <div style={sub}>
+              <div className="t-eyebrow" style={{ marginBottom: 8 }}>FCF Consistency</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: levelColor[analysis.fcfConsistency], marginBottom: 4 }}>{analysis.fcfConsistency}</div>
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: 0 }}>Free Cash Flow Stability</p>
             </div>
-            <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '16px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', marginBottom: '8px' }}>Sector Context</div>
-              <p style={{ fontSize: '13px', color: '#374151', lineHeight: 1.6, margin: 0 }}>{analysis.sectorContext}</p>
+            <div style={sub}>
+              <div className="t-eyebrow" style={{ marginBottom: 8 }}>Sector Context</div>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>{analysis.sectorContext}</p>
             </div>
           </div>
 
-          <div style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)', borderRadius: '12px', padding: '20px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 600, color: '#a5b4fc', textTransform: 'uppercase', marginBottom: '8px' }}>💡 Smart Insight</div>
-            <p style={{ fontSize: '14px', color: '#e0e7ff', lineHeight: 1.7, margin: 0, fontStyle: 'italic' }}>{analysis.smartInsight}</p>
+          {/* Smart Insight */}
+          <div style={{ background: 'linear-gradient(135deg, rgba(167,139,250,0.15) 0%, rgba(125,211,252,0.15) 100%)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: 12, padding: 20 }}>
+            <div className="t-eyebrow" style={{ color: 'var(--accent-2)', marginBottom: 8 }}>💡 Smart Insight</div>
+            <p style={{ fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.7, margin: 0, fontStyle: 'italic' }}>{analysis.smartInsight}</p>
           </div>
 
           <button onClick={generateAnalysis}
-            style={{ padding: '10px', background: 'transparent', border: '1px solid #e5e7eb', borderRadius: '10px', fontSize: '12px', color: '#6b7280', cursor: 'pointer' }}>
+            style={{ padding: 10, background: 'transparent', border: '1px solid var(--border)', borderRadius: 10, fontSize: 12, color: 'var(--text-muted)', cursor: 'pointer' }}>
             Regenerate Analysis ↺
           </button>
         </div>
