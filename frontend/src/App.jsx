@@ -374,7 +374,7 @@ export default function App() {
             <div className="logo-dot" />
             <div>
               <div className="wordmark" style={{ fontSize: 15 }}>NOESIS</div>
-              <div className="wordmark-tag" style={{ fontSize: 7 }}>{t('tagline')}</div>
+              <div className="wordmark-tag" style={{ fontSize: 7 }}>Understand Value. Act Smarter.</div>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
