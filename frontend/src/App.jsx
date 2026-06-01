@@ -254,7 +254,7 @@ export default function App() {
   const [user, setUser] = useState(() => localStorage.getItem('noesis-auth') || null);
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('vp-theme') !== 'light');
   const [paletteOpen, setPaletteOpen] = useState(false);
-  const { t, isHe } = useLanguage();
+  const { t } = useLanguage();
 
   useEffect(() => {
     document.documentElement.className = darkMode ? 'dark' : 'light';
@@ -276,15 +276,15 @@ export default function App() {
   };
 
   const analyze = async (sym) => {
-    const t = (sym || ticker).trim();
-    if (!t) return;
+    const tickerSym = (sym || ticker).trim();
+    if (!tickerSym) return;
     setLoading(true); setError(''); setData(null);
     setPeriod('annual'); setQuarterlyHistory(null);
     try {
-      const res = await axios.get(`${API}/valuation/${t.toUpperCase()}`);
+      const res = await axios.get(`${API}/valuation/${tickerSym.toUpperCase()}`);
       setData(res.data); setTab('overview');
     } catch(e) {
-      setError('No data found. Please check the ticker.');
+      setError(t('noDataFound'));
     } finally { setLoading(false); }
   };
 
@@ -365,7 +365,7 @@ export default function App() {
   if (!user) return <Login onLogin={u => setUser(u)} />;
 
   return (
-    <div style={{minHeight:'100vh',background:'var(--bg-base)'}} dir={isHe ? 'rtl' : 'ltr'}>
+    <div style={{minHeight:'100vh',background:'var(--bg-base)'}}>
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
 
         {/* Header */}

@@ -60,27 +60,30 @@ export default function CommandPalette({ open, onClose, onPick }) {
     return () => window.removeEventListener('keydown', handler);
   }, [open, onClose]);
 
-  // Debounced FMP search
+  // Debounced FMP search with AbortController to prevent stale results
   useEffect(() => {
     const q = query.trim();
-    if (!q || q.length < 1) { setFmpResults([]); setSearching(false); return; }
+    if (!q) { setFmpResults([]); setSearching(false); return; }
     setSearching(true);
     clearTimeout(timerRef.current);
+    let controller = new AbortController();
     timerRef.current = setTimeout(async () => {
       try {
-        const res = await fetch(`${API}/stock/search/${encodeURIComponent(q.toUpperCase())}`);
+        const res = await fetch(`${API}/stock/search/${encodeURIComponent(q.toUpperCase())}`, {
+          signal: controller.signal,
+        });
         const data = await res.json();
         const filtered = (Array.isArray(data) ? data : [])
           .filter(r => US_EXCHANGES.has(r.exchangeShortName))
           .slice(0, 8);
         setFmpResults(filtered);
-      } catch {
-        setFmpResults([]);
+      } catch (e) {
+        if (e.name !== 'AbortError') setFmpResults([]);
       } finally {
         setSearching(false);
       }
     }, 280);
-    return () => clearTimeout(timerRef.current);
+    return () => { clearTimeout(timerRef.current); controller.abort(); };
   }, [query]);
 
   if (!open) return null;

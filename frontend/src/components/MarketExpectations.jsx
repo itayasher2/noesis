@@ -13,6 +13,14 @@ export default function MarketExpectations({ data, dcfParams }) {
   const wacc = (dcfParams?.wacc || 10) / 100;
   const tgr  = (dcfParams?.tgr  || 3)  / 100;
 
+  if (!fcfBase || fcfBase <= 0 || !shares || shares <= 0 || wacc <= tgr) {
+    return (
+      <div style={{ padding: '32px 24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
+        {t('insufficientData')}
+      </div>
+    );
+  }
+
   const targetEV = price * shares + netDebt;
   let lo = -0.1, hi = 0.8, mid = 0;
   for (let i = 0; i < 80; i++) {

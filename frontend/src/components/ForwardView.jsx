@@ -17,12 +17,12 @@ export default function ForwardView({ estimates, history, price, shares, netDebt
       year: h.year, value: h.revenue ? h.revenue/1e9 : null, type: 'actual'
     })) || []),
     ...estimates.slice(0,3).map(e => ({
-      year: new Date(e.date).getFullYear(),
+      year: e.date ? new Date(e.date).getFullYear() : null,
       value: e.revenueAvg ? e.revenueAvg/1e9 : null,
       low: e.revenueLow ? e.revenueLow/1e9 : null,
       high: e.revenueHigh ? e.revenueHigh/1e9 : null,
       type: 'estimate'
-    }))
+    })).filter(e => e.year !== null)
   ];
 
   const epsData = [
@@ -30,12 +30,12 @@ export default function ForwardView({ estimates, history, price, shares, netDebt
       year: h.year, value: h.eps, type: 'actual'
     })) || []),
     ...estimates.slice(0,3).map(e => ({
-      year: new Date(e.date).getFullYear(),
+      year: e.date ? new Date(e.date).getFullYear() : null,
       value: e.epsAvg,
       low: e.epsLow,
       high: e.epsHigh,
       type: 'estimate'
-    }))
+    })).filter(e => e.year !== null)
   ];
 
   const fwdRevCAGR = estimates.length >= 1 && estimates[0]?.revenueAvg && lastHist?.revenue

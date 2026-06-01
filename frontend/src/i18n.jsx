@@ -277,6 +277,7 @@ const en = {
 
   // CommandPalette
   searchTickerPlaceholder: 'Search ticker · symbol, name, or sector…',
+  noDataFound: 'No data found. Please check the ticker symbol.',
   noMatches: 'No matches',
   navigate: 'navigate',
   selectCmd: 'select',
@@ -743,6 +744,7 @@ const he = {
 
   // CommandPalette
   searchTickerPlaceholder: 'חפש מניה · סמל, שם, או ענף…',
+  noDataFound: 'לא נמצאו נתונים. בדוק את סמל הטיקר.',
   noMatches: 'אין תוצאות',
   navigate: 'ניווט',
   selectCmd: 'בחר',
