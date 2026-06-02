@@ -11,16 +11,19 @@ function calcDecision({ scoreData, dcf, price, data, dcfParams, t }) {
   const tgr = (dcfParams?.tgr || 3) / 100;
 
   const targetEV = price * shares + netDebt;
-  let lo = -0.1, hi = 0.8, mid = 0;
-  for (let i = 0; i < 80; i++) {
-    mid = (lo + hi) / 2;
-    let f = fcfBase, pv = 0;
-    for (let y = 1; y <= 10; y++) { f *= (1 + mid); pv += f / Math.pow(1 + wacc, y); }
-    const tv = f * (1 + tgr) / (wacc - tgr);
-    const ev = pv + tv / Math.pow(1 + wacc, 10);
-    if (ev > targetEV) hi = mid; else lo = mid;
+  let impliedGrowth = 0;
+  if (fcfBase > 0 && wacc > tgr && shares > 0) {
+    let lo = -0.1, hi = 0.8, mid = 0;
+    for (let i = 0; i < 80; i++) {
+      mid = (lo + hi) / 2;
+      let f = fcfBase, pv = 0;
+      for (let y = 1; y <= 10; y++) { f *= (1 + mid); pv += f / Math.pow(1 + wacc, y); }
+      const tv = f * (1 + tgr) / (wacc - tgr);
+      const ev = pv + tv / Math.pow(1 + wacc, 10);
+      if (ev > targetEV) hi = mid; else lo = mid;
+    }
+    impliedGrowth = mid * 100;
   }
-  const impliedGrowth = mid * 100;
 
   const history = data.history || [];
   const fcfArr = history.filter(r => r.fcf && r.fcf > 0);

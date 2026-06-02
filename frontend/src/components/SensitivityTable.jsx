@@ -8,6 +8,7 @@ export default function SensitivityTable({ fcf, shares, totalDebt, cash, baseWac
   const growths = [0.04, 0.06, 0.08, 0.10, 0.12, 0.14];
 
   function calcFV(g1, wacc, tgr) {
+    if (wacc <= tgr) return null;
     let f = fcf; let pv = 0;
     for (let y = 1; y <= 10; y++) {
       f *= (1 + (y <= 5 ? g1 : g1 * 0.6));
@@ -58,7 +59,7 @@ export default function SensitivityTable({ fcf, shares, totalDebt, cash, baseWac
                 </td>
                 {growths.map(g => {
                   const fv = calcFV(g, w, baseTgr || 0.03);
-                  const { bg, color } = getColor(fv, baseFV);
+                  const { bg, color } = fv != null ? getColor(fv, baseFV) : { bg: 'var(--bg-subtle)', color: 'var(--text-muted)' };
                   return (
                     <td key={g} style={{
                       padding: '6px 10px',
@@ -68,7 +69,7 @@ export default function SensitivityTable({ fcf, shares, totalDebt, cash, baseWac
                       fontWeight: 500,
                       borderRadius: '4px',
                     }}>
-                      ${Math.round(fv)}
+                      {fv != null ? '$' + Math.round(fv) : '—'}
                     </td>
                   );
                 })}

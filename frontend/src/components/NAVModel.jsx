@@ -341,7 +341,7 @@ export default function NAVModel({ data }) {
                   <tr key={i} style={C.bdr}>
                     <td style={{ ...C.s, padding: '8px 12px', fontWeight: 500 }}>{l.name}</td>
                     <td style={{ color: 'var(--red)', padding: '8px 12px', textAlign: 'right', fontFamily: 'monospace' }}>({fmt(l.value)})</td>
-                    <td style={{ ...C.m, padding: '8px 12px', textAlign: 'right', fontSize: 12 }}>{(l.value / Math.abs(sumAssets('liq')) * 100).toFixed(1)}%</td>
+                    <td style={{ ...C.m, padding: '8px 12px', textAlign: 'right', fontSize: 12 }}>{Math.abs(sumAssets('liq')) > 0 ? (l.value / Math.abs(sumAssets('liq')) * 100).toFixed(1) + '%' : '—'}</td>
                   </tr>
                 ))}
                 <tr style={{ background: 'var(--bg-subtle)' }}>

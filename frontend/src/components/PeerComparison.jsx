@@ -91,7 +91,7 @@ export default function PeerComparison({ ticker, sector, currentPE, currentEVEbi
       setPeers(results.filter(Boolean));
       setLoading(false);
     });
-  }, [ticker]);
+  }, [ticker, sector]);
 
   const peerPEs = peers.map(p=>p.pe).filter(v=>v&&v>0);
   const peerEVs = peers.map(p=>p.evEbitda).filter(v=>v&&v>0);

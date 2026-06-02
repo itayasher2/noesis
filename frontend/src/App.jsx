@@ -163,6 +163,7 @@ function UserMenu({ user, onLogout, darkMode, toggleTheme }) {
 
 function calcDCF({ fcf, shares, totalDebt, cash, g1, g2, wacc, tgr }) {
   if (!fcf || !shares || fcf <= 0) return null;
+  if (wacc <= tgr) return null;
   let f = fcf; let pv = 0; const rows = [];
   for (let y = 1; y <= 10; y++) {
     f *= (1 + (y <= 5 ? g1 : g2));
@@ -183,7 +184,7 @@ function calcGordon({ dps, r, g }) {
 }
 
 function calcRI({ bvps, roe, ke, g }) {
-  if (!bvps || !roe || ke <= g) return null;
+  if (!bvps || roe == null || ke <= g) return null;
   return bvps + bvps * (roe - ke) / (ke - g);
 }
 
@@ -207,9 +208,8 @@ function calcCompositeScore({ dcf, gordonFV, riFV, grahamFV, price, data, dcfP }
     : { val:0.35,growth:0.20,quality:0.25,risk:0.20 };
   const wacc=dcfP.wacc/100,tgr=dcfP.tgr/100,fcfBase=data.financials.fcf;
   const sh=data.profile.shares,nd=data.financials.netDebt,targetEV=price*sh+nd;
-  let lo=-0.1,hi=0.5,mid=0;
-  for(let i=0;i<50;i++){mid=(lo+hi)/2;let f=fcfBase,pv=0;for(let y=1;y<=10;y++){f*=(1+mid);pv+=f/Math.pow(1+wacc,y);}const tv=f*(1+tgr)/(wacc-tgr);const ev=pv+tv/Math.pow(1+wacc,10);if(ev>targetEV)hi=mid;else lo=mid;}
-  const impliedGrowth=mid*100;
+  let impliedGrowth=0;
+  if(fcfBase>0&&wacc>tgr&&sh>0){let lo=-0.1,hi=0.5,mid=0;for(let i=0;i<50;i++){mid=(lo+hi)/2;let f=fcfBase,pv=0;for(let y=1;y<=10;y++){f*=(1+mid);pv+=f/Math.pow(1+wacc,y);}const tv=f*(1+tgr)/(wacc-tgr);const ev=pv+tv/Math.pow(1+wacc,10);if(ev>targetEV)hi=mid;else lo=mid;}impliedGrowth=mid*100;}
   const growthGap=impliedGrowth-(revCAGR||0);
   let valuationScore;
   if(upsideAvg===null)valuationScore=50;
@@ -220,7 +220,7 @@ function calcCompositeScore({ dcf, gordonFV, riFV, grahamFV, price, data, dcfP }
   const qualityRaw=((netMargin>20?3:netMargin>10?2:netMargin>0?1:0)+(roic>20?3:roic>10?2:roic>0?1:0)+(fcfMargin>15?3:fcfMargin>5?2:fcfMargin>0?1:0));
   const qualityScore=Math.round(qualityRaw/9*100);
   const tvPct=dcf?dcf.pvTV/dcf.ev:0.6;
-  const modelSpread=models2.length>1?Math.max(...models2)/Math.min(...models2)-1:0.5;
+  const modelSpread=models2.length>1&&Math.min(...models2)>0?Math.max(...models2)/Math.min(...models2)-1:0.5;
   const beta=data.profile.beta||1;
   const riskScore=Math.min(100,(beta>1.5?0:beta>1.2?10:beta>0.8?20:30)+(tvPct>0.75?0:tvPct>0.6?15:30)+(modelSpread>0.5?0:modelSpread>0.3?10:20)+(Math.abs(growthGap)>15?0:Math.abs(growthGap)>8?10:20));
   const composite=Math.round(valuationScore*weights.val+growthScore*weights.growth+qualityScore*weights.quality+riskScore*weights.risk);
