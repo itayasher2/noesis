@@ -520,7 +520,7 @@ export default function App() {
                 {advancedTabs.map(t => (
                   <button key={t.id} className={`tab ${tab === t.id ? 'active' : ''}`}
                     onClick={() => setTab(t.id)}
-                    style={{ fontSize: '9.5px', padding: '8px 14px' }}>
+                    style={{ fontSize: '11px', padding: '8px 16px' }}>
                     {t.label}
                   </button>
                 ))}

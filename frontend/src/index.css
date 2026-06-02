@@ -338,25 +338,33 @@ html.light .badge.ghost::before { background: var(--text-muted); }
   letter-spacing: 0.10em;
   text-transform: uppercase;
   color: var(--text-secondary);
-  padding: 12px 18px;
+  padding: 11px 18px;
   background: transparent;
   border: none;
   cursor: pointer;
   position: relative;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: color 0.15s;
+  border-radius: 6px 6px 0 0;
+  transition: color 0.15s, background 0.15s;
 }
-.tab:hover { color: var(--text-primary); }
-.tab.active { color: var(--accent); }
+.tab:hover {
+  color: var(--text-primary);
+  background: rgba(255,255,255,0.06);
+}
+.tab.active {
+  color: var(--accent);
+  background: rgba(125,211,252,0.06);
+}
 .tab.active::after {
   content: '';
-  position: absolute; left: 8px; right: 8px; bottom: -1px; height: 2px;
+  position: absolute; left: 6px; right: 6px; bottom: -1px; height: 2px;
   background: linear-gradient(90deg, #a78bfa, #7dd3fc);
   border-radius: 2px;
   box-shadow: 0 0 12px rgba(125,211,252,0.5);
 }
-html.light .tab.active { color: var(--accent); }
+html.light .tab:hover { background: rgba(0,0,0,0.04); }
+html.light .tab.active { color: var(--accent); background: rgba(0,102,255,0.06); }
 html.light .tab.active::after {
   background: var(--accent);
   box-shadow: 0 0 8px rgba(0,102,255,0.4);
