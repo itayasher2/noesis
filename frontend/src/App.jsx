@@ -450,7 +450,7 @@ export default function App() {
           {/* Investment Profile — 4-up KPI grid */}
           {scoreData && (
             <>
-              <div className="mb-4 fade-in" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+              <div className="mb-4 fade-in grid grid-cols-2 sm:grid-cols-4" style={{ gap: 10 }}>
                 {[
                   {
                     label: t('fairValue'),
@@ -491,9 +491,9 @@ export default function App() {
                 ))}
               </div>
               {Math.abs(scoreData.expectationsGap) > 8 && (
-                <div className="mb-4 fade-in" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'var(--amber-bg)', border: '1px solid var(--amber-border)', color: 'var(--amber)', borderRadius: 'var(--radius-sm)', fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.04em' }}>
-                  <span>⚠</span>
-                  {t('marketImplies')} <b style={{ margin: '0 4px' }}>{fmt(scoreData.impliedGrowth, 1)}%</b>{t('fcfGrowthVs')} <b>{fmt(scoreData.revCAGR || 0, 1)}%</b>{t('historical')}
+                <div className="mb-4 fade-in" style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '10px 14px', background: 'var(--amber-bg)', border: '1px solid var(--amber-border)', color: 'var(--amber)', borderRadius: 'var(--radius-sm)', fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.04em' }}>
+                  <span style={{ flexShrink: 0 }}>⚠</span>
+                  <span>{t('marketGapWarning', fmt(scoreData.impliedGrowth, 1), fmt(scoreData.revCAGR || 0, 1))}</span>
                 </div>
               )}
             </>
@@ -502,9 +502,9 @@ export default function App() {
           {/* Tabs */}
           <div style={C.card} className="mb-4">
             <div className="tab-bar" style={{ overflowX: 'auto', scrollbarWidth: 'none' }}>
-              {mainTabs.map(t => (
-                <button key={t.id} className={`tab ${tab === t.id ? 'active' : ''}`}
-                  onClick={() => setTab(t.id)}>{t.label}</button>
+              {mainTabs.map(tb => (
+                <button key={tb.id} className={`tab ${tab === tb.id ? 'active' : ''}`}
+                  onClick={() => setTab(tb.id)}>{tb.label}</button>
               ))}
               <button
                 className={`tab ${showAdvanced ? 'active' : ''}`}
@@ -517,11 +517,11 @@ export default function App() {
             {/* Advanced tabs row */}
             {showAdvanced && (
               <div className="tab-bar" style={{ background: 'var(--bg-subtle)', overflowX: 'auto', scrollbarWidth: 'none' }}>
-                {advancedTabs.map(t => (
-                  <button key={t.id} className={`tab ${tab === t.id ? 'active' : ''}`}
-                    onClick={() => setTab(t.id)}
+                {advancedTabs.map(tb => (
+                  <button key={tb.id} className={`tab ${tab === tb.id ? 'active' : ''}`}
+                    onClick={() => setTab(tb.id)}
                     style={{ fontSize: '11px', padding: '8px 16px' }}>
-                    {t.label}
+                    {tb.label}
                   </button>
                 ))}
               </div>

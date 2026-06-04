@@ -109,23 +109,28 @@ export default function HeroSection({ data, scoreData, dcf }) {
   return (
     <div className={`verdict-card ${klass} mb-4 fade-in`}>
 
-      {/* Top row */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
+      {/* Top row — company info left, price right, single line with proper truncation */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
+
+        {/* Left: logo + info — flex:1 + minWidth:0 allows shrinking to fit */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
           {data.profile.logo && (
             <img
               src={data.profile.logo}
-              style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'contain', background: 'white', padding: 4, border: '1px solid var(--border)', flexShrink: 0 }}
+              style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'contain', background: 'white', padding: 3, border: '1px solid var(--border)', flexShrink: 0 }}
               alt=""
               onError={e => { e.target.style.display = 'none'; }}
             />
           )}
-          <div style={{ minWidth: 0 }}>
-            <div className="t-eyebrow" style={{ marginBottom: 4 }}>{data.profile.ticker} · {data.profile.sector}</div>
-            <div className="wordmark" style={{ fontSize: 15, letterSpacing: '1.5px' }}>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div className="t-eyebrow" style={{ marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {data.profile.ticker} · {data.profile.sector}
+            </div>
+            {/* Company name — truncates on 1 line, standard stock-app behaviour */}
+            <div className="wordmark" style={{ fontSize: 'clamp(11px, 3.8vw, 15px)', letterSpacing: 'clamp(0.3px, 0.04em, 1.5px)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {data.profile.name.toUpperCase()}
             </div>
-            <div className="t-meta" style={{ marginTop: 4 }}>
+            <div className="t-meta" style={{ marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {data.profile.exchange}
               {data.profile.employees ? ` · ${(data.profile.employees / 1000).toFixed(0)}${t('employees')}` : ''}
               {data.profile.country ? ` · ${data.profile.country}` : ''}
@@ -133,8 +138,8 @@ export default function HeroSection({ data, scoreData, dcf }) {
           </div>
         </div>
 
+        {/* Right: price — fixed width, never shrinks */}
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
-          {/* Price label */}
           <div className="t-eyebrow" style={{ marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6 }}>
             {marketOpen ? (
               <>
@@ -148,16 +153,14 @@ export default function HeroSection({ data, scoreData, dcf }) {
             ) : t('prevClose')}
           </div>
 
-          {/* Price */}
-          <div className="t-num-hero" style={{ fontSize: 38 }}>{fmtPrice(price)}</div>
+          <div className="t-num-hero" style={{ fontSize: 'clamp(22px, 6vw, 38px)' }}>{fmtPrice(price)}</div>
 
-          {/* Change + market closed */}
-          <div style={{ marginTop: 4, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ marginTop: 4, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6, flexWrap: 'wrap' }}>
             <span className="t-meta" style={{ color: changePct >= 0 ? 'var(--green)' : 'var(--red)' }}>
               {changePct >= 0 ? '+' : ''}{fmt(changePct, 2)}% {t('today')}
             </span>
             {mktCap && (
-              <span className="t-meta" style={{ color: 'var(--text-muted)' }}>· {t('mktCap')} {mktCap}</span>
+              <span className="t-meta hidden sm:inline" style={{ color: 'var(--text-muted)' }}>· {t('mktCap')} {mktCap}</span>
             )}
             {!marketOpen && (
               <span className="t-meta" style={{ color: 'var(--text-muted)', opacity: 0.7 }}>· {t('marketClosed')}</span>

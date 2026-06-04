@@ -70,7 +70,7 @@ export default function ForwardView({ estimates, history, price, shares, netDebt
       </div>
 
       {/* Forward Multiples */}
-      <div className="grid grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         {[
           { label:t('fwdPELabel'), value: fwdPE ? fmt(fwdPE,1)+'x' : '—', color: fwdPE ? (fwdPE>30?'var(--red)':fwdPE>20?'var(--amber)':'var(--green)') : 'var(--text-muted)', sub:t('basedOnEstEPS') },
           { label:t('fwdEVEBITDALabel'), value: fwdEVEbitda ? fmt(fwdEVEbitda,1)+'x' : '—', color: fwdEVEbitda ? (fwdEVEbitda>15?'var(--red)':fwdEVEbitda>10?'var(--amber)':'var(--green)') : 'var(--text-muted)', sub:t('basedOnEstEBITDA') },

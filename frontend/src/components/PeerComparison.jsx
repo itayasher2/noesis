@@ -203,7 +203,7 @@ export default function PeerComparison({ ticker, sector, currentPE, currentEVEbi
 
       {/* Summary cards */}
       {pePremium !== null && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 16 }}>
+        <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: 12, marginBottom: 16 }}>
           <div style={card}>
             <div className="t-eyebrow" style={{ marginBottom: 4 }}>P/E vs Peer Avg</div>
             <div style={{ fontSize: 18, fontWeight: 700, color: pePremium > 10 ? 'var(--red)' : pePremium < -10 ? 'var(--green)' : 'var(--text-primary)' }}>
@@ -330,7 +330,7 @@ export default function PeerComparison({ ticker, sector, currentPE, currentEVEbi
 
       {/* PEG + Quality */}
       {!loading && peers.length > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: 12, marginTop: 16 }}>
           {currentPEG !== null && (
             <div style={{ ...card, background: 'rgba(125,211,252,0.06)', border: '1px solid rgba(125,211,252,0.18)' }}>
               <div className="t-eyebrow" style={{ color: 'var(--accent)', marginBottom: 6 }}>Growth-Adjusted Valuation (PEG)</div>

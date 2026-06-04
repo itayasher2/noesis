@@ -142,7 +142,7 @@ export default function ThesisTab({ data, scoreData, dcf, dcfParams }) {
       </div>
 
       {/* Bull & Bear */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: 12, marginBottom: 12 }}>
         <div style={{ ...C.card, marginBottom: 0, borderLeft: '3px solid var(--green)' }}>
           <div style={{ ...C.label, color: 'var(--green)' }}>{t('bullCase')}</div>
           {thesis.bullPoints?.map((p, i) => (
@@ -170,7 +170,7 @@ export default function ThesisTab({ data, scoreData, dcf, dcfParams }) {
       </div>
 
       {/* Risks & Catalysts */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: 12, marginBottom: 12 }}>
         <div style={{ ...C.card, marginBottom: 0 }}>
           <div style={C.label}>{t('keyRisks')}</div>
           {thesis.keyRisks?.map((r, i) => (

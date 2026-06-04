@@ -169,48 +169,60 @@ export default function DecisionBox({ scoreData, dcf, price, data, dcfParams }) 
       {/* ── Price Level Bar ── */}
       <div style={{background:'var(--bg-subtle)',borderRadius:10,padding:'12px 14px',marginBottom:14,border:`1px solid ${d.primaryColor}20`}}>
         <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{color:d.primaryColor,opacity:0.6}}>{t('priceLevels')}</div>
-        <div className="relative h-7 rounded-lg overflow-hidden" style={{background:'rgba(255,255,255,0.03)'}}>
+
+        {/* Colored zones only — no text inside overflow:hidden */}
+        <div className="relative h-6 rounded-lg overflow-hidden" style={{background:'rgba(255,255,255,0.03)'}}>
           <div className="absolute inset-y-0 left-0" style={{width:'30%',background:'rgba(61,220,132,0.08)'}}/>
           <div className="absolute inset-y-0" style={{left:'30%',width:'25%',background:'rgba(255,181,71,0.06)'}}/>
           <div className="absolute inset-y-0" style={{left:'55%',width:'25%',background:'rgba(255,149,64,0.06)'}}/>
           <div className="absolute inset-y-0 right-0" style={{left:'80%',background:'rgba(255,84,112,0.08)'}}/>
-          <div className="absolute inset-0 flex items-center">
-            <span className="text-xs font-medium px-1" style={{color:'var(--green)',opacity:0.8,width:'30%',fontSize:10}}>{t('buyZone')}</span>
-            <span className="text-xs font-medium px-1" style={{color:'var(--amber)',opacity:0.8,width:'25%',fontSize:10}}>{t('fairZone')}</span>
-            <span className="text-xs font-medium px-1" style={{color:'var(--orange)',opacity:0.8,width:'25%',fontSize:10}}>{t('priceyZone')}</span>
-            <span className="text-xs font-medium px-1" style={{color:'var(--red)',opacity:0.8,fontSize:10}}>{t('extZone')}</span>
-          </div>
-          <div className="absolute top-1 bottom-1 w-0.5 rounded" style={{left:d.pricePct+'%',background:d.primaryColor,opacity:0.8}}/>
-          <div className="absolute text-xs font-bold num" style={{
-            left:Math.min(85,Math.max(2,d.pricePct))+'%',
-            top:'50%',transform:'translateY(-50%)',
-            color:d.primaryColor,
-            background:'var(--bg-card)',
-            padding:'1px 4px',borderRadius:3,fontSize:9,
-            boxShadow:'0 1px 3px rgba(0,0,0,0.08)',
-          }}>
-            {fmtPrice(price)}
-          </div>
+          <div className="absolute top-0.5 bottom-0.5 w-0.5 rounded" style={{left:d.pricePct+'%',background:d.primaryColor,opacity:0.9}}/>
         </div>
-        <div className="flex justify-between text-xs mt-1.5" style={C.m}>
-          <span className="num" style={{fontSize:9}}>{fmtPrice(d.buyZoneLow)}</span>
+
+        {/* Zone label row */}
+        <div className="flex mt-1" style={{fontSize:9}}>
+          <span style={{width:'30%',color:'var(--green)',opacity:0.75}}>{t('buyZone')}</span>
+          <span style={{width:'25%',color:'var(--amber)',opacity:0.75,textAlign:'center'}}>{t('fairZone')}</span>
+          <span style={{width:'25%',color:'var(--orange)',opacity:0.75,textAlign:'center'}}>{t('priceyZone')}</span>
+          <span style={{width:'20%',color:'var(--red)',opacity:0.75,textAlign:'right'}}>{t('extZone')}</span>
+        </div>
+
+        {/* Boundary prices + current price tag */}
+        <div className="flex justify-between items-center mt-0.5">
+          <span className="num" style={{fontSize:9,color:'var(--text-muted)'}}>{fmtPrice(d.buyZoneLow)}</span>
           <span className="num font-semibold" style={{color:d.primaryColor,fontSize:9}}>{fmtPrice(d.fairValue)}</span>
-          <span className="num" style={{fontSize:9}}>{fmtPrice(d.overvalued)}</span>
-          <span className="num" style={{fontSize:9}}>{fmtPrice(d.extreme)}</span>
+          <span className="num" style={{fontSize:9,color:'var(--text-muted)'}}>{fmtPrice(d.overvalued)}</span>
+          <span className="num" style={{fontSize:9,color:'var(--text-muted)'}}>{fmtPrice(d.extreme)}</span>
+        </div>
+
+        {/* Current price label — positioned below bar, aligned to price % */}
+        <div style={{position:'relative',height:16,marginTop:2}}>
+          <span className="num font-bold" style={{
+            position:'absolute',
+            left:`clamp(0%, calc(${d.pricePct}% - 18px), calc(100% - 48px))`,
+            fontSize:9,color:d.primaryColor,
+            background:'var(--bg-card)',padding:'1px 4px',borderRadius:3,
+            border:`1px solid ${d.primaryColor}30`,
+            whiteSpace:'nowrap',
+          }}>
+            ▲ {fmtPrice(price)}
+          </span>
         </div>
       </div>
 
       {/* ── Confidence strip ── */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs" style={{color:d.primaryColor,opacity:0.7}}>
-        <span className="font-bold uppercase tracking-widest">{t('confidenceLabel')}</span>
-        {[[t('dataLabel'),scoreData?.dataQuality],[t('modelsLabel'),scoreData?.modelConsistency],[t('stabilityLabel'),scoreData?.assumptionStability]].map(([l,v])=>(
-          <span key={l} style={{opacity:1}}>
-            {l}: <strong style={{color:v==='high'?'var(--green)':v==='medium'?'var(--amber)':'var(--red)'}}>{v||'N/A'}</strong>
-          </span>
-        ))}
-        <span className="w-full sm:w-auto sm:ml-auto text-xs" style={{opacity:1}}>
+      <div style={{color:d.primaryColor,opacity:0.7,fontSize:11}}>
+        <div className="flex flex-wrap gap-x-3 gap-y-0.5 items-center">
+          <span className="font-bold uppercase tracking-widest" style={{fontSize:10}}>{t('confidenceLabel')}</span>
+          {[[t('dataLabel'),scoreData?.dataQuality],[t('modelsLabel'),scoreData?.modelConsistency],[t('stabilityLabel'),scoreData?.assumptionStability]].map(([l,v])=>(
+            <span key={l} style={{opacity:1,fontSize:10}}>
+              {l}: <strong style={{color:v==='high'?'var(--green)':v==='medium'?'var(--amber)':'var(--red)'}}>{v||'N/A'}</strong>
+            </span>
+          ))}
+        </div>
+        <div style={{marginTop:3,fontSize:10,opacity:1}}>
           {t('impliedLabel')} <strong>{fmt(d.impliedGrowth,1)}%</strong> vs <strong>{d.histFCFCAGR!==null?fmt(d.histFCFCAGR,1)+'% '+t('histLabel'):'N/A'}</strong>
-        </span>
+        </div>
       </div>
 
     </div>

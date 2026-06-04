@@ -22,30 +22,30 @@ export default function SensitivityTable({ fcf, shares, totalDebt, cash, baseWac
 
   function getColor(fv, base) {
     const diff = (fv / base - 1) * 100;
-    if (diff >= 30) return { bg: '#dcfce7', color: '#166534' };
-    if (diff >= 10) return { bg: '#d1fae5', color: '#065f46' };
-    if (diff >= -10) return { bg: '#fef9c3', color: '#854d0e' };
-    if (diff >= -30) return { bg: '#fee2e2', color: '#991b1b' };
-    return { bg: '#fecaca', color: '#7f1d1d' };
+    if (diff >= 30) return { bg: 'var(--green-bg)', color: 'var(--green)' };
+    if (diff >= 10) return { bg: 'rgba(16,185,129,0.08)', color: 'var(--green)' };
+    if (diff >= -10) return { bg: 'var(--amber-bg)', color: 'var(--amber)' };
+    if (diff >= -30) return { bg: 'rgba(239,68,68,0.08)', color: 'var(--red)' };
+    return { bg: 'var(--red-bg)', color: 'var(--red)' };
   }
 
   const baseFV = calcFV(0.10, baseWacc || 0.10, baseTgr || 0.03);
 
   return (
     <div style={{ marginTop: '24px' }}>
-      <div style={{ fontSize: '11px', color: '#9ca3af', marginBottom: '8px', textTransform: 'uppercase' }}>
+      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase' }}>
         {t('sensitivityTitle')}
       </div>
-      <div style={{ fontSize: '11px', color: '#9ca3af', marginBottom: '12px' }}>
+      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '12px' }}>
         {t('sensitivityDesc')}
       </div>
       <div style={{ overflowX: 'auto' }}>
         <table style={{ borderCollapse: 'collapse', fontSize: '12px', width: '100%' }}>
           <thead>
             <tr>
-              <th style={{ padding: '6px 10px', textAlign: 'right', color: '#6b7280', fontWeight: 500 }}>{t('waccGrowthHeader')}</th>
+              <th style={{ padding: '6px 10px', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 500 }}>{t('waccGrowthHeader')}</th>
               {growths.map(g => (
-                <th key={g} style={{ padding: '6px 10px', textAlign: 'center', color: '#6b7280', fontWeight: 500 }}>
+                <th key={g} style={{ padding: '6px 10px', textAlign: 'center', color: 'var(--text-muted)', fontWeight: 500 }}>
                   {(g * 100).toFixed(0)}%
                 </th>
               ))}
@@ -54,7 +54,7 @@ export default function SensitivityTable({ fcf, shares, totalDebt, cash, baseWac
           <tbody>
             {waccs.map(w => (
               <tr key={w}>
-                <td style={{ padding: '6px 10px', fontWeight: 500, color: '#374151' }}>
+                <td style={{ padding: '6px 10px', fontWeight: 500, color: 'var(--text-secondary)' }}>
                   {(w * 100).toFixed(0)}%
                 </td>
                 {growths.map(g => {

@@ -358,8 +358,8 @@ export default function NAVModel({ data }) {
       {/* SCENARIOS TAB */}
       {tab === 'scenarios' && (
         <div>
-          <div style={{ ...C.card, marginBottom: 16 }}>
-            <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
+          <div style={{ ...C.card, marginBottom: 16, overflow: 'auto' }}>
+            <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse', minWidth: 420 }}>
               <thead>
                 <tr style={{ ...C.bdr, background: 'var(--bg-subtle)' }}>
                   {['Scenario', 'NAV / Share', 'vs Market', 'Note', 'Rating'].map((h, i) => (
@@ -440,7 +440,7 @@ export default function NAVModel({ data }) {
 
           {adjControls.map(ctrl => (
             <div key={ctrl.key} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-              <label style={{ fontSize: 12, color: 'var(--text-secondary)', minWidth: 200 }}>{ctrl.label}</label>
+              <label style={{ fontSize: 12, color: 'var(--text-secondary)', minWidth: 120, flexShrink: 0 }}>{ctrl.label}</label>
               <input
                 type="range" min={ctrl.min} max={ctrl.max} step={1}
                 value={adjustments[ctrl.key]}

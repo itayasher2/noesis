@@ -150,7 +150,7 @@ IMPORTANT: Write ALL text fields (investmentThesis, valueDrivers, growthNote, re
           </div>
 
           {/* Value Drivers + Growth Stage */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: 12 }}>
             <div style={sub}>
               <div className="t-eyebrow" style={{ marginBottom: 8 }}>{t('valueDrivers')}</div>
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>{analysis.valueDrivers}</p>
@@ -169,7 +169,7 @@ IMPORTANT: Write ALL text fields (investmentThesis, valueDrivers, growthNote, re
           {/* Business Quality */}
           <div style={sub}>
             <div className="t-eyebrow" style={{ marginBottom: 12 }}>{t('businessQuality')}</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
+            <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: 12 }}>
               <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: 28, fontWeight: 700, color: qualityColor(analysis.qualityScore) }}>{analysis.qualityScore}/10</div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t('qualityScore')}</div>
@@ -202,7 +202,7 @@ IMPORTANT: Write ALL text fields (investmentThesis, valueDrivers, growthNote, re
           </div>
 
           {/* Capital Allocation + FCF + Sector */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-3" style={{ gap: 12 }}>
             <div style={sub}>
               <div className="t-eyebrow" style={{ marginBottom: 8 }}>{t('capitalAllocation')}</div>
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>{analysis.capitalAllocationNote}</p>

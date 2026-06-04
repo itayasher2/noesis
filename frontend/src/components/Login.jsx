@@ -49,7 +49,7 @@ export default function Login({ onLogin }) {
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: 20,
     }} dir={isHe ? 'rtl' : 'ltr'}>
-      <div className="card glow" style={{ width: 380, padding: '32px 32px 28px' }}>
+      <div className="card glow" style={{ width: '100%', maxWidth: 380, padding: '28px 24px 24px' }}>
 
         {/* Brand */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 }}>

@@ -64,6 +64,7 @@ const en = {
   marketImplies: 'Market implies',
   fcfGrowthVs: '% FCF growth vs',
   historical: '% historical — significant gap',
+  marketGapWarning: 'Market implies {0}% FCF growth vs {1}% historical — significant expectations gap',
 
   // Overview tab
   profitability: 'Profitability',
@@ -461,6 +462,9 @@ const en = {
   // Scenarios
   scenariosTitle: 'Bull / Base / Bear Scenarios',
   baseCase: 'Base Case',
+  bullNarrative: 'Margin expansion + AI-driven services growth',
+  baseNarrative: 'Steady hardware + services, modest growth',
+  bearNarrative: 'Margin compression + China headwinds + stagnation',
 
   // SensitivityTable
   sensitivityTitle: 'DCF Sensitivity Table — WACC × Growth Rate',
@@ -531,6 +535,7 @@ const he = {
   marketImplies: 'השוק מניח',
   fcfGrowthVs: '% צמיחת FCF מול',
   historical: '% היסטורי — פער משמעותי',
+  marketGapWarning: 'השוק מניח {0}% צמיחת FCF מול {1}% היסטורי — פער ציפיות משמעותי',
 
   // Overview tab
   profitability: 'רווחיות',
@@ -928,6 +933,9 @@ const he = {
   // Scenarios
   scenariosTitle: 'תרחישים: שוורי / בסיס / דובי',
   baseCase: 'תרחיש בסיס',
+  bullNarrative: 'התרחבות שולי רווח + צמיחה מונעת AI',
+  baseNarrative: 'חומרה ושירותים יציבים, צמיחה מתונה',
+  bearNarrative: 'לחץ על שולי הרווח + רוחות נגד מסין + סטגנציה',
 
   // SensitivityTable
   sensitivityTitle: 'טבלת רגישות DCF — WACC × קצב צמיחה',

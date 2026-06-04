@@ -11,6 +11,8 @@ export default function PriceChart({ ticker, darkMode }) {
     script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
     script.type = 'text/javascript';
     script.async = true;
+    const isMobile = window.innerWidth < 640;
+    const chartHeight = isMobile ? 260 : 400;
     script.innerHTML = JSON.stringify({
       autosize: true,
       symbol: ticker,
@@ -22,12 +24,12 @@ export default function PriceChart({ ticker, darkMode }) {
       allow_symbol_change: false,
       calendar: false,
       support_host: 'https://www.tradingview.com',
-      height: 400,
+      height: chartHeight,
     });
 
     const div = document.createElement('div');
     div.className = 'tradingview-widget-container__widget';
-    div.style.height = '400px';
+    div.style.height = chartHeight + 'px';
     div.style.width = '100%';
 
     container.current.appendChild(div);
@@ -42,7 +44,7 @@ export default function PriceChart({ ticker, darkMode }) {
     <div
       className="tradingview-widget-container"
       ref={container}
-      style={{ height: 400, width: '100%', borderRadius: 'var(--radius)', overflow: 'hidden' }}
+      style={{ height: window.innerWidth < 640 ? 260 : 400, width: '100%', borderRadius: 'var(--radius)', overflow: 'hidden' }}
     />
   );
 }

@@ -534,11 +534,54 @@ tr:hover { background: var(--bg-subtle) !important; }
 ::selection { background: var(--accent); color: #ffffff; }
 html.dark ::selection { color: var(--bg-base); }
 
-/* ── Mobile ── */
+/* ── Tablet (≤ 768px) ── */
+@media (max-width: 768px) {
+  .verdict-card { padding: 14px 16px; }
+  .t-num-hero { font-size: 34px; }
+  .t-num-lg   { font-size: 18px; }
+  .badge { font-size: 8px; padding: 4px 9px; }
+  .tab   { padding: 10px 14px; font-size: 11px; }
+}
+
+/* ── Mobile (≤ 640px) ── */
 @media (max-width: 640px) {
+  /* Typography */
+  .t-num-hero { font-size: 26px !important; }
+  .t-num-lg   { font-size: 16px; }
+  .t-eyebrow  { font-size: 9px; }
+  .t-meta     { font-size: 9px; }
+  .num        { font-size: 11px; letter-spacing: -0.03em; }
+
+  /* Tables */
   table { font-size: 11px; }
-  table td, table th { padding: 6px 4px; }
-  .num { font-size: 11px; letter-spacing: -0.03em; }
+  table td, table th { padding: 5px 4px; }
+
+  /* Inputs */
   input[type="number"] { font-size: 14px; }
-  .t-num-hero { font-size: 36px; }
+
+  /* Cards & containers */
+  .verdict-card { padding: 12px 14px; border-radius: 14px; }
+  .card { border-radius: 12px; }
+
+  /* Badges — smaller on phone */
+  .badge { font-size: 8px; padding: 3px 8px; gap: 3px; }
+  .badge::before { width: 5px; height: 5px; }
+
+  /* Tabs */
+  .tab { padding: 8px 10px; font-size: 10px; letter-spacing: 0.06em; }
+
+  /* Ticker — tighter on mobile */
+  .ticker       { height: 28px; font-size: 10px; }
+  .ticker-track { gap: 14px; padding: 0 10px; }
+  .ticker-item  { gap: 4px; }
+
+  /* Buttons */
+  .btn-brand { height: 36px; padding: 0 14px; font-size: 10px; }
+}
+
+/* ── Small phone (≤ 390px) ── */
+@media (max-width: 390px) {
+  .t-num-hero { font-size: 22px !important; }
+  .badge { display: none; }
+  .badge:first-child { display: inline-flex; }
 }

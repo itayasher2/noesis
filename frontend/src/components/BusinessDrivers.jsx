@@ -106,7 +106,7 @@ export default function BusinessDrivers({ data }) {
       {/* Driver cards */}
       {drivers && !loading && (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: 12, marginBottom: 16 }}>
             {drivers.map((d, i) => {
               const valLabel = VALUATION_LABEL[d.valuationImpact];
               return (

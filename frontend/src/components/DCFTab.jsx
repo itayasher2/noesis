@@ -6,6 +6,7 @@ import Scenarios from './Scenarios';
 
 function calcDCFAdvanced({ fcf, shares, totalDebt, cash, g1, decayRate, wacc, tgr }) {
   if (!fcf || !shares || fcf <= 0) return null;
+  if (wacc <= tgr) return null;
   let rate = g1, f = fcf, pv = 0;
   const rows = [];
   for (let y = 1; y <= 10; y++) {
@@ -39,6 +40,7 @@ function calcPEValuation({ eps, niGrowth, decayRate, peMultiple, divGrowth, dps,
 
 function calcCAGR({ fcf, shares, dps, divGrowth, shareChangeRate, g1, decayRate, wacc, tgr, years, currentPrice }) {
   if (!fcf || !shares || fcf <= 0 || currentPrice <= 0) return null;
+  if (wacc <= tgr) return null;
   let rate = g1, f = fcf;
   for (let y = 1; y <= years; y++) {
     if (y > 1) rate = rate * (1 - decayRate);

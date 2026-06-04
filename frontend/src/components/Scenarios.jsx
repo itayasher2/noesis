@@ -19,19 +19,19 @@ export default function Scenarios({ fcf, shares, totalDebt, cash, price }) {
   const scenarios = [
     {
       name: t('bullCase'), emoji: '🟢',
-      narrative: 'Margin expansion + AI-driven services growth',
+      narrative: t('bullNarrative'),
       g1: 0.18, g2: 0.12, wacc: 0.08, tgr: 0.04,
       color: '#dcfce7', textColor: '#166534', borderColor: '#86efac'
     },
     {
       name: t('baseCase'), emoji: '🟡',
-      narrative: 'Steady hardware + services, modest growth',
+      narrative: t('baseNarrative'),
       g1: 0.10, g2: 0.06, wacc: 0.10, tgr: 0.03,
       color: '#fef9c3', textColor: '#854d0e', borderColor: '#fde047'
     },
     {
       name: t('bearCase'), emoji: '🔴',
-      narrative: 'Margin compression + China headwinds + stagnation',
+      narrative: t('bearNarrative'),
       g1: 0.04, g2: 0.02, wacc: 0.12, tgr: 0.02,
       color: '#fee2e2', textColor: '#991b1b', borderColor: '#fca5a5'
     },
@@ -42,7 +42,7 @@ export default function Scenarios({ fcf, shares, totalDebt, cash, price }) {
       <div style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', marginBottom: '12px' }}>
         {t('scenariosTitle')}
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+      <div className="grid grid-cols-1 sm:grid-cols-3" style={{ gap: '12px' }}>
         {scenarios.map(s => {
           const fv = calcFV(s.g1, s.g2, s.wacc, s.tgr);
           const up = price ? (fv / price - 1) * 100 : null;
