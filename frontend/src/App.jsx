@@ -370,13 +370,16 @@ export default function App() {
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <button
+            onClick={() => { setData(null); setTicker(''); setError(''); setTab('overview'); }}
+            style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          >
             <div className="logo-dot" />
             <div>
               <div className="wordmark" style={{ fontSize: 15 }}>NOESIS</div>
               <div className="wordmark-tag" style={{ fontSize: 7 }}>Understand Value. Act Smarter.</div>
             </div>
-          </div>
+          </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <LangToggle />
             <UserMenu user={user} onLogout={() => { localStorage.removeItem('noesis-auth'); setUser(null); }} darkMode={darkMode} toggleTheme={toggleTheme}/>
