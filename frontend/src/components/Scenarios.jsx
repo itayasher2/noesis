@@ -59,8 +59,8 @@ export default function Scenarios({ fcf, shares, totalDebt, cash, price }) {
                 </div>
               )}
               <div style={{ marginTop: '10px', borderTop: `1px solid ${s.borderColor}`, paddingTop: '8px', fontSize: '11px', color: s.textColor, opacity: 0.8 }}>
-                <div>Growth 1-5: {(s.g1*100).toFixed(0)}% | 6-10: {(s.g2*100).toFixed(0)}%</div>
-                <div>WACC: {(s.wacc*100).toFixed(0)}% | TGR: {(s.tgr*100).toFixed(0)}%</div>
+                <div>{t('growthYears15')}: {(s.g1*100).toFixed(0)}% | {t('growthYears610')}: {(s.g2*100).toFixed(0)}%</div>
+                <div>WACC: {(s.wacc*100).toFixed(0)}% | {t('terminalGrowthPct').split(' ')[0]}: {(s.tgr*100).toFixed(0)}%</div>
               </div>
             </div>
           );

@@ -250,6 +250,129 @@ router.post('/ai-analysis', async (req, res) => {
   }
 });
 
+router.post('/analyst-report', async (req, res) => {
+  try {
+    const { profile, financials, multiples, history, estimates, dcf, dcfParams, scoreData, lang } = req.body;
+    const isHe = lang === 'he';
+
+    const revArr = (history || []).filter(r => r.revenue && r.revenue > 0);
+    const revCAGR = revArr.length >= 2
+      ? (((revArr[revArr.length-1].revenue / revArr[0].revenue) ** (1/(revArr.length-1))) - 1) * 100 : null;
+
+    const histRows = (history || []).slice(-5).map(r =>
+      `  ${r.year}: Rev $${r.revenue?(r.revenue/1e9).toFixed(1)+'B':'N/A'} | EBITDA margin ${r.ebitdaMargin?.toFixed(1)??'N/A'}% | Net Income $${r.netIncome?(r.netIncome/1e9).toFixed(1)+'B':'N/A'} | FCF $${r.fcf?(r.fcf/1e9).toFixed(1)+'B':'N/A'}`
+    ).join('\n');
+
+    const estRows = (estimates || []).slice(0, 3).map(e => {
+      const yr = e.date ? new Date(e.date).getFullYear() : '?';
+      return `  ${yr}: Rev ${e.revenueAvg?(e.revenueAvg/1e9).toFixed(1)+'B':'N/A'} | EPS ${e.epsAvg?'$'+e.epsAvg.toFixed(2):'N/A'} | EBITDA ${e.ebitdaAvg?(e.ebitdaAvg/1e9).toFixed(1)+'B':'N/A'}`;
+    }).join('\n');
+
+    const prompt = `You are a Managing Director at Goldman Sachs Equity Research. Write a professional equity research report for ${profile.name} (${profile.ticker}).
+
+COMPANY:
+${profile.name} (${profile.ticker}) | ${profile.sector} — ${profile.industry}
+Exchange: ${profile.exchange || 'N/A'} | Country: ${profile.country || 'USA'} | Beta: ${profile.beta?.toFixed(2) ?? 'N/A'} | Market Cap: $${(profile.marketCap/1e9).toFixed(1)}B
+
+CURRENT FINANCIALS (TTM):
+Revenue: $${(financials.revenue/1e9).toFixed(1)}B | EBITDA: $${(financials.ebitda/1e9).toFixed(1)}B | Net Income: $${(financials.netIncome/1e9).toFixed(1)}B | FCF: $${(financials.fcf/1e9).toFixed(1)}B
+Gross Margin: ${financials.grossMargin?.toFixed(1)??'N/A'}% | EBITDA Margin: ${financials.ebitdaMargin?.toFixed(1)??'N/A'}% | Net Margin: ${financials.netMargin?.toFixed(1)??'N/A'}% | FCF Margin: ${financials.fcfMargin?.toFixed(1)??'N/A'}%
+ROE: ${financials.roe?.toFixed(1)??'N/A'}% | ROIC: ${financials.roic?.toFixed(1)??'N/A'}% | Net Debt: $${(financials.netDebt/1e9).toFixed(1)}B
+
+VALUATION:
+Price: $${profile.price} | P/E: ${multiples.pe?.toFixed(1)??'N/A'}x | Fwd P/E: ${multiples.forwardPE?.toFixed(1)??'N/A'}x | EV/EBITDA: ${multiples.evEbitda?.toFixed(1)??'N/A'}x | P/S: ${multiples.ps?.toFixed(1)??'N/A'}x
+EPS: $${multiples.eps?.toFixed(2)??'N/A'} | Div Yield: ${((multiples.dividendYield||0)*100).toFixed(2)}%
+Analyst Consensus: $${multiples.targetPrice?.toFixed(2)??'N/A'} target | ${multiples.analystRating??'N/A'} | ${multiples.numberOfAnalysts??0} analysts
+Revenue CAGR (${revArr.length}Y hist): ${revCAGR?.toFixed(1)??'N/A'}%
+
+DCF ANALYSIS (user inputs):
+WACC: ${dcfParams?.wacc??10}% | Growth Y1-5: ${dcfParams?.g1??10}% | Terminal: ${dcfParams?.tgr??3}%
+DCF Fair Value: ${dcf?.fv ? '$'+dcf.fv.toFixed(2) : 'N/A'}
+Implied FCF Growth (market-implied): ${scoreData?.impliedGrowth?.toFixed(1)??'N/A'}%
+Investment Score: ${scoreData?.composite??'N/A'}/100
+
+HISTORICAL FINANCIALS:
+${histRows || 'Not available'}
+
+FORWARD ESTIMATES:
+${estRows || 'Not available'}
+
+Return ONLY a JSON object (no markdown fences, no explanation):
+{
+  "recommendation": "Buy",
+  "priceTarget": 245,
+  "impliedReturn": 14.9,
+  "riskRating": "Medium",
+  "headline": "10-15 word headline capturing the core thesis with ticker",
+  "summary": "3-4 sentence executive summary with specific numbers",
+  "businessDescription": "2-3 sentences on competitive moat and market position",
+  "financialOutlook": "2-3 sentences on revenue trajectory, margins, and FCF",
+  "valuationRationale": "2-3 sentences explaining price target derivation",
+  "keyPoints": [
+    {"type": "bull", "title": "5-word max title", "detail": "one sentence with specific number", "impact": "High"},
+    {"type": "bull", "title": "...", "detail": "...", "impact": "High"},
+    {"type": "bull", "title": "...", "detail": "...", "impact": "Medium"},
+    {"type": "bear", "title": "5-word max title", "detail": "one sentence with specific number", "impact": "High"},
+    {"type": "bear", "title": "...", "detail": "...", "impact": "Medium"},
+    {"type": "bear", "title": "...", "detail": "...", "impact": "Low"}
+  ],
+  "scenarios": {
+    "bull": {"target": 280, "trigger": "one sentence on bull case driver", "probability": 30},
+    "base": {"target": 245, "trigger": "one sentence on base case", "probability": 50},
+    "bear": {"target": 175, "trigger": "one sentence on bear case risk", "probability": 20}
+  },
+  "risks": [
+    {"title": "Short risk name", "description": "one sentence", "severity": "High"},
+    {"title": "...", "description": "...", "severity": "Medium"},
+    {"title": "...", "description": "...", "severity": "Medium"},
+    {"title": "...", "description": "...", "severity": "Low"}
+  ],
+  "catalysts": [
+    {"title": "Catalyst name", "timeline": "Q3 2025", "description": "one sentence"},
+    {"title": "...", "timeline": "...", "description": "..."},
+    {"title": "...", "timeline": "...", "description": "..."}
+  ],
+  "conclusion": "one powerful final sentence summarizing the investment case"
+}
+
+Rules — strictly enforce:
+- recommendation: exactly one of: Buy | Hold | Reduce | Sell
+- riskRating: exactly one of: Low | Medium | High
+- keyPoints[].type: exactly one of: bull | bear
+- keyPoints[].impact: exactly one of: High | Medium | Low
+- risks[].severity: exactly one of: High | Medium | Low
+- all numeric fields (priceTarget, impliedReturn, scenarios.*.target, scenarios.*.probability) must be JSON numbers not strings
+- scenarios probabilities must sum to 100
+- be specific: use actual numbers from the data above${isHe ? `
+
+LANGUAGE: Write ALL text fields (headline, summary, businessDescription, financialOutlook, valuationRationale, keyPoints[].title and detail, scenarios[].trigger, risks[].title and description, catalysts[].title and description, conclusion) in natural professional Hebrew using correct Israeli financial terminology. Keep recommendation/riskRating/type/impact/severity as exact English enum values above.` : ''}`;
+
+    const response = await axios({
+      method: 'post',
+      url: 'https://api.anthropic.com/v1/messages',
+      headers: {
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      data: {
+        model: 'claude-sonnet-4-6',
+        max_tokens: 4000,
+        messages: [{ role: 'user', content: prompt }],
+      }
+    });
+
+    const text = response.data.content[0].text;
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('No JSON found in response');
+    const report = JSON.parse(jsonMatch[0]);
+    res.json(report);
+  } catch (err) {
+    console.error('Analyst report error:', err.response?.data || err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ✅ GET routes with wildcards come LAST
 router.get('/quarterly/:ticker', async (req, res) => {
   try {

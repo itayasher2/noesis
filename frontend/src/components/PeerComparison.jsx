@@ -64,15 +64,15 @@ export default function PeerComparison({ ticker, sector, currentPE, currentEVEbi
   const [loading, setLoading] = useState(false);
   const { t } = useLanguage();
 
-  const peerTickers = (PEERS[sector] || PEERS.default).filter(t => t !== ticker).slice(0, 4);
+  const peerTickers = (PEERS[sector] || PEERS.default).filter(sym => sym !== ticker).slice(0, 4);
 
   useEffect(() => {
     if (!ticker) return;
     setLoading(true);
     setPeers([]);
-    Promise.all(peerTickers.map(t =>
-      axios.get(`${API}/valuation/${t}`).then(r => ({
-        ticker: t,
+    Promise.all(peerTickers.map(sym =>
+      axios.get(`${API}/valuation/${sym}`).then(r => ({
+        ticker: sym,
         name: r.data.profile.name,
         logo: r.data.profile.logo || LOGOS[t],
         pe: r.data.multiples.pe,
@@ -205,26 +205,26 @@ export default function PeerComparison({ ticker, sector, currentPE, currentEVEbi
       {pePremium !== null && (
         <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: 12, marginBottom: 16 }}>
           <div style={card}>
-            <div className="t-eyebrow" style={{ marginBottom: 4 }}>P/E vs Peer Avg</div>
+            <div className="t-eyebrow" style={{ marginBottom: 4 }}>{t('peVsPeerAvg')}</div>
             <div style={{ fontSize: 18, fontWeight: 700, color: pePremium > 10 ? 'var(--red)' : pePremium < -10 ? 'var(--green)' : 'var(--text-primary)' }}>
               {pePremium > 0 ? '+' : ''}{fmt(pePremium,0)}%
             </div>
-            <div className="t-meta">{pePremium > 0 ? 'Premium' : 'Discount'} to peers</div>
+            <div className="t-meta">{pePremium > 0 ? t('premiumVsPeers') : t('discountVsPeers')}</div>
           </div>
           <div style={card}>
-            <div className="t-eyebrow" style={{ marginBottom: 4 }}>EV/EBITDA vs Avg</div>
+            <div className="t-eyebrow" style={{ marginBottom: 4 }}>{t('evVsPeerAvg')}</div>
             <div style={{ fontSize: 18, fontWeight: 700, color: evPremium > 10 ? 'var(--red)' : evPremium < -10 ? 'var(--green)' : 'var(--text-primary)' }}>
               {evPremium !== null ? (evPremium > 0 ? '+' : '')+fmt(evPremium,0)+'%' : 'N/A'}
             </div>
-            <div className="t-meta">{evPremium > 0 ? 'Premium' : 'Discount'} to peers</div>
+            <div className="t-meta">{evPremium > 0 ? t('premiumVsPeers') : t('discountVsPeers')}</div>
           </div>
           <div style={card}>
-            <div className="t-eyebrow" style={{ marginBottom: 4 }}>P/E Rank in Group</div>
+            <div className="t-eyebrow" style={{ marginBottom: 4 }}>{t('peRankInGroup')}</div>
             <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>
               {peRank !== null ? `${peRank}/${total}` : 'N/A'}
             </div>
             <div className="t-meta">
-              {peRank === 1 ? 'Most expensive' : peRank === total ? 'Cheapest in group' : 'Higher than most'}
+              {peRank === 1 ? t('mostExpensive') : peRank === total ? t('cheapestInGroup') : t('higherThanMost')}
             </div>
           </div>
           <div style={{
@@ -232,11 +232,11 @@ export default function PeerComparison({ ticker, sector, currentPE, currentEVEbi
             background: avgImplied !== null && avgImplied > 0 ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)',
             border: `1px solid ${avgImplied !== null && avgImplied > 0 ? 'rgba(16,185,129,0.20)' : 'rgba(239,68,68,0.20)'}`,
           }}>
-            <div className="t-eyebrow" style={{ marginBottom: 4 }}>If valued at peer avg</div>
+            <div className="t-eyebrow" style={{ marginBottom: 4 }}>{t('ifValuedAtPeerAvg')}</div>
             <div style={{ fontSize: 18, fontWeight: 700, color: avgImplied > 0 ? 'var(--green)' : 'var(--red)' }}>
               {avgImplied !== null ? (avgImplied > 0 ? '+' : '')+fmt(avgImplied,0)+'%' : 'N/A'}
             </div>
-            <div className="t-meta">{avgImplied > 0 ? 'implied upside' : 'implied downside'}</div>
+            <div className="t-meta">{avgImplied > 0 ? t('impliedUpside') : t('impliedDownside')}</div>
           </div>
         </div>
       )}
@@ -252,7 +252,7 @@ export default function PeerComparison({ ticker, sector, currentPE, currentEVEbi
           <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                <th style={{ textAlign: 'left', paddingBottom: 8, paddingRight: 16, color: 'var(--text-muted)', fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Company</th>
+                <th style={{ textAlign: 'left', paddingBottom: 8, paddingRight: 16, color: 'var(--text-muted)', fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{t('companyCol')}</th>
                 {metrics.map(m => (
                   <th key={m.key} style={{ textAlign: 'right', paddingBottom: 8, paddingLeft: 8, paddingRight: 8, fontSize: 11, fontWeight: m.primary ? 600 : 500, textTransform: 'uppercase', letterSpacing: '0.08em', color: m.primary ? 'var(--green)' : 'var(--text-muted)' }}>
                     {m.star ? '★ ' : ''}{m.label}

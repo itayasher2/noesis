@@ -112,7 +112,7 @@ export default function NAVModel({ data }) {
     total += ppe * (1 - adjustments.ppeDiscount / 100);
     total += goodwill * (1 - adjustments.goodwillDiscount / 100);
     total += (otherIntangibles * 0.5) * (1 - adjustments.ipDiscount / 100);
-    total += (financials.revenue * 0.15) * (1 - adjustments.brandDiscount / 100);
+    total += ((financials.revenue || 0) * 0.15) * (1 - adjustments.brandDiscount / 100);
     total += (otherIntangibles * 0.5) * (1 - adjustments.otherIntangiblesDiscount / 100);
     liabilities.forEach(l => total -= l.value);
     return total;

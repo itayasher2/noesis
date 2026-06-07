@@ -254,7 +254,7 @@ export default function App() {
   const [user, setUser] = useState(() => localStorage.getItem('noesis-auth') || null);
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('vp-theme') !== 'light');
   const [paletteOpen, setPaletteOpen] = useState(false);
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   useEffect(() => {
     document.documentElement.className = darkMode ? 'dark' : 'light';
@@ -365,7 +365,7 @@ export default function App() {
   if (!user) return <Login onLogin={u => setUser(u)} />;
 
   return (
-    <div style={{minHeight:'100vh',background:'var(--bg-base)'}}>
+    <div dir={lang === 'he' ? 'rtl' : 'ltr'} style={{minHeight:'100vh',background:'var(--bg-base)'}}>
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
 
         {/* Header */}
@@ -563,7 +563,7 @@ export default function App() {
                         <tbody>{[
                           {name:'P/E',val:data.multiples.pe,base:data.multiples.eps,target:20},
                           {name:'P/E Fwd',val:data.multiples.forwardPE,base:data.multiples.eps,target:18},
-                          {name:'EV/EBITDA',val:data.multiples.evEbitda,base:data.financials.ebitda&&data.profile.shares?data.financials.ebitda/data.profile.shares:null,target:12},
+                          {name:'EV/EBITDA',val:data.multiples.evEbitda,base:data.financials.ebitda&&data.profile.shares?(data.financials.ebitda-(data.financials.netDebt||0)/12)/data.profile.shares:null,target:12},
                           {name:'P/FCF ★',val:data.multiples.evFcf,base:data.financials.fcf&&data.profile.shares?data.financials.fcf/data.profile.shares:null,target:20,primary:true},
                         ].map(m=>{const fv=m.target&&m.base?m.target*m.base:null;const up=fv&&price?(fv/price-1)*100:null;return(
                           <tr key={m.name} style={{...C.bdr,background:m.primary?'var(--green-bg)':'transparent'}}>
@@ -630,7 +630,7 @@ export default function App() {
                     <BusinessDrivers data={data}/>
                   </div>
                   <div className="mt-4">
-                    <AIAnalysis data={data} dcfParams={dcfP}/>
+                    <AIAnalysis data={data} dcfParams={dcfP} dcf={dcf} scoreData={scoreData}/>
                   </div>
                 </div>
               )}

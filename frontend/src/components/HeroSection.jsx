@@ -30,13 +30,28 @@ const VERDICT_CLASS = {
   'Speculative':        'avoid',
 };
 
-const VERDICT_ACTION = {
+const VERDICT_ACTION_EN = {
   'Strong Opportunity': 'BUY',
   'Attractive':         'BUY',
   'Fairly Valued':      'HOLD',
   'High Expectations':  'REDUCE',
   'Caution':            'REDUCE',
   'Speculative':        'AVOID',
+};
+
+const VERDICT_HE = {
+  'Strong Opportunity': 'verdictStrongOpportunity',
+  'Attractive':         'verdictAttractive',
+  'Fairly Valued':      'verdictFairlyValued',
+  'High Expectations':  'verdictHighExpectations',
+  'Caution':            'verdictCaution',
+  'Speculative':        'verdictSpeculative',
+};
+const ACTION_HE = {
+  BUY:    'actionBuy',
+  HOLD:   'actionHoldLabel',
+  REDUCE: 'actionReduceLabel',
+  AVOID:  'actionAvoidLabel',
 };
 
 export default function HeroSection({ data, scoreData, dcf }) {
@@ -102,8 +117,10 @@ export default function HeroSection({ data, scoreData, dcf }) {
     scoreData.composite >= 50 ? 'Fairly Valued' :
     scoreData.composite >= 35 ? 'High Expectations' :
     'Caution';
-  const klass  = VERDICT_CLASS[verdict] || 'hold';
-  const action = VERDICT_ACTION[verdict] || 'HOLD';
+  const klass      = VERDICT_CLASS[verdict] || 'hold';
+  const actionKey  = VERDICT_ACTION_EN[verdict] || 'HOLD';
+  const verdictLabel = lang === 'he' && VERDICT_HE[verdict] ? t(VERDICT_HE[verdict]) : verdict;
+  const actionLabel  = lang === 'he' && ACTION_HE[actionKey] ? t(ACTION_HE[actionKey]) : actionKey;
   const upside = dcf?.fv ? (dcf.fv / price - 1) * 100 : null;
 
   return (
@@ -156,8 +173,8 @@ export default function HeroSection({ data, scoreData, dcf }) {
           <div className="t-num-hero" style={{ fontSize: 'clamp(22px, 6vw, 38px)' }}>{fmtPrice(price)}</div>
 
           <div style={{ marginTop: 4, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6, flexWrap: 'wrap' }}>
-            <span className="t-meta" style={{ color: changePct >= 0 ? 'var(--green)' : 'var(--red)' }}>
-              {changePct >= 0 ? '+' : ''}{fmt(changePct, 2)}% {t('today')}
+            <span className="t-meta" style={{ color: changePct == null ? 'var(--text-muted)' : changePct >= 0 ? 'var(--green)' : 'var(--red)' }}>
+              {changePct == null ? '—' : `${changePct >= 0 ? '+' : ''}${fmt(changePct, 2)}%`} {t('today')}
             </span>
             {mktCap && (
               <span className="t-meta hidden sm:inline" style={{ color: 'var(--text-muted)' }}>· {t('mktCap')} {mktCap}</span>
@@ -171,7 +188,7 @@ export default function HeroSection({ data, scoreData, dcf }) {
 
       {/* Badges */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
-        <div className={`badge ${klass}`}>{verdict} · {action}</div>
+        <div className={`badge ${klass}`}>{verdictLabel} · {actionLabel}</div>
         <div className="badge ghost">{t('confidenceBadge')} · {scoreData.confidence || 'Medium'}</div>
         {upside !== null && (
           <div className={`badge ${upside >= 0 ? 'up' : 'down'}`}>

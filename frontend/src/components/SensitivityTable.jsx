@@ -21,6 +21,7 @@ export default function SensitivityTable({ fcf, shares, totalDebt, cash, baseWac
   }
 
   function getColor(fv, base) {
+    if (!base || base <= 0) return { bg: 'var(--bg-subtle)', color: 'var(--text-muted)' };
     const diff = (fv / base - 1) * 100;
     if (diff >= 30) return { bg: 'var(--green-bg)', color: 'var(--green)' };
     if (diff >= 10) return { bg: 'rgba(16,185,129,0.08)', color: 'var(--green)' };
