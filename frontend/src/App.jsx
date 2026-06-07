@@ -368,7 +368,7 @@ export default function App() {
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
 
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div dir="ltr" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <button
             onClick={() => { setData(null); setTicker(''); setError(''); setTab('overview'); }}
             style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
