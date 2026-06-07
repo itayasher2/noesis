@@ -16,7 +16,6 @@ import MarketExpectations from './components/MarketExpectations';
 import DecisionBox from './components/DecisionBox';
 import ThesisTriggers from './components/ThesisTriggers';
 import HeroSection from './components/HeroSection';
-import ThesisTab from './components/ThesisTab';
 import DCFTab from './components/DCFTab';
 import CommandPalette from './components/CommandPalette';
 import Login from './components/Login';
@@ -628,10 +627,7 @@ export default function App() {
               {/* ── ANALYSIS ── */}
               {tab==='analysis' && (
                 <div>
-                  <ThesisTab data={data} scoreData={scoreData} dcf={dcf} dcfParams={dcfP}/>
-                  <div className="mt-4">
-                    <BusinessDrivers data={data}/>
-                  </div>
+                  <BusinessDrivers data={data}/>
                   <div className="mt-4">
                     <AIAnalysis data={data} dcfParams={dcfP} dcf={dcf} scoreData={scoreData}/>
                   </div>
